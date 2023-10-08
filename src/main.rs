@@ -66,6 +66,64 @@ fn main() {
     // PROCESS
     ////////////////////////////////////////////////////////////////////////////////
 
+    let mut in_memory_account_map = std::collections::HashMap::<String, Vec<u8>>::new();
+
+    for (pubkey, data_base64) in account_map.iter() {
+        let data = BASE64_STANDARD.decode(data_base64).unwrap();
+        //in_memory_account_map.insert(pubkey.clone(), Rc::new(RefCell::new(data)));
+        in_memory_account_map.insert(pubkey.clone(), data);
+    }
+
+    let account_data = in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap();
+    let mut x = &account_data[..];
+    let pool_data = whirlpool_base::state::Whirlpool::try_deserialize(&mut x).unwrap();
+
+    let mut lamports = 1_000_000_000;
+    let mut data = in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap().clone();
+    let account_info = solana_program::account_info::AccountInfo {
+        executable: false,
+        is_signer: false,
+        is_writable: true,
+        owner: &ORCA_WHIRLPOOL_PROGRAM_ID,
+        rent_epoch: 0,
+        key: &ORCA_WHIRLPOOL_PROGRAM_ID, // dummy
+        //data: Rc::new(RefCell::new(&mut [0u8; 1000])),
+        data: Rc::new(RefCell::new(&mut data[..])),
+        lamports: Rc::new(RefCell::new(&mut lamports)),
+    };
+
+    print!("before: {}", in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap()[45] as i32 + in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap()[46] as i32 * 256i32);
+
+    //print!("before data: {} {}", data[45], data[46]);
+    let mut y = Account::<whirlpool_base::state::Whirlpool>::try_from(&account_info).unwrap();
+    y.update_fee_rate(1000).unwrap();
+
+    //let yy = y.to_account_info();
+    let yy = y.into_inner();
+
+    //print!("fee rate: {}", yy.fee_rate);
+
+    //whirlpool_base::state::Whirlpool::try_serialize(yy, )
+    yy.try_serialize(&mut &mut data[..]).unwrap();
+
+    //drop(y);
+
+    print!("after data: {}", data[45] as i32 + data[46] as i32 * 256);
+
+    in_memory_account_map.get_mut("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap().copy_from_slice(&data[..]);
+
+    in_memory_account_map.get_mut("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap().copy_from_slice(&data[..]);
+
+
+
+    print!("AFTER: {}", in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap()[45] as i32 + in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap()[46] as i32 * 256i32);
+
+    //print!("after yy: {}", yy.data.borrow()[45] as i32 + yy.data.borrow()[46] as i32 * 256);
+    
+
+    //print!("after: {}", in_memory_account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap()[0]);
+
+    /* 
     let account_data_base64 = account_map.get("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ").unwrap();
     let account_data = BASE64_STANDARD.decode(account_data_base64).unwrap();
     let mut x = &account_data[..];
@@ -103,7 +161,7 @@ fn main() {
     }
 
     //instructions::set_fee_rate::handler();
-
+*/
     ////////////////////////////////////////////////////////////////////////////////
     // SAVE
     ////////////////////////////////////////////////////////////////////////////////

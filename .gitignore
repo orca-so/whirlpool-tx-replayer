@@ -17,3 +17,4 @@ Cargo.lock
 # Added by cargo
 
 /target
+data/whirlpool-snapshot-215135999.csv.2.gz
