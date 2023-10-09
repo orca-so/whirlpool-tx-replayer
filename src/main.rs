@@ -174,7 +174,6 @@ fn main() {
         in_memory_account_map.insert(pubkey.clone(), data);
     }
 
-
     // https://github.com/solana-labs/solana-program-library/blob/master/token-swap/program/src/processor.rs#L1364
 
     struct TestSyscallStubs {
@@ -471,8 +470,21 @@ fn test_collect_reward(in_memory_account_map: &std::collections::HashMap<String,
     let token_program_account_info = create_account_info_with_pubkey(&mut token_program_data, &mut token_program_lamports, &token_program_pubkey);
     let token_program = Program::try_from(&token_program_account_info).unwrap();
 
-    let mut t = Rc::new(RefCell::new(&mut [0u8; 1000]));
+    let mut d = [0u8; 1000];
+    let mut t = Rc::new(RefCell::new(&mut d));
     let mut t2 = Rc::new(RefCell::new(&mut 1_000_000_000u64));
+
+    let mut tcopy = t.clone();
+    t.borrow_mut()[0] = 1;
+    println!("t: {}", tcopy.borrow()[0]);
+    tcopy.borrow_mut()[0] = 2;
+    println!("t: {}", t.borrow()[0]);
+
+    let mut x = t.borrow_mut();
+    x[5] = 2;
+    drop(x);
+    let mut y = tcopy.borrow_mut();
+    y[5] = 3;
 
     let mut accounts = instructions::collect_reward::CollectReward {
         whirlpool: Box::new(whirlpool),
