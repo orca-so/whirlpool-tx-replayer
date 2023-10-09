@@ -45,12 +45,12 @@ async fn main() {
     ////////////////////////////////////////////////////////////////////////////////
     // REPLAY
     ////////////////////////////////////////////////////////////////////////////////
-    let mut test = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
+    let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
 
     let ORCA_WHIRLPOOL_PROGRAM_ID = whirlpool_base::ID;
 
     let whirlpool = solana_program::pubkey!("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ");
-    test.add_account_with_base64_data(
+    replayer.add_account_with_base64_data(
         whirlpool,
         1_000_000_000u64,
         ORCA_WHIRLPOOL_PROGRAM_ID,
@@ -58,7 +58,7 @@ async fn main() {
     );
 
     let whirlpools_config = solana_program::pubkey!("2LecshUwdy9xi7meFgHtFJQNSKk4KdTrcpvaB56dP2NQ");
-    test.add_account_with_base64_data(
+    replayer.add_account_with_base64_data(
         whirlpools_config,
         1_000_000_000u64,
         ORCA_WHIRLPOOL_PROGRAM_ID,
@@ -67,7 +67,7 @@ async fn main() {
 
     let fee_authority = solana_program::pubkey!("3Pi4tc4SxZyKZivKxWnYfGNxeqFJJxPc8xRw1VnvXpbb");
 
-    let mut context = test.start_with_context().await;
+    let mut context = replayer.start_with_context().await;
 
     let payer = std::rc::Rc::new(context.payer.insecure_clone());
     let anchor = anchor_client::Client::new_with_options(
@@ -92,7 +92,9 @@ async fn main() {
     let message = solana_sdk::message::Message::new(&ixs, Some(&payer.pubkey()));
     let mut tx = solana_sdk::transaction::Transaction::new_unsigned(message);
 
+    // sign is not required, just to set the last_blockhash
     tx.partial_sign(&[&context.payer], context.last_blockhash);
+
     context.banks_client.process_transaction(tx).await.unwrap();
 
 
