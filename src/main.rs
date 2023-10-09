@@ -137,7 +137,6 @@ fn create_signer_account_info<'info>(data: &'info mut [u8], lamports: &'info mut
 // rent sysvar
 // clock sysvar
 
-
 fn main() {
     let gzcsvfile = "data/whirlpool-snapshot-215135999.csv.gz";
     let copiedfile = "data/whirlpool-snapshot-215135999.csv.2.gz";
@@ -178,7 +177,9 @@ fn main() {
 
     // https://github.com/solana-labs/solana-program-library/blob/master/token-swap/program/src/processor.rs#L1364
 
-    struct TestSyscallStubs {}
+    struct TestSyscallStubs {
+        pub stub_clock_sysvar: i64,
+    }
     impl solana_program::program_stubs::SyscallStubs for TestSyscallStubs {
         fn sol_invoke_signed(
             &self,
@@ -192,7 +193,7 @@ fn main() {
 
         fn sol_get_clock_sysvar(&self, var_addr: *mut u8) -> u64 {
             let mut clock = Clock::default();
-            clock.unix_timestamp = 500i64;
+            clock.unix_timestamp = self.stub_clock_sysvar;// 500i64;
             unsafe {
                 *(var_addr as *mut _ as *mut Clock) = clock;
             }
@@ -200,7 +201,7 @@ fn main() {
         }
     }
 
-    solana_program::program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs {}));
+    solana_program::program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs { stub_clock_sysvar: 500i64 }));
 
     /* 
     // https://github.com/solana-labs/example-helloworld/blob/master/src/program-rust/tests/lib.rs
@@ -255,6 +256,11 @@ fn main() {
 
     let clock = Clock::get().unwrap();
     println!("clock: {}", clock.unix_timestamp);
+
+    solana_program::program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs { stub_clock_sysvar: 10000i64 }));
+
+    let clock2 = Clock::get().unwrap();
+    println!("clock2: {}", clock2.unix_timestamp);
 
 /* 
    let mut x_lamports = 1_000_000_000u64;
@@ -464,6 +470,9 @@ fn test_collect_reward(in_memory_account_map: &std::collections::HashMap<String,
     let mut token_program_data: Vec<u8> = vec![];
     let token_program_account_info = create_account_info_with_pubkey(&mut token_program_data, &mut token_program_lamports, &token_program_pubkey);
     let token_program = Program::try_from(&token_program_account_info).unwrap();
+
+    let mut t = Rc::new(RefCell::new(&mut [0u8; 1000]));
+    let mut t2 = Rc::new(RefCell::new(&mut 1_000_000_000u64));
 
     let mut accounts = instructions::collect_reward::CollectReward {
         whirlpool: Box::new(whirlpool),
