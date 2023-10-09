@@ -1,3 +1,4 @@
+use std::borrow::BorrowMut;
 use std::{fs::File, collections::BTreeMap};
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -200,7 +201,7 @@ fn main() {
         }
     }
 
-    solana_program::program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs { stub_clock_sysvar: 500i64 }));
+    solana_program::program_stubs::set_syscall_stubs(Box::new(TestSyscallStubs { stub_clock_sysvar: 1696838023 }));
 
     /* 
     // https://github.com/solana-labs/example-helloworld/blob/master/src/program-rust/tests/lib.rs
@@ -250,8 +251,13 @@ fn main() {
 */
 
     test_set_fee_rate(&in_memory_account_map);
+    test_set_fee_rate2(&mut in_memory_account_map);
 
     test_collect_reward(&in_memory_account_map);
+
+    test_set_fee_rate2(&mut in_memory_account_map);
+
+    test_update_fees_and_rewards(&mut in_memory_account_map);
 
     let clock = Clock::get().unwrap();
     println!("clock: {}", clock.unix_timestamp);
@@ -469,7 +475,7 @@ fn test_collect_reward(in_memory_account_map: &std::collections::HashMap<String,
     let mut token_program_data: Vec<u8> = vec![];
     let token_program_account_info = create_account_info_with_pubkey(&mut token_program_data, &mut token_program_lamports, &token_program_pubkey);
     let token_program = Program::try_from(&token_program_account_info).unwrap();
-
+/*
     let mut d = [0u8; 1000];
     let mut t = Rc::new(RefCell::new(&mut d));
     let mut t2 = Rc::new(RefCell::new(&mut 1_000_000_000u64));
@@ -485,7 +491,7 @@ fn test_collect_reward(in_memory_account_map: &std::collections::HashMap<String,
     drop(x);
     let mut y = tcopy.borrow_mut();
     y[5] = 3;
-
+ */
     let mut accounts = instructions::collect_reward::CollectReward {
         whirlpool: Box::new(whirlpool),
         position_authority,
@@ -507,3 +513,147 @@ fn test_collect_reward(in_memory_account_map: &std::collections::HashMap<String,
 
     instructions::collect_reward::handler(ctx, 0).unwrap();
 }
+
+
+fn test_set_fee_rate2(in_memory_account_map: &mut std::collections::HashMap::<String, Vec<u8>>) {
+/* 
+    let mut account_info_map = std::collections::HashMap::<Pubkey, AccountInfo>::new();
+    let keys = ["HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ", "2LecshUwdy9xi7meFgHtFJQNSKk4KdTrcpvaB56dP2NQ"];
+
+    let mut lamports = 1_000_000_000u64;
+    let mut data_map = std::collections::HashMap::<String, Vec<u8>>::new();
+    for key in keys.iter() {
+        let mut data = in_memory_account_map.get(*key).unwrap().clone();
+        let account_info = create_account_info(&mut data, &mut lamports);
+        account_info_map.insert(account_info.key.clone(), account_info);
+    }
+
+*/
+let LAMPORTS = 1_000_000_000u64;
+
+    let key_whirlpool = "HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ";
+    let key_whirlpools_config = "2LecshUwdy9xi7meFgHtFJQNSKk4KdTrcpvaB56dP2NQ";
+
+// to use same account info for same address (especially for TickArray)
+    let mut updating_account_info = std::collections::HashMap::<String, AccountInfo>::new();
+
+    let mut whirlpool_lamports = LAMPORTS;
+    let mut whirlpool_data = in_memory_account_map.get(key_whirlpool).unwrap().clone();
+    updating_account_info.insert(key_whirlpool.to_string(), create_account_info(&mut whirlpool_data, &mut whirlpool_lamports));
+
+    let mut whirlpools_config_lamports = LAMPORTS;
+    let mut whirlpools_config_data = in_memory_account_map.get(key_whirlpools_config).unwrap().clone();
+    updating_account_info.insert(key_whirlpools_config.to_string(), create_account_info(&mut whirlpools_config_data, &mut whirlpools_config_lamports));
+
+    let mut fee_authority_lamports = LAMPORTS;
+    let mut fee_authority_data: Vec<u8> = vec![];
+    let fee_authority_account_info = create_account_info(&mut fee_authority_data, &mut fee_authority_lamports);
+
+    //    let whirlpools_config = Account::try_from(&whirlpools_config_account_info).unwrap();
+
+//    let mut fee_authority_lamports = 1_000_000_000u64;
+    //let fee_authority = Signer::try_from(&fee_authority_account_info).unwrap();
+
+    let mut accounts = instructions::set_fee_rate::SetFeeRate {
+        whirlpool: Account::try_from(&updating_account_info.get(key_whirlpool).unwrap()).unwrap(),
+        whirlpools_config: Account::try_from(&updating_account_info.get(key_whirlpools_config).unwrap()).unwrap(),
+        fee_authority: Signer::try_from(&fee_authority_account_info).unwrap(),
+    };
+
+    let next_fee_rate = accounts.whirlpool.fee_rate + 1000;
+
+    //let bumps = BTreeMap::new();
+    //let remaining_accounts = [];
+    let ctx = Context::new(
+        &ORCA_WHIRLPOOL_PROGRAM_ID,
+        &mut accounts,
+        &[],//remaining_accounts,
+        BTreeMap::new(),//bumps,
+    );
+
+    for (key, account_info) in updating_account_info.iter() {
+        println!("updating {}: {}", key, account_info.data.borrow()[45]as i32 + account_info.data.borrow()[46] as i32 *256);
+    }
+
+    instructions::set_fee_rate::handler(ctx, next_fee_rate).unwrap();
+
+    println!("after feerate {}", accounts.whirlpool.fee_rate);
+
+    // persistence Account (AccountLoader はダイレクト書き込み)
+    accounts.whirlpool.exit(&ORCA_WHIRLPOOL_PROGRAM_ID).unwrap();
+    accounts.whirlpools_config.exit(&ORCA_WHIRLPOOL_PROGRAM_ID).unwrap();
+
+    for (key, account_info) in updating_account_info.iter() {
+        println!("updated {}: {}", key, account_info.data.borrow()[45]as i32 + account_info.data.borrow()[46] as i32 *256);
+    }
+
+    for (key, account_info) in updating_account_info.iter() {
+        in_memory_account_map.insert(key.to_string(), account_info.data.borrow().to_vec());
+    }
+
+}
+
+
+
+
+fn test_update_fees_and_rewards(in_memory_account_map: &mut std::collections::HashMap::<String, Vec<u8>>) {
+    let LAMPORTS = 1_000_000_000u64;
+    
+    let key_whirlpool = "9vqYJjDUFecLL2xPUC4Rc7hyCtZ6iJ4mDiVZX7aFXoAe";
+    let key_position = "ELVPibaoLYDyzSXQCiELdLgYTrB4zVr2RzuBtJGjuhJC";
+    let key_lower_tick_array = "7SAU5FgSFsDV2fBVNfzAtSP7DcXwH174jjxzePQm11WD";
+    let key_upper_tick_array = "8C7RSksyUbS3SmCUFpuKtY413Yswqh5HNmzHQ7c5TCNK";
+    
+    let mut updating_account_info = std::collections::HashMap::<String, AccountInfo>::new();
+
+    let mut whirlpool_lamports = LAMPORTS;
+    let mut whirlpool_data = in_memory_account_map.get(key_whirlpool).unwrap().clone();
+    updating_account_info.insert(key_whirlpool.to_string(), create_account_info(&mut whirlpool_data, &mut whirlpool_lamports));
+
+    let mut position_lamports = LAMPORTS;
+    let mut position_data = in_memory_account_map.get(key_position).unwrap().clone();
+    updating_account_info.insert(key_position.to_string(), create_account_info(&mut position_data, &mut position_lamports));
+
+    let mut lower_tick_array_lamports = LAMPORTS;
+    let mut lower_tick_array_data: Vec<u8> = in_memory_account_map.get(key_lower_tick_array).unwrap().clone();
+    updating_account_info.insert(key_lower_tick_array.to_string(), create_account_info(&mut lower_tick_array_data, &mut lower_tick_array_lamports));
+
+    let mut upper_tick_array_lamports = LAMPORTS;
+    let mut upper_tick_array_data: Vec<u8> = in_memory_account_map.get(key_upper_tick_array).unwrap().clone();
+    updating_account_info.insert(key_upper_tick_array.to_string(), create_account_info(&mut upper_tick_array_data, &mut upper_tick_array_lamports));
+
+    
+    let tick_array_lower = AccountLoader::try_from(&updating_account_info.get(key_lower_tick_array).unwrap()).unwrap();
+    let tick_array_upper = AccountLoader::try_from(&updating_account_info.get(key_upper_tick_array).unwrap()).unwrap();
+    tick_array_lower.load().unwrap();
+    tick_array_upper.load().unwrap();
+
+    let mut accounts = instructions::update_fees_and_rewards::UpdateFeesAndRewards {
+        whirlpool: Account::try_from(&updating_account_info.get(key_whirlpool).unwrap()).unwrap(),
+        position: Account::try_from(&updating_account_info.get(key_position).unwrap()).unwrap(),
+        tick_array_lower,
+        tick_array_upper,
+    };
+
+    let ctx = Context::new(
+        &ORCA_WHIRLPOOL_PROGRAM_ID,
+        &mut accounts,
+        &[],
+        BTreeMap::new(),
+    );
+    
+    instructions::update_fees_and_rewards::handler(ctx).unwrap();
+
+    println!("after feerate {}", accounts.whirlpool.fee_rate);
+
+    // persistence Account (AccountLoader はダイレクト書き込み)
+    accounts.whirlpool.exit(&ORCA_WHIRLPOOL_PROGRAM_ID).unwrap();
+    accounts.position.exit(&ORCA_WHIRLPOOL_PROGRAM_ID).unwrap();
+
+
+    for (key, account_info) in updating_account_info.iter() {
+        in_memory_account_map.insert(key.to_string(), account_info.data.borrow().to_vec());
+    }
+    
+}
+    
