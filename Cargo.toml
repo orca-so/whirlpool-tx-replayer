@@ -15,14 +15,20 @@ base64 = "0.21.4"
 
 mysql = "24.0.0"
 
+tokio = { version = "1.14.1", features = ["full"] }
+
 # solana-program = "=1.16.16"
 # solana-program-test = "=1.16.16"
 # spl-token = "3.5.0"
 anchor-lang = "0.26.0"
+anchor-client = "0.26.0"
 whirlpool_base = { git = "https://github.com/orca-so/whirlpools", package = "whirlpool" }
 
+solana-sdk = "=1.16.16"
 solana-program = "=1.16.16"
+solana-banks-server = "=1.16.16"
 solana-program-test = "=1.16.16"
 
-# skip signature verification
+# skip signature verification for replay purpose
+[patch.crates-io]
 solana-banks-server = { path = "crates/solana-banks-server-for-replay" }

@@ -166,6 +166,7 @@ fn verify_transaction(
 ) -> transaction::Result<()> {
     //transaction.verify()?;
     //transaction.verify_precompiles(feature_set)?;
+    println!("verify_transaction: skipped");
     Ok(())
 }
 
