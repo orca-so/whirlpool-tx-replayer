@@ -1,5 +1,6 @@
 use solana_program_test::*;
 use solana_sdk::signer::Signer;
+use solana_sdk::pubkey::Pubkey;
 
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
@@ -13,6 +14,12 @@ struct AccountString {
 
 use anchor_client;
 
+const BPF_LOADER_PROGRAM_ID: Pubkey = solana_program::pubkey!("BPFLoader2111111111111111111111111111111111");
+const BPF_LOADER_UPGRADABLE_PROGRAM_ID: Pubkey = solana_program::pubkey!("BPFLoaderUpgradeab1e11111111111111111111111");
+const SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
+const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
 #[tokio::main]
 async fn main() {
@@ -45,9 +52,63 @@ async fn main() {
     ////////////////////////////////////////////////////////////////////////////////
     // REPLAY
     ////////////////////////////////////////////////////////////////////////////////
-    let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
 
-    let ORCA_WHIRLPOOL_PROGRAM_ID = whirlpool_base::ID;
+    println!("replay: set_fee_rate");
+    set_fee_rate(&account_map).await;
+
+    println!("replay: update_fees_and_rewards");
+    update_fees_and_rewards(&account_map).await;
+    
+    println!("replay: collect_reward");
+    collect_reward(&account_map).await;
+
+    /*
+    let tx = solana_sdk::transaction::Transaction::new_with_payer(
+        &ixs,
+        Some(&payer.pubkey()),
+    );
+     */
+
+    //println!("tx: {:?}", tx);
+
+    /* 
+    println!("payer {}", context.payer.pubkey());
+    let payer_account = context.banks_client.get_account(context.payer.pubkey()).await.unwrap();
+
+    match payer_account {
+        Some(v) => {
+            println!("payer: {}", v.lamports);
+            println!("payer: {}", v.owner);
+            println!("payer: {}", v.executable);
+            println!("payer: {}", v.rent_epoch);
+            println!("payer: {}", v.data.len());
+        },
+        None => {
+            println!("payer: no account found");
+        }
+    }
+
+*/
+/* 
+    let v = context.banks_client.get_account(whirlpool).await.unwrap();
+
+    match v {
+        Some(v) => {
+            println!("SOL/USDC(64): {}", v.lamports);
+            println!("SOL/USDC(64): {}", v.owner);
+            println!("SOL/USDC(64): {}", v.executable);
+            println!("SOL/USDC(64): {}", v.rent_epoch);
+            println!("SOL/USDC(64): {}", v.data.len());
+        },
+        None => {
+            println!("SOL/USDC(64): no account found");
+        }
+    }
+   */ 
+}
+
+async fn set_fee_rate(account_map: &std::collections::HashMap::<String, String>) {
+    let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
 
     let whirlpool = solana_program::pubkey!("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ");
     replayer.add_account_with_base64_data(
@@ -96,51 +157,152 @@ async fn main() {
     tx.partial_sign(&[&context.payer], context.last_blockhash);
 
     context.banks_client.process_transaction(tx).await.unwrap();
+}
 
+async fn collect_reward(account_map: &std::collections::HashMap::<String, String>) {
+    let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
 
-    
-
-    /*
-    let tx = solana_sdk::transaction::Transaction::new_with_payer(
-        &ixs,
-        Some(&payer.pubkey()),
+    let whirlpool = solana_program::pubkey!("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ");
+    replayer.add_account_with_base64_data(
+        whirlpool,
+        1_000_000_000u64,
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        account_map.get(&whirlpool.to_string()).unwrap(),
     );
-     */
 
-    //println!("tx: {:?}", tx);
+    let position_authority = solana_program::pubkey!("8KLXsmgjPY1xkGU9tfz5YeP26hxemWTwiN9WhkSrufFZ");
 
-    /* 
-    println!("payer {}", context.payer.pubkey());
-    let payer_account = context.banks_client.get_account(context.payer.pubkey()).await.unwrap();
+    let position = solana_program::pubkey!("7MXHNKLmetpi1qh69bcda5aRDXysKWi7yvywfih2XCw3");
+    replayer.add_account_with_base64_data(
+        position,
+        1_000_000_000u64,
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        account_map.get(&position.to_string()).unwrap(),
+    );
 
-    match payer_account {
-        Some(v) => {
-            println!("payer: {}", v.lamports);
-            println!("payer: {}", v.owner);
-            println!("payer: {}", v.executable);
-            println!("payer: {}", v.rent_epoch);
-            println!("payer: {}", v.data.len());
-        },
-        None => {
-            println!("payer: no account found");
-        }
-    }
+    let position_token_account = solana_program::pubkey!("H8omqqRQVePUxTdq1L9MetJcpWckuCd2UE7UaHtjvhBn");
+    replayer.add_account_with_base64_data(
+        position_token_account,
+        1_000_000_000u64,
+        SPL_TOKEN_PROGRAM_ID,
+        "SYksBBmzFFTG48kMplfHqJAtk/eyGKcwxyMiCV7PiY9stFksBFcs+AxnuABuYLnvRqpnqwvuDmSIGHzVo7T9NAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    );
 
-*/
-/* 
-    let v = context.banks_client.get_account(whirlpool).await.unwrap();
+    let reward_owner_account = solana_program::pubkey!("2tU3tKvj7RBxEatryyMYTUxBoLSSWCQXsdv1X6yce4T2");
+    replayer.add_account_with_base64_data(
+        reward_owner_account,
+        1_000_000_000u64,
+        SPL_TOKEN_PROGRAM_ID,
+        "DADQr+uGFNp/GaugLUDxjGklhfZQIN/O09Xl+anAxOHyL5MQp9RFVK38fpgddAeEPkj5Nf7TAl/qe/yaQ/yJNd6HixEFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    );
 
-    match v {
-        Some(v) => {
-            println!("SOL/USDC(64): {}", v.lamports);
-            println!("SOL/USDC(64): {}", v.owner);
-            println!("SOL/USDC(64): {}", v.executable);
-            println!("SOL/USDC(64): {}", v.rent_epoch);
-            println!("SOL/USDC(64): {}", v.data.len());
-        },
-        None => {
-            println!("SOL/USDC(64): no account found");
-        }
-    }
-   */ 
+    // TODO: fix vault or owner_account (same)
+    let reward_vault = solana_program::pubkey!("2tU3tKvj7RBxEatryyMYTUxBoLSSWCQXsdv1X6yce4T2");
+    replayer.add_account_with_base64_data(
+        reward_vault,
+        1_000_000_000u64,
+        SPL_TOKEN_PROGRAM_ID,
+        "DADQr+uGFNp/GaugLUDxjGklhfZQIN/O09Xl+anAxOHyL5MQp9RFVK38fpgddAeEPkj5Nf7TAl/qe/yaQ/yJNd6HixEFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    );
+
+    let token_program = SPL_TOKEN_PROGRAM_ID;
+
+    let mut context = replayer.start_with_context().await;
+
+    let payer = std::rc::Rc::new(context.payer.insecure_clone());
+    let anchor = anchor_client::Client::new_with_options(
+        anchor_client::Cluster::Localnet,
+        payer.clone(),
+        solana_sdk::commitment_config::CommitmentConfig::confirmed(),
+    );
+    let program = anchor.program(ORCA_WHIRLPOOL_PROGRAM_ID);
+
+    let ixs = program
+        .request()
+        .accounts(whirlpool_base::accounts::CollectReward {
+            whirlpool,
+            position_authority,
+            position,
+            position_token_account,
+            reward_owner_account,
+            reward_vault,
+            token_program,
+        })
+        .args(whirlpool_base::instruction::CollectReward {
+            reward_index: 0,
+        })
+        .instructions().unwrap();
+
+    let message = solana_sdk::message::Message::new(&ixs, Some(&payer.pubkey()));
+    let mut tx = solana_sdk::transaction::Transaction::new_unsigned(message);
+
+    // sign is not required, just to set the last_blockhash
+    tx.partial_sign(&[&context.payer], context.last_blockhash);
+
+    context.banks_client.process_transaction(tx).await.unwrap();   
+}
+
+async fn update_fees_and_rewards(account_map: &std::collections::HashMap::<String, String>) {
+    let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
+
+    let whirlpool = solana_program::pubkey!("9vqYJjDUFecLL2xPUC4Rc7hyCtZ6iJ4mDiVZX7aFXoAe");
+    replayer.add_account_with_base64_data(
+        whirlpool,
+        1_000_000_000u64,
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        account_map.get(&whirlpool.to_string()).unwrap(),
+    );
+
+    let position = solana_program::pubkey!("ELVPibaoLYDyzSXQCiELdLgYTrB4zVr2RzuBtJGjuhJC");
+    replayer.add_account_with_base64_data(
+        position,
+        1_000_000_000u64,
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        account_map.get(&position.to_string()).unwrap(),
+    );
+
+    let tick_array_lower = solana_program::pubkey!("7SAU5FgSFsDV2fBVNfzAtSP7DcXwH174jjxzePQm11WD");
+    replayer.add_account_with_base64_data(
+        tick_array_lower,
+        1_000_000_000u64,
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        account_map.get(&tick_array_lower.to_string()).unwrap(),
+    );
+
+    let tick_array_upper = solana_program::pubkey!("8C7RSksyUbS3SmCUFpuKtY413Yswqh5HNmzHQ7c5TCNK");
+    replayer.add_account_with_base64_data(
+        tick_array_upper,
+        1_000_000_000u64,
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        account_map.get(&tick_array_upper.to_string()).unwrap(),
+    );
+
+    let mut context = replayer.start_with_context().await;
+
+    let payer = std::rc::Rc::new(context.payer.insecure_clone());
+    let anchor = anchor_client::Client::new_with_options(
+        anchor_client::Cluster::Localnet,
+        payer.clone(),
+        solana_sdk::commitment_config::CommitmentConfig::confirmed(),
+    );
+    let program = anchor.program(ORCA_WHIRLPOOL_PROGRAM_ID);
+
+    let ixs = program
+        .request()
+        .accounts(whirlpool_base::accounts::UpdateFeesAndRewards {
+            whirlpool,
+            position,
+            tick_array_lower,
+            tick_array_upper,
+        })
+        .args(whirlpool_base::instruction::UpdateFeesAndRewards {})
+        .instructions().unwrap();
+
+    let message = solana_sdk::message::Message::new(&ixs, Some(&payer.pubkey()));
+    let mut tx = solana_sdk::transaction::Transaction::new_unsigned(message);
+
+    // sign is not required, just to set the last_blockhash
+    tx.partial_sign(&[&context.payer], context.last_blockhash);
+
+    context.banks_client.process_transaction(tx).await.unwrap();  
 }
