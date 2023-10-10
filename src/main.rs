@@ -143,7 +143,7 @@ async fn set_fee_rate(account_map: &std::collections::HashMap::<String, String>)
 
     //builder.clone_upgradable_program_from_cluster(&client, ORCA_WHIRLPOOL_PROGRAM_ID);
 
-    util::add_upgradable_program(&mut builder, ORCA_WHIRLPOOL_PROGRAM_ID, programs::ORCA_WHIRLPOOL_20230823_A574AE5);
+    util::add_upgradable_program(&mut builder, ORCA_WHIRLPOOL_PROGRAM_ID, programs::ORCA_WHIRLPOOL_20230901_A574AE5);
 
     //println!("deployed whirlpool len: {}", programs::ORCA_WHIRLPOOL_20230823_a574ae5.len());
 
