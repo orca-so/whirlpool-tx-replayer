@@ -6,6 +6,7 @@ use solana_program::bpf_loader_upgradeable;
 use bincode;
 
 // LocalEnvironmentBuilder.add_program doesn't work for upgradeable programs
+// https://github.com/solana-labs/solana/blob/170478924705c9c62dbeb475c5425b68ba61b375/sdk/program/src/bpf_loader_upgradeable.rs#L27-L53
 pub fn add_upgradable_program(
     builder: &mut LocalEnvironmentBuilder,
     pubkey: Pubkey,
