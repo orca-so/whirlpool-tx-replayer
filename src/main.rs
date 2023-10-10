@@ -31,12 +31,18 @@ const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJ
 const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
+
+
+
+
+
+
 #[tokio::main]
 async fn main() {
     println!("Hello, world!");
 
     let gzcsvfile = "data/whirlpool-snapshot-215135999.csv.gz";
-
+/* 
     ////////////////////////////////////////////////////////////////////////////////
     // LOAD
     ////////////////////////////////////////////////////////////////////////////////
@@ -67,56 +73,15 @@ async fn main() {
 
     println!("replay: set_fee_rate");
     set_fee_rate(&account_map).await;
-
-    //println!("replay: update_fees_and_rewards");
-    //update_fees_and_rewards(&account_map).await;
-    
-    //println!("replay: collect_reward");
-    //collect_reward(&account_map).await;
-
-    /*
-    let tx = solana_sdk::transaction::Transaction::new_with_payer(
-        &ixs,
-        Some(&payer.pubkey()),
-    );
-     */
-
-    //println!("tx: {:?}", tx);
-
-    /* 
-    println!("payer {}", context.payer.pubkey());
-    let payer_account = context.banks_client.get_account(context.payer.pubkey()).await.unwrap();
-
-    match payer_account {
-        Some(v) => {
-            println!("payer: {}", v.lamports);
-            println!("payer: {}", v.owner);
-            println!("payer: {}", v.executable);
-            println!("payer: {}", v.rent_epoch);
-            println!("payer: {}", v.data.len());
-        },
-        None => {
-            println!("payer: no account found");
-        }
-    }
-
 */
-/* 
-    let v = context.banks_client.get_account(whirlpool).await.unwrap();
 
-    match v {
-        Some(v) => {
-            println!("SOL/USDC(64): {}", v.lamports);
-            println!("SOL/USDC(64): {}", v.owner);
-            println!("SOL/USDC(64): {}", v.executable);
-            println!("SOL/USDC(64): {}", v.rent_epoch);
-            println!("SOL/USDC(64): {}", v.data.len());
-        },
-        None => {
-            println!("SOL/USDC(64): no account found");
-        }
-    }
-   */ 
+
+
+
+
+
+
+
 }
 
 async fn set_fee_rate(account_map: &std::collections::HashMap::<String, String>) {
