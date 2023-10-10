@@ -3,11 +3,10 @@ CREATE VIEW vwixsSwap AS
 SELECT
     t.txid,
     t.order,
-    (SELECT signature FROM txs WHERE txid = t.txid) AS "signature",
     "swap" AS "ix",
     JSON_OBJECT(
-        'dataAmount', t.dataAmount,
-    	'dataOtherAmountThreshold', t.dataOtherAmountThreshold,
+		'dataAmount', t.dataAmount,
+		'dataOtherAmountThreshold', t.dataOtherAmountThreshold,
 		'dataSqrtPriceLimit', t.dataSqrtPriceLimit,
 		'dataAmountSpecifiedIsInput', t.dataAmountSpecifiedIsInput,
 		'dataAToB', t.dataAToB,
