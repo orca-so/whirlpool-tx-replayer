@@ -1,6 +1,9 @@
-use solana_program_test::*;
-use solana_sdk::signer::Signer;
+use anchor_lang::AccountDeserialize;
+use base64::prelude::{Engine as _, BASE64_STANDARD};
+//use solana_program_test::*;
+use solana_sdk::{signer::Signer, signature::Keypair, transaction::{Transaction, VersionedTransaction}};
 use solana_sdk::pubkey::Pubkey;
+use solana_program::{bpf_loader, bpf_loader_upgradeable};
 
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
@@ -11,6 +14,13 @@ struct AccountString {
     pubkey: String,
     data_base64: String,
 }
+
+use solana_client::{rpc_client::RpcClient, rpc_config::RpcTransactionConfig};
+
+use poc_framework::{Environment, LocalEnvironment, PrintableTransaction, setup_logging, LogLevel};
+
+mod programs;
+mod util;
 
 use anchor_client;
 
@@ -53,14 +63,16 @@ async fn main() {
     // REPLAY
     ////////////////////////////////////////////////////////////////////////////////
 
+    setup_logging(LogLevel::DEBUG);
+
     println!("replay: set_fee_rate");
     set_fee_rate(&account_map).await;
 
-    println!("replay: update_fees_and_rewards");
-    update_fees_and_rewards(&account_map).await;
+    //println!("replay: update_fees_and_rewards");
+    //update_fees_and_rewards(&account_map).await;
     
-    println!("replay: collect_reward");
-    collect_reward(&account_map).await;
+    //println!("replay: collect_reward");
+    //collect_reward(&account_map).await;
 
     /*
     let tx = solana_sdk::transaction::Transaction::new_with_payer(
@@ -108,32 +120,58 @@ async fn main() {
 }
 
 async fn set_fee_rate(account_map: &std::collections::HashMap::<String, String>) {
-    let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
+    //let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
+
+    //let client = RpcClient::new("<RPC>");
+
+
+    let mut builder = LocalEnvironment::builder();
+
+    /* 
+    // deploy whirlpool
+    builder.add_account_with_data(
+        ORCA_WHIRLPOOL_PROGRAM_ID,
+        bpf_loader_upgradeable::ID,
+        &BASE64_STANDARD.decode("AgAAALCj2NteOsPf+tyRpPc+hRFSbDKg2sRwo9znup2STWeS").unwrap(),
+        true);
+    builder.add_account_with_data(
+        solana_program::pubkey!("CtXfPzz36dH5Ws4UYKZvrQ1Xqzn42ecDW6y8NKuiN8nD"),
+        bpf_loader_upgradeable::ID,
+        programs::ORCA_WHIRLPOOL_WITH_ANCHOR_DEBUG,
+        false);
+*/
+
+    //builder.clone_upgradable_program_from_cluster(&client, ORCA_WHIRLPOOL_PROGRAM_ID);
+
+    util::add_upgradable_program(&mut builder, ORCA_WHIRLPOOL_PROGRAM_ID, programs::ORCA_WHIRLPOOL_20230823_A574AE5);
+
+    //println!("deployed whirlpool len: {}", programs::ORCA_WHIRLPOOL_20230823_a574ae5.len());
+
+    // replayer.set_creation_time(unix_timestamp);
 
     let whirlpool = solana_program::pubkey!("HJPjoWUrhoZzkNfRpHuieeFk9WcZWjwy6PBjZ81ngndJ");
-    replayer.add_account_with_base64_data(
+    builder.add_account_with_data(
         whirlpool,
-        1_000_000_000u64,
         ORCA_WHIRLPOOL_PROGRAM_ID,
-        account_map.get(&whirlpool.to_string()).unwrap(),
-    );
+        &BASE64_STANDARD.decode(&account_map.get(&whirlpool.to_string()).unwrap()).unwrap(),
+        false);
 
     let whirlpools_config = solana_program::pubkey!("2LecshUwdy9xi7meFgHtFJQNSKk4KdTrcpvaB56dP2NQ");
-    replayer.add_account_with_base64_data(
+    builder.add_account_with_data(
         whirlpools_config,
-        1_000_000_000u64,
         ORCA_WHIRLPOOL_PROGRAM_ID,
-        account_map.get(&whirlpools_config.to_string()).unwrap(),
-    );
+        &BASE64_STANDARD.decode(&account_map.get(&whirlpools_config.to_string()).unwrap()).unwrap(),
+        false);
 
     let fee_authority = solana_program::pubkey!("3Pi4tc4SxZyKZivKxWnYfGNxeqFJJxPc8xRw1VnvXpbb");
 
-    let mut context = replayer.start_with_context().await;
+    let mut replayer = builder.build();
 
-    let payer = std::rc::Rc::new(context.payer.insecure_clone());
+    //let dummy = Keypair::new();
+    //let payer = std::rc::Rc::new(dummy);
     let anchor = anchor_client::Client::new_with_options(
         anchor_client::Cluster::Localnet,
-        payer.clone(),
+        std::rc::Rc::new(Keypair::new()),
         solana_sdk::commitment_config::CommitmentConfig::confirmed(),
     );
     let program = anchor.program(ORCA_WHIRLPOOL_PROGRAM_ID);
@@ -141,8 +179,8 @@ async fn set_fee_rate(account_map: &std::collections::HashMap::<String, String>)
     let ixs = program
         .request()
         .accounts(whirlpool_base::accounts::SetFeeRate {
-            whirlpool,
             whirlpools_config,
+            whirlpool,
             fee_authority,
         })
         .args(whirlpool_base::instruction::SetFeeRate {
@@ -150,15 +188,29 @@ async fn set_fee_rate(account_map: &std::collections::HashMap::<String, String>)
         })
         .instructions().unwrap();
 
+    let payer = replayer.payer();
+
+    // create transaction with only sign of payer
     let message = solana_sdk::message::Message::new(&ixs, Some(&payer.pubkey()));
     let mut tx = solana_sdk::transaction::Transaction::new_unsigned(message);
+    tx.partial_sign(&[&payer], replayer.get_latest_blockhash());
 
-    // sign is not required, just to set the last_blockhash
-    tx.partial_sign(&[&context.payer], context.last_blockhash);
+    let pre_account = replayer.get_account(whirlpool).unwrap();
+    let pre_data = whirlpool_base::state::Whirlpool::try_deserialize(&mut pre_account.data.as_slice()).unwrap();
+    println!("pre fee rate = {}", pre_data.fee_rate);
 
-    context.banks_client.process_transaction(tx).await.unwrap();
+    // no signature verification
+    let result = replayer.execute_transaction(tx);
+
+    result.print_named("set_fee_rate");
+
+    let post_account = replayer.get_account(whirlpool).unwrap();
+    let post_data = whirlpool_base::state::Whirlpool::try_deserialize(&mut post_account.data.as_slice()).unwrap();
+    println!("post fee rate = {}", post_data.fee_rate);
+
+    
 }
-
+/* 
 async fn collect_reward(account_map: &std::collections::HashMap::<String, String>) {
     let mut replayer = ProgramTest::new("program", whirlpool_base::ID, processor!(whirlpool_base::entry));
 
@@ -306,3 +358,5 @@ async fn update_fees_and_rewards(account_map: &std::collections::HashMap::<Strin
 
     context.banks_client.process_transaction(tx).await.unwrap();  
 }
+
+*/
