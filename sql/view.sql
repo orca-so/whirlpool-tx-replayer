@@ -170,9 +170,9 @@ SELECT
     "initializeConfig" AS "ix",
     JSON_OBJECT(
         'dataDefaultProtocolFeeRate', t.dataDefaultProtocolFeeRate,
-        'dataFeeAuthority', t.dataFeeAuthority,
-        'dataCollectProtocolFeesAuthority', t.dataCollectProtocolFeesAuthority,
-        'dataRewardEmissionsSuperAuthority', t.dataRewardEmissionsSuperAuthority,
+        'dataFeeAuthority', toPubkeyBase58(t.dataFeeAuthority),
+        'dataCollectProtocolFeesAuthority', toPubkeyBase58(t.dataCollectProtocolFeesAuthority),
+        'dataRewardEmissionsSuperAuthority', toPubkeyBase58(t.dataRewardEmissionsSuperAuthority),
         'keyWhirlpoolsConfig', toPubkeyBase58(t.keyWhirlpoolsConfig),
         'keyFunder', toPubkeyBase58(t.keyFunder),
         'keySystemProgram', toPubkeyBase58(t.keySystemProgram)
