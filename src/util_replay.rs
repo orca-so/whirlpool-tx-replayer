@@ -10,7 +10,7 @@ use poc_framework::{LocalEnvironmentBuilder, LocalEnvironment, Environment};
 use solana_program::bpf_loader_upgradeable;
 use bincode;
 
-use whirlpool_base::state::Whirlpool;
+use whirlpool_base::state::{Whirlpool, Position};
 use std::str::FromStr;
 
 use anchor_lang::{InstructionData, ToAccountMetas};
@@ -67,6 +67,15 @@ pub fn get_whirlpool_data(
   let data = account_map.get(pubkey_string).unwrap();
   let whirlpool_data = whirlpool_base::state::Whirlpool::try_deserialize(&mut data.as_slice()).unwrap();
   return whirlpool_data;
+}
+
+pub fn get_position_data(
+  pubkey_string: &String,
+  account_map: &AccountMap,
+) -> Position {
+  let data = account_map.get(pubkey_string).unwrap();
+  let position_data = whirlpool_base::state::Position::try_deserialize(&mut data.as_slice()).unwrap();
+  return position_data;
 }
 
 pub fn build_unsigned_whirlpool_transaction(
