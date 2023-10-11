@@ -62,6 +62,9 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::DecreaseLiquidity(decoded) => Ok(replay_instructions::decrease_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::OpenPosition(decoded) => Ok(replay_instructions::open_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::OpenPositionWithMetadata(decoded) => Ok(replay_instructions::open_position_with_metadata::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::ClosePosition(decoded) => Ok(replay_instructions::close_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+
+    // CollectProtocolFees
 
     // InitializePositionBundle
     // InitializePositionBundleWithMetadata
@@ -74,8 +77,6 @@ pub fn replay_whirlpool_instruction(
     // InitializeReward
     // SetRewardEmissions
     // ---------------------------------
-    // ClosePosition
-    // CollectProtocolFees
     // DeletePositionBundle
     // InitializeConfig
     // InitializeFeeTier

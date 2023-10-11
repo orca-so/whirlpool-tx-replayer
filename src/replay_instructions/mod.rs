@@ -7,6 +7,7 @@ pub mod increase_liquidity;
 pub mod decrease_liquidity;
 pub mod open_position;
 pub mod open_position_with_metadata;
+pub mod close_position;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -17,3 +18,4 @@ pub use increase_liquidity::*;
 pub use decrease_liquidity::*;
 pub use open_position::*;
 pub use open_position_with_metadata::*;
+pub use close_position::*;

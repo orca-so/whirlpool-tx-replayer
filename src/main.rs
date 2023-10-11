@@ -48,7 +48,7 @@ fn main() {
 
     let last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
-    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 2048, &mut conn);
+    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 4096*4, &mut conn);
 
     assert_eq!(next_slots[0].slot, last_processed_slot.slot);
     next_slots.pop();
@@ -58,7 +58,7 @@ fn main() {
 
         let ixs_in_slot = util_database_io::fetch_instructions_in_slot(slot.slot, &mut conn);
         for ix in ixs_in_slot {
-            println!("replaying instruction = {} ...", ix.ix_name);
+            println!("  replaying instruction = {} ...", ix.ix_name);
 
             let result = replay_core::replay_whirlpool_instruction(
                 ix.ix,
