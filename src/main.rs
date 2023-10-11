@@ -31,32 +31,24 @@ fn main() {
     let pool = Pool::new(url).unwrap();
     let mut conn = pool.get_conn().unwrap();
 
+    let start_snapshot_slot = 215135999;
     let start_snapshot_file = "data/whirlpool-snapshot-215135999.csv.gz";
 
     // TODO: protect account_map (stop using HashMap directly)
     let account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
     println!("loaded {} accounts", account_map.len());
 
-    let selected_slots = conn.query_map(
-        "SELECT slot, blockHeight, blockTime FROM slots WHERE slot > 215135999 ORDER BY slot ASC LIMIT 10",
-        |(slot, block_height, block_time)| {
-            Slot {
-                slot,
-                block_height,
-                block_time,
-            }
-        },
-    ).unwrap();
+    let mut last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
-    for slot in selected_slots {
+    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 100, &mut conn);
+
+    assert_eq!(next_slots[0].slot, last_processed_slot.slot);
+    next_slots.pop();
+
+    for slot in next_slots {
         println!("processing slot = {:?} ...", slot);
 
-        let txid_start = slot.slot << 24;
-        let txid_end = ((slot.slot + 1) << 24) - 1;
-        println!("  start: {:?}, end: {:?}", txid_start, txid_end);
-
-        let ixs_in_slot = util_database_io::fetch_ixs_in_slot(slot.slot, &mut conn);
-
+        let ixs_in_slot = util_database_io::fetch_instructions_in_slot(slot.slot, &mut conn);
         for ix in ixs_in_slot {
             match ix.ix {
             decoded_instructions::DecodedWhirlpoolInstruction::Swap(detail) => {
