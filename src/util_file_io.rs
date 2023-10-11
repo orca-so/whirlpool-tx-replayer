@@ -2,7 +2,9 @@ use flate2::read::GzDecoder;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 
-use std::collections::HashMap;
+use base64::prelude::{Engine as _, BASE64_STANDARD};
+
+use crate::types::AccountMap;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct PubkeyAndDataBase64 {
@@ -11,7 +13,7 @@ struct PubkeyAndDataBase64 {
 }
 
 // TODO: error handling
-pub fn load_from_snapshot_file(file_path: &String) -> HashMap<String, String> {
+pub fn load_from_snapshot_file(file_path: &String) -> AccountMap {
     let file = File::open(file_path).unwrap();
 
     let decoder = GzDecoder::new(file);
@@ -19,10 +21,11 @@ pub fn load_from_snapshot_file(file_path: &String) -> HashMap<String, String> {
         .has_headers(false)
         .from_reader(decoder);
 
-    let mut account_map = HashMap::<String, String>::new();
+    let mut account_map = AccountMap::new();
     reader.deserialize::<PubkeyAndDataBase64>().for_each(|row| {
         let row = row.unwrap();
-        account_map.insert(row.pubkey, row.data_base64);
+        let data = BASE64_STANDARD.decode(row.data_base64).unwrap();
+        account_map.insert(row.pubkey, data);
     });
 
     account_map

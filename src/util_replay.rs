@@ -6,15 +6,16 @@ use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
 use solana_sdk::hash::Hash;
 use solana_sdk::instruction::Instruction;
-use poc_framework::LocalEnvironmentBuilder;
+use poc_framework::{LocalEnvironmentBuilder, LocalEnvironment, Environment};
 use solana_program::bpf_loader_upgradeable;
 use bincode;
 
-use base64::prelude::{Engine as _, BASE64_STANDARD};
 use whirlpool_base::state::Whirlpool;
 use std::str::FromStr;
 
 use anchor_lang::{InstructionData, ToAccountMetas};
+
+use crate::types::AccountMap;
 
 // LocalEnvironmentBuilder.add_program doesn't work for upgradeable programs
 // https://github.com/solana-labs/solana/blob/170478924705c9c62dbeb475c5425b68ba61b375/sdk/program/src/bpf_loader_upgradeable.rs#L27-L53
@@ -46,7 +47,7 @@ pub fn add_upgradable_program(
 pub fn add_whirlpool_account_with_data(
   builder: &mut LocalEnvironmentBuilder,
   pubkey_string: &String,
-  account_map: &HashMap<String, String>,
+  account_map: &AccountMap,
 ) {
   // TODO: refactor
   let ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
@@ -54,16 +55,16 @@ pub fn add_whirlpool_account_with_data(
   builder.add_account_with_data(
     solana_program::pubkey::Pubkey::from_str(pubkey_string.as_str()).unwrap(),
     ORCA_WHIRLPOOL_PROGRAM_ID,
-    &BASE64_STANDARD.decode(account_map.get(pubkey_string).unwrap()).unwrap(),
+    &account_map.get(pubkey_string).unwrap(),
     false,
   );
 }
 
 pub fn get_whirlpool_data(
   pubkey_string: &String,
-  account_map: &HashMap<String, String>,
+  account_map: &AccountMap,
 ) -> Whirlpool {
-  let mut data = BASE64_STANDARD.decode(account_map.get(pubkey_string).unwrap()).unwrap();
+  let data = account_map.get(pubkey_string).unwrap();
   let whirlpool_data = whirlpool_base::state::Whirlpool::try_deserialize(&mut data.as_slice()).unwrap();
   return whirlpool_data;
 }
@@ -87,4 +88,29 @@ pub fn build_unsigned_transaction(
   tx.partial_sign(&[payer], recent_blockhash);
 
   return tx;
+}
+
+pub fn pubkey(pubkey_string: &String) -> Pubkey {
+  return Pubkey::from_str(pubkey_string).unwrap();
+}
+
+pub fn take_snapshot(
+  env: &LocalEnvironment,
+  pubkeys: &[&String],
+) -> AccountMap {
+  let mut snapshot = AccountMap::new();
+
+  for pubkey_string in pubkeys {
+    let account = env.get_account(pubkey(pubkey_string)).unwrap();
+    snapshot.insert((*pubkey_string).clone(), account.data);
+  }
+
+  return snapshot;
+}
+
+pub fn update_account_map(
+  account_map: &mut AccountMap,
+  post_snapshot: AccountMap,
+) {
+  account_map.extend(post_snapshot);
 }

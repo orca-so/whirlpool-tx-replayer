@@ -18,6 +18,7 @@ mod util_file_io;
 mod util_replay;
 mod replay_core;
 mod programs;
+mod types;
 
 use decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
 
@@ -40,7 +41,7 @@ fn main() {
     let start_snapshot_file = "data/whirlpool-snapshot-215135999.csv.gz";
 
     // TODO: protect account_map (stop using HashMap directly)
-    let account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
+    let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
     println!("loaded {} accounts", account_map.len());
 
     let mut last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
@@ -72,9 +73,13 @@ fn main() {
                 if let Some(meta) = result.replay_result.transaction.clone().meta {
                     if meta.err.is_some() {
                         result.replay_result.print_named("swap");
-                        panic!("🔥REPLAY TRANSACTION FAILED!!!");
+                        println!("🔥REPLAY TRANSACTION FAILED!!!");
+                        //panic!("🔥REPLAY TRANSACTION FAILED!!!");
                     }
                 }
+
+                // write back
+                util_replay::update_account_map(&mut account_map, result.writable_account_map.post_snapshot);
             },
             decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {
                 //println!("    {:?}", detail);

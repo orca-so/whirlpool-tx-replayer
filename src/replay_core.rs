@@ -2,6 +2,7 @@ use std::collections::HashMap;
 ////////////////////
 use anchor_lang::AccountDeserialize;
 use base64::prelude::{Engine as _, BASE64_STANDARD};
+use mysql::LocalInfileHandler;
 //use solana_program_test::*;
 use solana_sdk::{signer::Signer, signature::Keypair, transaction::{Transaction, VersionedTransaction}};
 use solana_sdk::pubkey::Pubkey;
@@ -25,7 +26,7 @@ use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
 use poc_framework::{Environment, LocalEnvironment, LocalEnvironmentBuilder, PrintableTransaction, setup_logging, LogLevel};
 ////////////////////
 
-use crate::decoded_instructions::{DecodedWhirlpoolInstruction, DecodedSwap};
+use crate::{decoded_instructions::{DecodedWhirlpoolInstruction, DecodedSwap}, types::AccountMap};
 use crate::util_replay;
 
 use whirlpool_base::accounts as whirlpool_ix_accounts;
@@ -33,9 +34,11 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::programs;
 
+use crate::util_replay::pubkey as pubkey; // abbr
+
 pub struct WritableAccountMap {
-  pub pre: HashMap<String, String>,
-  pub post: HashMap<String, String>,
+  pub pre_snapshot: AccountMap,
+  pub post_snapshot: AccountMap,
 }
 
 const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
@@ -44,7 +47,7 @@ const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUe
 
 pub fn replay_whirlpool_instruction(
   instruction: DecodedWhirlpoolInstruction,
-  account_map: &HashMap<String, String>, // readonly
+  account_map: &AccountMap, // readonly
   clock_unixtimestamp: i64,
   whirlpool_program_so: &[u8],
   token_metadata_program_so: &[u8],
@@ -86,7 +89,7 @@ pub struct ReplayInstructionResult {
 struct ReplayInstructionParams<'info, T> {
   pub env_builder: &'info mut LocalEnvironmentBuilder,
   pub decoded_instruction: &'info T,
-  pub account_map: &'info HashMap<String, String>,
+  pub account_map: &'info AccountMap,
 }
 
 fn replay_swap(req: ReplayInstructionParams<DecodedSwap>) -> ReplayInstructionResult {
@@ -152,9 +155,6 @@ fn replay_swap(req: ReplayInstructionParams<DecodedSwap>) -> ReplayInstructionRe
   util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array2, &account_map);
   // oracle
 
-  // TODO: take snapshot
-  let pre = HashMap::new();
-
   let mut env = builder.build();
   let payer = env.payer();
   let latest_blockhash = env.get_latest_blockhash();
@@ -185,21 +185,28 @@ fn replay_swap(req: ReplayInstructionParams<DecodedSwap>) -> ReplayInstructionRe
     &payer,
     latest_blockhash);
 
+  let pre_snapshot = util_replay::take_snapshot(&env, &[
+    &ix.key_whirlpool,
+    &ix.key_tick_array0,
+    &ix.key_tick_array1,
+    &ix.key_tick_array2,
+  ]);
+  
   // run
   let replay_result = env.execute_transaction(tx);
 
-  // TODO: take snapshot
-  let post = HashMap::new();
+  let post_snapshot = util_replay::take_snapshot(&env, &[
+    &ix.key_whirlpool,
+    &ix.key_tick_array0,
+    &ix.key_tick_array1,
+    &ix.key_tick_array2,
+  ]);
 
   return ReplayInstructionResult {
     replay_result,
     writable_account_map: WritableAccountMap {
-      pre,
-      post,
-    }}
+      pre_snapshot,
+      post_snapshot,
+    }
+  }
 }
-
-fn pubkey(pubkey_string: &String) -> Pubkey {
-  return Pubkey::from_str(pubkey_string).unwrap();
-}
-
