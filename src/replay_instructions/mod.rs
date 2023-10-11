@@ -9,6 +9,7 @@ pub mod open_position;
 pub mod open_position_with_metadata;
 pub mod close_position;
 pub mod collect_protocol_fees;
+pub mod initialize_reward;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -21,3 +22,4 @@ pub use open_position::*;
 pub use open_position_with_metadata::*;
 pub use close_position::*;
 pub use collect_protocol_fees::*;
+pub use initialize_reward::*;
