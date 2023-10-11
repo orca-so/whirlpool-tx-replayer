@@ -69,16 +69,16 @@ pub fn replay_whirlpool_instruction(
     // minor instructions
     DecodedWhirlpoolInstruction::InitializePool(decoded) => Ok(replay_instructions::initialize_pool::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::InitializeReward(decoded) => Ok(replay_instructions::initialize_reward::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
-    // SetRewardEmissions
+    DecodedWhirlpoolInstruction::SetRewardEmissions(decoded) => Ok(replay_instructions::set_reward_emissions::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
 
     // InitializePositionBundle
     // InitializePositionBundleWithMetadata
     // OpenBundledPosition
     // CloseBundledPosition
-
+    // DeletePositionBundle
 
     // ---------------------------------
-    // DeletePositionBundle
+    // very rare instructions
     // InitializeConfig
     // InitializeFeeTier
     // SetCollectProtocolFeesAuthority
