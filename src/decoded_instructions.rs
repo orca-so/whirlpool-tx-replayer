@@ -86,441 +86,441 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedWhirlpoolInstructi
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedAdminIncreaseLiquidity {
-    data_liquidity: u128,
-    key_whirlpools_config: String,
-    key_whirlpool: String,
-    key_authority: String,
+  pub data_liquidity: u128,
+  pub key_whirlpools_config: String,
+  pub key_whirlpool: String,
+  pub key_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCloseBundledPosition {
-    data_bundle_index: u16,
-    key_bundled_position: String,
-    key_position_bundle: String,
-    key_position_bundle_token_account: String,
-    key_position_bundle_authority: String,
-    key_receiver: String,
+  pub data_bundle_index: u16,
+  pub key_bundled_position: String,
+  pub key_position_bundle: String,
+  pub key_position_bundle_token_account: String,
+  pub key_position_bundle_authority: String,
+  pub key_receiver: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedClosePosition {
-    key_position_authority: String,
-    key_receiver: String,
-    key_position: String,
-    key_position_mint: String,
-    key_position_token_account: String,
-    key_token_program: String,
+  pub key_position_authority: String,
+  pub key_receiver: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_token_account: String,
+  pub key_token_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCollectFees {
-    key_whirlpool: String,
-    key_position_authority: String,
-    key_position: String,
-    key_position_token_account: String,
-    key_token_owner_account_a: String,
-    key_token_vault_a: String,
-    key_token_owner_account_b: String,
-    key_token_vault_b: String,
-    key_token_program: String,
-    transfer_amount0: u64,
-    transfer_amount1: u64,
+  pub key_whirlpool: String,
+  pub key_position_authority: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_token_owner_account_a: String,
+  pub key_token_vault_a: String,
+  pub key_token_owner_account_b: String,
+  pub key_token_vault_b: String,
+  pub key_token_program: String,
+  pub transfer_amount0: u64,
+  pub transfer_amount1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCollectProtocolFees {
-    key_whirlpools_config: String,
-    key_whirlpool: String,
-    key_collect_protocol_fees_authority: String,
-    key_token_vault_a: String,
-    key_token_vault_b: String,
-    key_token_destination_a: String,
-    key_token_destination_b: String,
-    key_token_program: String,
-    transfer_amount0: u64,
-    transfer_amount1: u64,
+  pub key_whirlpools_config: String,
+  pub key_whirlpool: String,
+  pub key_collect_protocol_fees_authority: String,
+  pub key_token_vault_a: String,
+  pub key_token_vault_b: String,
+  pub key_token_destination_a: String,
+  pub key_token_destination_b: String,
+  pub key_token_program: String,
+  pub transfer_amount0: u64,
+  pub transfer_amount1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCollectReward {
-    data_reward_index: u8,
-    key_whirlpool: String,
-    key_position_authority: String,
-    key_position: String,
-    key_position_token_account: String,
-    key_reward_owner_account: String,
-    key_reward_vault: String,
-    key_token_program: String,
-    transfer_amount0: u64,
+  pub data_reward_index: u8,
+  pub key_whirlpool: String,
+  pub key_position_authority: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_reward_owner_account: String,
+  pub key_reward_vault: String,
+  pub key_token_program: String,
+  pub transfer_amount0: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedDecreaseLiquidity {
-    data_liquidity_amount: u128,
-    data_token_amount_min_a: u64,
-    data_token_amount_min_b: u64,
-    key_whirlpool: String,
-    key_token_program: String,
-    key_position_authority: String,
-    key_position: String,
-    key_position_token_account: String,
-    key_token_owner_account_a: String,
-    key_token_owner_account_b: String,
-    key_token_vault_a: String,
-    key_token_vault_b: String,
-    key_tick_array_lower: String,
-    key_tick_array_upper: String,
-    transfer_amount0: u64,
-    transfer_amount1: u64,
+  pub data_liquidity_amount: u128,
+  pub data_token_amount_min_a: u64,
+  pub data_token_amount_min_b: u64,
+  pub key_whirlpool: String,
+  pub key_token_program: String,
+  pub key_position_authority: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_token_owner_account_a: String,
+  pub key_token_owner_account_b: String,
+  pub key_token_vault_a: String,
+  pub key_token_vault_b: String,
+  pub key_tick_array_lower: String,
+  pub key_tick_array_upper: String,
+  pub transfer_amount0: u64,
+  pub transfer_amount1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedDeletePositionBundle {
-    key_position_bundle: String,
-    key_position_bundle_mint: String,
-    key_position_bundle_token_account: String,
-    key_position_bundle_owner: String,
-    key_receiver: String,
-    key_token_program: String,
+  pub key_position_bundle: String,
+  pub key_position_bundle_mint: String,
+  pub key_position_bundle_token_account: String,
+  pub key_position_bundle_owner: String,
+  pub key_receiver: String,
+  pub key_token_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedIncreaseLiquidity {
-    data_liquidity_amount: u128,
-    data_token_amount_max_a: u64,
-    data_token_amount_max_b: u64,
-    key_whirlpool: String,
-    key_token_program: String,
-    key_position_authority: String,
-    key_position: String,
-    key_position_token_account: String,
-    key_token_owner_account_a: String,
-    key_token_owner_account_b: String,
-    key_token_vault_a: String,
-    key_token_vault_b: String,
-    key_tick_array_lower: String,
-    key_tick_array_upper: String,
-    transfer_amount0: u64,
-    transfer_amount1: u64,
+  pub data_liquidity_amount: u128,
+  pub data_token_amount_max_a: u64,
+  pub data_token_amount_max_b: u64,
+  pub key_whirlpool: String,
+  pub key_token_program: String,
+  pub key_position_authority: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_token_owner_account_a: String,
+  pub key_token_owner_account_b: String,
+  pub key_token_vault_a: String,
+  pub key_token_vault_b: String,
+  pub key_tick_array_lower: String,
+  pub key_tick_array_upper: String,
+  pub transfer_amount0: u64,
+  pub transfer_amount1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeConfig {
-    data_default_protocol_fee_rate: u16,
-    data_fee_authority: String,
-    data_collect_protocol_fees_authority: String,
-    data_reward_emissions_super_authority: String,
-    key_whirlpools_config: String,
-    key_funder: String,
-    key_system_program: String,
+  pub data_default_protocol_fee_rate: u16,
+  pub data_fee_authority: String,
+  pub data_collect_protocol_fees_authority: String,
+  pub data_reward_emissions_super_authority: String,
+  pub key_whirlpools_config: String,
+  pub key_funder: String,
+  pub key_system_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeFeeTier {
-    data_tick_spacing: u16,
-    data_default_fee_rate: u16,
-    key_whirlpools_config: String,
-    key_fee_tier: String,
-    key_funder: String,
-    key_fee_authority: String,
-    key_system_program: String,
+  pub data_tick_spacing: u16,
+  pub data_default_fee_rate: u16,
+  pub key_whirlpools_config: String,
+  pub key_fee_tier: String,
+  pub key_funder: String,
+  pub key_fee_authority: String,
+  pub key_system_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePool {
-    data_tick_spacing: u16,
-    data_initial_sqrt_price: u128,
-    key_whirlpools_config: String,
-    key_token_mint_a: String,
-    key_token_mint_b: String,
-    key_funder: String,
-    key_whirlpool: String,
-    key_token_vault_a: String,
-    key_token_vault_b: String,
-    key_fee_tier: String,
-    key_token_program: String,
-    key_system_program: String,
-    key_rent: String,
+  pub data_tick_spacing: u16,
+  pub data_initial_sqrt_price: u128,
+  pub key_whirlpools_config: String,
+  pub key_token_mint_a: String,
+  pub key_token_mint_b: String,
+  pub key_funder: String,
+  pub key_whirlpool: String,
+  pub key_token_vault_a: String,
+  pub key_token_vault_b: String,
+  pub key_fee_tier: String,
+  pub key_token_program: String,
+  pub key_system_program: String,
+  pub key_rent: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePositionBundle {
-    key_position_bundle: String,
-    key_position_bundle_mint: String,
-    key_position_bundle_token_account: String,
-    key_position_bundle_owner: String,
-    key_funder: String,
-    key_token_program: String,
-    key_system_program: String,
-    key_rent: String,
-    key_associated_token_program: String,
+  pub key_position_bundle: String,
+  pub key_position_bundle_mint: String,
+  pub key_position_bundle_token_account: String,
+  pub key_position_bundle_owner: String,
+  pub key_funder: String,
+  pub key_token_program: String,
+  pub key_system_program: String,
+  pub key_rent: String,
+  pub key_associated_token_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePositionBundleWithMetadata {
-    key_position_bundle: String,
-    key_position_bundle_mint: String,
-    key_position_bundle_metadata: String,
-    key_position_bundle_token_account: String,
-    key_position_bundle_owner: String,
-    key_funder: String,
-    key_metadata_update_auth: String,
-    key_token_program: String,
-    key_system_program: String,
-    key_rent: String,
-    key_associated_token_program: String,
-    key_metadata_program: String,
+  pub key_position_bundle: String,
+  pub key_position_bundle_mint: String,
+  pub key_position_bundle_metadata: String,
+  pub key_position_bundle_token_account: String,
+  pub key_position_bundle_owner: String,
+  pub key_funder: String,
+  pub key_metadata_update_auth: String,
+  pub key_token_program: String,
+  pub key_system_program: String,
+  pub key_rent: String,
+  pub key_associated_token_program: String,
+  pub key_metadata_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeReward {
-    data_reward_index: u8,
-    key_reward_authority: String,
-    key_funder: String,
-    key_whirlpool: String,
-    key_reward_mint: String,
-    key_reward_vault: String,
-    key_token_program: String,
-    key_system_program: String,
-    key_rent: String,
+  pub data_reward_index: u8,
+  pub key_reward_authority: String,
+  pub key_funder: String,
+  pub key_whirlpool: String,
+  pub key_reward_mint: String,
+  pub key_reward_vault: String,
+  pub key_token_program: String,
+  pub key_system_program: String,
+  pub key_rent: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeTickArray {
-    data_start_tick_index: u16,
-    key_whirlpool: String,
-    key_funder: String,
-    key_tick_array: String,
-    key_system_program: String,
+  pub data_start_tick_index: i32,
+  pub key_whirlpool: String,
+  pub key_funder: String,
+  pub key_tick_array: String,
+  pub key_system_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedOpenBundledPosition {
-    data_bundle_index: u16,
-    data_tick_lower_index: i32,
-    data_tick_upper_index: i32,
-    key_bundled_position: String,
-    key_position_bundle: String,
-    key_position_bundle_token_account: String,
-    key_position_bundle_authority: String,
-    key_whirlpool: String,
-    key_funder: String,
-    key_system_program: String,
-    key_rent: String,
+  pub data_bundle_index: u16,
+  pub data_tick_lower_index: i32,
+  pub data_tick_upper_index: i32,
+  pub key_bundled_position: String,
+  pub key_position_bundle: String,
+  pub key_position_bundle_token_account: String,
+  pub key_position_bundle_authority: String,
+  pub key_whirlpool: String,
+  pub key_funder: String,
+  pub key_system_program: String,
+  pub key_rent: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedOpenPosition {
-    data_tick_lower_index: i32,
-    data_tick_upper_index: i32,
-    key_funder: String,
-    key_owner: String,
-    key_position: String,
-    key_position_mint: String,
-    key_position_token_account: String,
-    key_whirlpool: String,
-    key_token_program: String,
-    key_system_program: String,
-    key_rent: String,
-    key_associated_token_program: String,
+  pub data_tick_lower_index: i32,
+  pub data_tick_upper_index: i32,
+  pub key_funder: String,
+  pub key_owner: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_token_account: String,
+  pub key_whirlpool: String,
+  pub key_token_program: String,
+  pub key_system_program: String,
+  pub key_rent: String,
+  pub key_associated_token_program: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedOpenPositionWithMetadata {
-    data_tick_lower_index: i32,
-    data_tick_upper_index: i32,
-    key_funder: String,
-    key_owner: String,
-    key_position: String,
-    key_position_mint: String,
-    key_position_metadata_account: String,
-    key_position_token_account: String,
-    key_whirlpool: String,
-    key_token_program: String,
-    key_system_program: String,
-    key_rent: String,
-    key_associated_token_program: String,
-    key_metadata_program: String,
-    key_metadata_update_auth: String,
+  pub data_tick_lower_index: i32,
+  pub data_tick_upper_index: i32,
+  pub key_funder: String,
+  pub key_owner: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_metadata_account: String,
+  pub key_position_token_account: String,
+  pub key_whirlpool: String,
+  pub key_token_program: String,
+  pub key_system_program: String,
+  pub key_rent: String,
+  pub key_associated_token_program: String,
+  pub key_metadata_program: String,
+  pub key_metadata_update_auth: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetCollectProtocolFeesAuthority {
-    key_whirlpools_config: String,
-    key_collect_protocol_fees_authority: String,
-    key_new_collect_protocol_fees_authority: String,
+  pub key_whirlpools_config: String,
+  pub key_collect_protocol_fees_authority: String,
+  pub key_new_collect_protocol_fees_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetDefaultFeeRate {
-    data_default_fee_rate: u16,
-    key_whirlpools_config: String,
-    key_fee_tier: String,
-    key_fee_authority: String,
+  pub data_default_fee_rate: u16,
+  pub key_whirlpools_config: String,
+  pub key_fee_tier: String,
+  pub key_fee_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetDefaultProtocolFeeRate {
-    data_default_protocol_fee_rate: u16,
-    key_whirlpools_config: String,
-    key_fee_authority: String,
+  pub data_default_protocol_fee_rate: u16,
+  pub key_whirlpools_config: String,
+  pub key_fee_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetFeeAuthority {
-    key_whirlpools_config: String,
-    key_fee_authority: String,
-    key_new_fee_authority: String,
+  pub key_whirlpools_config: String,
+  pub key_fee_authority: String,
+  pub key_new_fee_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetFeeRate {
-    data_fee_rate: u16,
-    key_whirlpools_config: String,
-    key_whirlpool: String,
-    key_fee_authority: String,
+  pub data_fee_rate: u16,
+  pub key_whirlpools_config: String,
+  pub key_whirlpool: String,
+  pub key_fee_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetProtocolFeeRate {
-    data_protocol_fee_rate: u16,
-    key_whirlpools_config: String,
-    key_whirlpool: String,
-    key_fee_authority: String,
+  pub data_protocol_fee_rate: u16,
+  pub key_whirlpools_config: String,
+  pub key_whirlpool: String,
+  pub key_fee_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardAuthority {
-    data_reward_index: u8,
-    key_whirlpool: String,
-    key_reward_authority: String,
-    key_new_reward_authority: String,
+  pub data_reward_index: u8,
+  pub key_whirlpool: String,
+  pub key_reward_authority: String,
+  pub key_new_reward_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardAuthorityBySuperAuthority {
-    data_reward_index: u8,
-    key_whirlpools_config: String,
-    key_whirlpool: String,
-    key_reward_emissions_super_authority: String,
-    key_new_reward_authority: String,
+  pub data_reward_index: u8,
+  pub key_whirlpools_config: String,
+  pub key_whirlpool: String,
+  pub key_reward_emissions_super_authority: String,
+  pub key_new_reward_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardEmissions {
-    data_reward_index: u8,
-    data_emissions_per_second_x64: u128,
-    key_whirlpool: String,
-    key_reward_authority: String,
-    key_reward_vault: String,
+  pub data_reward_index: u8,
+  pub data_emissions_per_second_x64: u128,
+  pub key_whirlpool: String,
+  pub key_reward_authority: String,
+  pub key_reward_vault: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardEmissionsSuperAuthority {
-    key_whirlpools_config: String,
-    key_reward_emissions_super_authority: String,
-    key_new_reward_emissions_super_authority: String,
+  pub key_whirlpools_config: String,
+  pub key_reward_emissions_super_authority: String,
+  pub key_new_reward_emissions_super_authority: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSwap {
-    data_amount: u64,
-    data_other_amount_threshold: u64,
-    data_sqrt_price_limit: u128,
-    #[serde(deserialize_with = "deserialize_bool")]
-    data_amount_specified_is_input: bool,
-    #[serde(deserialize_with = "deserialize_bool")]
-    data_a_to_b: bool,
-    key_token_program: String,
-    key_token_authority: String,
-    key_whirlpool: String,
-    key_token_owner_account_a: String,
-    key_vault_a: String,
-    key_token_owner_account_b: String,
-    key_vault_b: String,
-    key_tick_array0: String,
-    key_tick_array1: String,
-    key_tick_array2: String,
-    key_oracle: String,
-    transfer_amount0: u64,
-    transfer_amount1: u64,
+  pub data_amount: u64,
+  pub data_other_amount_threshold: u64,
+  pub data_sqrt_price_limit: u128,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_amount_specified_is_input: bool,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_a_to_b: bool,
+  pub key_token_program: String,
+  pub key_token_authority: String,
+  pub key_whirlpool: String,
+  pub key_token_owner_account_a: String,
+  pub key_vault_a: String,
+  pub key_token_owner_account_b: String,
+  pub key_vault_b: String,
+  pub key_tick_array0: String,
+  pub key_tick_array1: String,
+  pub key_tick_array2: String,
+  pub key_oracle: String,
+  pub transfer_amount0: u64,
+  pub transfer_amount1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedTwoHopSwap {
-    data_amount: u64,
-    data_other_amount_threshold: u64,
-    #[serde(deserialize_with = "deserialize_bool")]
-    data_amount_specified_is_input: bool,
-    #[serde(deserialize_with = "deserialize_bool")]
-    data_a_to_b_one: bool,
-    #[serde(deserialize_with = "deserialize_bool")]
-    data_a_to_b_two: bool,
-    data_sqrt_price_limit_one: u128,
-    data_sqrt_price_limit_two: u128,
-    key_token_program: String,
-    key_token_authority: String,
-    key_whirlpool_one: String,
-    key_whirlpool_two: String,
-    key_token_owner_account_one_a: String,
-    key_vault_one_a: String,
-    key_token_owner_account_one_b: String,
-    key_vault_one_b: String,
-    key_token_owner_account_two_a: String,
-    key_vault_two_a: String,
-    key_token_owner_account_two_b: String,
-    key_vault_two_b: String,
-    key_tick_array_one_0: String,
-    key_tick_array_one_1: String,
-    key_tick_array_one_2: String,
-    key_tick_array_two_0: String,
-    key_tick_array_two_1: String,
-    key_tick_array_two_2: String,
-    key_oracle_one: String,
-    key_oracle_two: String,
-    transfer_amount_0: u64,
-    transfer_amount_1: u64,
-    transfer_amount_2: u64,
-    transfer_amount_3: u64,
+  pub data_amount: u64,
+  pub data_other_amount_threshold: u64,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_amount_specified_is_input: bool,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_a_to_b_one: bool,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_a_to_b_two: bool,
+  pub data_sqrt_price_limit_one: u128,
+  pub data_sqrt_price_limit_two: u128,
+  pub key_token_program: String,
+  pub key_token_authority: String,
+  pub key_whirlpool_one: String,
+  pub key_whirlpool_two: String,
+  pub key_token_owner_account_one_a: String,
+  pub key_vault_one_a: String,
+  pub key_token_owner_account_one_b: String,
+  pub key_vault_one_b: String,
+  pub key_token_owner_account_two_a: String,
+  pub key_vault_two_a: String,
+  pub key_token_owner_account_two_b: String,
+  pub key_vault_two_b: String,
+  pub key_tick_array_one_0: String,
+  pub key_tick_array_one_1: String,
+  pub key_tick_array_one_2: String,
+  pub key_tick_array_two_0: String,
+  pub key_tick_array_two_1: String,
+  pub key_tick_array_two_2: String,
+  pub key_oracle_one: String,
+  pub key_oracle_two: String,
+  pub transfer_amount_0: u64,
+  pub transfer_amount_1: u64,
+  pub transfer_amount_2: u64,
+  pub transfer_amount_3: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedUpdateFeesAndRewards {
-    key_whirlpool: String,
-    key_position: String,
-    key_tick_array_lower: String,
-    key_tick_array_upper: String,
+  pub key_whirlpool: String,
+  pub key_position: String,
+  pub key_tick_array_lower: String,
+  pub key_tick_array_upper: String,
 }
 
 
