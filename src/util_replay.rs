@@ -60,6 +60,20 @@ pub fn add_whirlpool_account_with_data(
   );
 }
 
+pub fn add_funder_account(
+  builder: &mut LocalEnvironmentBuilder,
+  pubkey_string: &String,
+) {
+  // TODO: refactor
+  let SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
+
+  builder.add_account_with_lamports(
+    solana_program::pubkey::Pubkey::from_str(pubkey_string.as_str()).unwrap(),
+    SYSTEM_PROGRAM_ID,
+    10_000_000_000 // 10 SOL
+  );
+}
+
 pub fn get_whirlpool_data(
   pubkey_string: &String,
   account_map: &AccountMap,
@@ -88,7 +102,6 @@ pub fn build_unsigned_whirlpool_transaction(
   let ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
   return build_unsigned_transaction(ORCA_WHIRLPOOL_PROGRAM_ID, args, accounts, payer, recent_blockhash);
 }
-
 
 fn build_unsigned_transaction(
   program_id: Pubkey,

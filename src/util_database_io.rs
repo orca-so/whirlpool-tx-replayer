@@ -42,7 +42,7 @@ pub fn fetch_slot_info(slot: u64, database: &mut PooledConn) -> Slot {
     return slots.pop().unwrap();
 }
 
-pub fn fetch_next_slot_infos(start_slot: u64, limit: u8, database: &mut PooledConn) -> Vec<Slot> {
+pub fn fetch_next_slot_infos(start_slot: u64, limit: u16, database: &mut PooledConn) -> Vec<Slot> {
   let slots = database.exec_map(
     "SELECT slot, blockHeight, blockTime FROM slots WHERE slot >= :s LIMIT :l",
     params! {

@@ -46,9 +46,9 @@ fn main() {
     let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
     println!("loaded {} accounts", account_map.len());
 
-    let mut last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
+    let last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
-    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 255, &mut conn);
+    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 2048, &mut conn);
 
     assert_eq!(next_slots[0].slot, last_processed_slot.slot);
     next_slots.pop();
@@ -82,7 +82,7 @@ fn main() {
                     util_replay::update_account_map(&mut account_map, result.snapshot.post_snapshot);
                 },
                 Err(err) => {
-                    println!("REPLAY INSTRUCTION FAILED!!! {:?}", err);
+                    println!("🤦‍REPLAY INSTRUCTION FAILED!!! {:?}", err);
                 }
             }
         }
