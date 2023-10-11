@@ -20,6 +20,8 @@ mod replay_core;
 mod programs;
 mod types;
 
+mod replay_instructions;
+
 use decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
 
 use poc_framework::{Environment, LocalEnvironment, PrintableTransaction, setup_logging, LogLevel};
@@ -70,16 +72,16 @@ fn main() {
                 );
 
                 
-                if let Some(meta) = result.replay_result.transaction.clone().meta {
+                if let Some(meta) = result.transaction_status.transaction.clone().meta {
                     if meta.err.is_some() {
-                        result.replay_result.print_named("swap");
+                        result.transaction_status.print_named("swap");
                         println!("🔥REPLAY TRANSACTION FAILED!!!");
                         //panic!("🔥REPLAY TRANSACTION FAILED!!!");
                     }
                 }
 
                 // write back
-                util_replay::update_account_map(&mut account_map, result.writable_account_map.post_snapshot);
+                util_replay::update_account_map(&mut account_map, result.snapshot.post_snapshot);
             },
             /* 
             decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {

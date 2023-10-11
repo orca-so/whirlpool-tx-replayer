@@ -69,7 +69,19 @@ pub fn get_whirlpool_data(
   return whirlpool_data;
 }
 
-pub fn build_unsigned_transaction(
+pub fn build_unsigned_whirlpool_transaction(
+  args: impl InstructionData,
+  accounts: impl ToAccountMetas,
+  payer: &Keypair,
+  recent_blockhash: Hash,
+) -> Transaction {
+  // TODO: refactor
+  let ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+  return build_unsigned_transaction(ORCA_WHIRLPOOL_PROGRAM_ID, args, accounts, payer, recent_blockhash);
+}
+
+
+fn build_unsigned_transaction(
   program_id: Pubkey,
   args: impl InstructionData,
   accounts: impl ToAccountMetas,

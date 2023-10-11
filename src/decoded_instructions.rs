@@ -126,8 +126,8 @@ pub struct DecodedCollectFees {
   pub key_token_owner_account_b: String,
   pub key_token_vault_b: String,
   pub key_token_program: String,
-  pub transfer_amount0: u64,
-  pub transfer_amount1: u64,
+  pub transfer_amount_0: u64,
+  pub transfer_amount_1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -141,8 +141,8 @@ pub struct DecodedCollectProtocolFees {
   pub key_token_destination_a: String,
   pub key_token_destination_b: String,
   pub key_token_program: String,
-  pub transfer_amount0: u64,
-  pub transfer_amount1: u64,
+  pub transfer_amount_0: u64,
+  pub transfer_amount_1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -156,7 +156,7 @@ pub struct DecodedCollectReward {
   pub key_reward_owner_account: String,
   pub key_reward_vault: String,
   pub key_token_program: String,
-  pub transfer_amount0: u64,
+  pub transfer_amount_0: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -176,8 +176,8 @@ pub struct DecodedDecreaseLiquidity {
   pub key_token_vault_b: String,
   pub key_tick_array_lower: String,
   pub key_tick_array_upper: String,
-  pub transfer_amount0: u64,
-  pub transfer_amount1: u64,
+  pub transfer_amount_0: u64,
+  pub transfer_amount_1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -208,8 +208,8 @@ pub struct DecodedIncreaseLiquidity {
   pub key_token_vault_b: String,
   pub key_tick_array_lower: String,
   pub key_tick_array_upper: String,
-  pub transfer_amount0: u64,
-  pub transfer_amount1: u64,
+  pub transfer_amount_0: u64,
+  pub transfer_amount_1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -467,12 +467,12 @@ pub struct DecodedSwap {
   pub key_vault_a: String,
   pub key_token_owner_account_b: String,
   pub key_vault_b: String,
-  pub key_tick_array0: String,
-  pub key_tick_array1: String,
-  pub key_tick_array2: String,
+  pub key_tick_array_0: String,
+  pub key_tick_array_1: String,
+  pub key_tick_array_2: String,
   pub key_oracle: String,
-  pub transfer_amount0: u64,
-  pub transfer_amount1: u64,
+  pub transfer_amount_0: u64,
+  pub transfer_amount_1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
