@@ -79,7 +79,11 @@ fn main() {
                     }
 
                     // write back
-                    util_replay::update_account_map(&mut account_map, result.snapshot.post_snapshot);
+                    util_replay::update_account_map(
+                        &mut account_map,
+                        result.snapshot.pre_snapshot,
+                        result.snapshot.post_snapshot
+                    );
                 },
                 Err(err) => {
                     println!("🤦‍REPLAY INSTRUCTION FAILED!!! {:?}", err);

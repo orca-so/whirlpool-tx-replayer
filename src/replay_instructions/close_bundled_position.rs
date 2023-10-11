@@ -55,6 +55,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCloseBun
   let replay_result = env.execute_transaction(tx);
 
   let post_snapshot = util_replay::take_snapshot(&env, &[
+    // closed
     &ix.key_position_bundle,
   ]);
 

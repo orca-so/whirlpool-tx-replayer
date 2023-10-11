@@ -61,6 +61,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDeletePo
   let replay_result = env.execute_transaction(tx);
 
   let post_snapshot = util_replay::take_snapshot(&env, &[
+    // closed
   ]);
 
   return ReplayInstructionResult {
