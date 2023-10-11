@@ -1,9 +1,20 @@
-use solana_sdk::pubkey::Pubkey;
+use std::collections::HashMap;
+
+use anchor_lang::AccountDeserialize;
+use solana_sdk::{pubkey::Pubkey, transaction::Transaction};
 use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
+use solana_sdk::hash::Hash;
+use solana_sdk::instruction::Instruction;
 use poc_framework::LocalEnvironmentBuilder;
 use solana_program::bpf_loader_upgradeable;
 use bincode;
+
+use base64::prelude::{Engine as _, BASE64_STANDARD};
+use whirlpool_base::state::Whirlpool;
+use std::str::FromStr;
+
+use anchor_lang::{InstructionData, ToAccountMetas};
 
 // LocalEnvironmentBuilder.add_program doesn't work for upgradeable programs
 // https://github.com/solana-labs/solana/blob/170478924705c9c62dbeb475c5425b68ba61b375/sdk/program/src/bpf_loader_upgradeable.rs#L27-L53
@@ -30,4 +41,50 @@ pub fn add_upgradable_program(
 
     builder.add_account_with_data(program_pubkey, bpf_loader_upgradeable::ID, &program_bytes, true);
     builder.add_account_with_data(programdata_pubkey, bpf_loader_upgradeable::ID, &programdata_bytes, false);
+}
+
+pub fn add_whirlpool_account_with_data(
+  builder: &mut LocalEnvironmentBuilder,
+  pubkey_string: &String,
+  account_map: &HashMap<String, String>,
+) {
+  // TODO: refactor
+  let ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+
+  builder.add_account_with_data(
+    solana_program::pubkey::Pubkey::from_str(pubkey_string.as_str()).unwrap(),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &BASE64_STANDARD.decode(account_map.get(pubkey_string).unwrap()).unwrap(),
+    false,
+  );
+}
+
+pub fn get_whirlpool_data(
+  pubkey_string: &String,
+  account_map: &HashMap<String, String>,
+) -> Whirlpool {
+  let mut data = BASE64_STANDARD.decode(account_map.get(pubkey_string).unwrap()).unwrap();
+  let whirlpool_data = whirlpool_base::state::Whirlpool::try_deserialize(&mut data.as_slice()).unwrap();
+  return whirlpool_data;
+}
+
+pub fn build_unsigned_transaction(
+  program_id: Pubkey,
+  args: impl InstructionData,
+  accounts: impl ToAccountMetas,
+  payer: &Keypair,
+  recent_blockhash: Hash,
+) -> Transaction {
+  let instruction = Instruction {
+    program_id,
+    data: args.data(), // using Anchor, at least instruction code (8 bytes)
+    accounts: accounts.to_account_metas(None),
+  };
+
+  // create transaction with only sign of payer
+  let message = solana_sdk::message::Message::new(&[instruction], Some(&payer.pubkey()));
+  let mut tx = solana_sdk::transaction::Transaction::new_unsigned(message);
+  tx.partial_sign(&[payer], recent_blockhash);
+
+  return tx;
 }

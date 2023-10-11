@@ -17,8 +17,11 @@ mod util_database_io;
 mod util_file_io;
 mod util_replay;
 mod replay_core;
+mod programs;
 
 use decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
+
+use poc_framework::{Environment, LocalEnvironment, PrintableTransaction, setup_logging, LogLevel};
 
 #[derive(Debug, PartialEq, Eq)]
 struct Slot {
@@ -42,7 +45,7 @@ fn main() {
 
     let mut last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
-    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 100, &mut conn);
+    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 10, &mut conn);
 
     assert_eq!(next_slots[0].slot, last_processed_slot.slot);
     next_slots.pop();
@@ -55,6 +58,16 @@ fn main() {
             match ix.ix {
             decoded_instructions::DecodedWhirlpoolInstruction::Swap(detail) => {
                 println!("    {:?}", detail);
+
+                let result = replay_core::replay_whirlpool_instruction(
+                    DecodedWhirlpoolInstruction::Swap(detail),
+                    &account_map,
+                    slot.block_time,
+                    programs::ORCA_WHIRLPOOL_20230901_A574AE5,
+                    programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3
+                );
+
+                result.replay_result.print_named("swap");
             },
             decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {
                 println!("    {:?}", detail);
