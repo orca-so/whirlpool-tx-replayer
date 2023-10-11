@@ -44,7 +44,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
 
   let post_snapshot = util_replay::take_snapshot(&env, &[
     &ix.key_whirlpool,
-    &ix.key_tick_array,
+    &ix.key_tick_array, // created
   ]);
 
   return ReplayInstructionResult {

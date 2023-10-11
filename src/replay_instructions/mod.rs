@@ -11,6 +11,7 @@ pub mod close_position;
 pub mod collect_protocol_fees;
 pub mod initialize_reward;
 pub mod initialize_tick_array;
+pub mod initialize_pool;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -25,3 +26,4 @@ pub use close_position::*;
 pub use collect_protocol_fees::*;
 pub use initialize_reward::*;
 pub use initialize_tick_array::*;
+pub use initialize_pool::*;
