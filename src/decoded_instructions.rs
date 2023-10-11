@@ -1,17 +1,85 @@
 use serde_derive::{Deserialize, Serialize};
 use serde::de;
 
-// 0 to false, 1 to true
-fn deserialize_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
-where
-    D: de::Deserializer<'de>,
-{
-    let n: u8 = de::Deserialize::deserialize(deserializer)?;
-    match n {
-        0 => Ok(false),
-        1 => Ok(true),
-        _ => Err(de::Error::custom("expected 0 or 1")),
-    }
+use crate::errors::ErrorCode;
+
+pub enum DecodedWhirlpoolInstruction {
+  AdminIncreaseLiquidity(DecodedAdminIncreaseLiquidity),
+  CloseBundledPosition(DecodedCloseBundledPosition),
+  ClosePosition(DecodedClosePosition),
+  CollectFees(DecodedCollectFees),
+  CollectProtocolFees(DecodedCollectProtocolFees),
+  CollectReward(DecodedCollectReward),
+  DecreaseLiquidity(DecodedDecreaseLiquidity),
+  DeletePositionBundle(DecodedDeletePositionBundle),
+  IncreaseLiquidity(DecodedIncreaseLiquidity),
+  InitializeConfig(DecodedInitializeConfig),
+  InitializeFeeTier(DecodedInitializeFeeTier),
+  InitializePool(DecodedInitializePool),
+  InitializePositionBundle(DecodedInitializePositionBundle),
+  InitializePositionBundleWithMetadata(DecodedInitializePositionBundleWithMetadata),
+  InitializeReward(DecodedInitializeReward),
+  InitializeTickArray(DecodedInitializeTickArray),
+  OpenBundledPosition(DecodedOpenBundledPosition),
+  OpenPosition(DecodedOpenPosition),
+  OpenPositionWithMetadata(DecodedOpenPositionWithMetadata),
+  SetCollectProtocolFeesAuthority(DecodedSetCollectProtocolFeesAuthority),
+  SetDefaultFeeRate(DecodedSetDefaultFeeRate),
+  SetDefaultProtocolFeeRate(DecodedSetDefaultProtocolFeeRate),
+  SetFeeAuthority(DecodedSetFeeAuthority),
+  SetFeeRate(DecodedSetFeeRate),
+  SetProtocolFeeRate(DecodedSetProtocolFeeRate),
+  SetRewardAuthority(DecodedSetRewardAuthority),
+  SetRewardAuthorityBySuperAuthority(DecodedSetRewardAuthorityBySuperAuthority),
+  SetRewardEmissions(DecodedSetRewardEmissions),
+  SetRewardEmissionsSuperAuthority(DecodedSetRewardEmissionsSuperAuthority),
+  Swap(DecodedSwap),
+  TwoHopSwap(DecodedTwoHopSwap),
+  UpdateFeesAndRewards(DecodedUpdateFeesAndRewards),
+}
+
+pub fn from_json(ix: &String, json: &String) -> Result<DecodedWhirlpoolInstruction, ErrorCode> {
+  fn from_str<'de, T>(json: &'de String) -> Result<T, ErrorCode>
+  where T: de::Deserialize<'de>,
+  {
+    serde_json::from_str(json).map_err(|_| ErrorCode::InvalidWhirlpoolInstructionJsonString)
+  }
+
+  match ix.as_str() {
+    "adminIncreaseLiquidity" => Ok(DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(from_str(&json)?)),
+    "closeBundledPosition" => Ok(DecodedWhirlpoolInstruction::CloseBundledPosition(from_str(&json)?)),
+    "closePosition" => Ok(DecodedWhirlpoolInstruction::ClosePosition(from_str(&json)?)),
+    "collectFees" => Ok(DecodedWhirlpoolInstruction::CollectFees(from_str(&json)?)),
+    "collectProtocolFees" => Ok(DecodedWhirlpoolInstruction::CollectProtocolFees(from_str(&json)?)),
+    "collectReward" => Ok(DecodedWhirlpoolInstruction::CollectReward(from_str(&json)?)),
+    "decreaseLiquidity" => Ok(DecodedWhirlpoolInstruction::DecreaseLiquidity(from_str(&json)?)),
+    "deletePositionBundle" => Ok(DecodedWhirlpoolInstruction::DeletePositionBundle(from_str(&json)?)),
+    "increaseLiquidity" => Ok(DecodedWhirlpoolInstruction::IncreaseLiquidity(from_str(&json)?)),
+    "initializeConfig" => Ok(DecodedWhirlpoolInstruction::InitializeConfig(from_str(&json)?)),
+    "initializeFeeTier" => Ok(DecodedWhirlpoolInstruction::InitializeFeeTier(from_str(&json)?)),
+    "initializePool" => Ok(DecodedWhirlpoolInstruction::InitializePool(from_str(&json)?)),
+    "initializePositionBundle" => Ok(DecodedWhirlpoolInstruction::InitializePositionBundle(from_str(&json)?)),
+    "initializePositionBundleWithMetadata" => Ok(DecodedWhirlpoolInstruction::InitializePositionBundleWithMetadata(from_str(&json)?)),
+    "initializeReward" => Ok(DecodedWhirlpoolInstruction::InitializeReward(from_str(&json)?)),
+    "initializeTickArray" => Ok(DecodedWhirlpoolInstruction::InitializeTickArray(from_str(&json)?)),
+    "openBundledPosition" => Ok(DecodedWhirlpoolInstruction::OpenBundledPosition(from_str(&json)?)),
+    "openPosition" => Ok(DecodedWhirlpoolInstruction::OpenPosition(from_str(&json)?)),
+    "openPositionWithMetadata" => Ok(DecodedWhirlpoolInstruction::OpenPositionWithMetadata(from_str(&json)?)),
+    "setCollectProtocolFeesAuthority" => Ok(DecodedWhirlpoolInstruction::SetCollectProtocolFeesAuthority(from_str(&json)?)),
+    "setDefaultFeeRate" => Ok(DecodedWhirlpoolInstruction::SetDefaultFeeRate(from_str(&json)?)),
+    "setDefaultProtocolFeeRate" => Ok(DecodedWhirlpoolInstruction::SetDefaultProtocolFeeRate(from_str(&json)?)),
+    "setFeeAuthority" => Ok(DecodedWhirlpoolInstruction::SetFeeAuthority(from_str(&json)?)),
+    "setFeeRate" => Ok(DecodedWhirlpoolInstruction::SetFeeRate(from_str(&json)?)),
+    "setProtocolFeeRate" => Ok(DecodedWhirlpoolInstruction::SetProtocolFeeRate(from_str(&json)?)),
+    "setRewardAuthority" => Ok(DecodedWhirlpoolInstruction::SetRewardAuthority(from_str(&json)?)),
+    "setRewardAuthorityBySuperAuthority" => Ok(DecodedWhirlpoolInstruction::SetRewardAuthorityBySuperAuthority(from_str(&json)?)),
+    "setRewardEmissions" => Ok(DecodedWhirlpoolInstruction::SetRewardEmissions(from_str(&json)?)),
+    "setRewardEmissionsSuperAuthority" => Ok(DecodedWhirlpoolInstruction::SetRewardEmissionsSuperAuthority(from_str(&json)?)),
+    "swap" => Ok(DecodedWhirlpoolInstruction::Swap(from_str(&json)?)),
+    "twoHopSwap" => Ok(DecodedWhirlpoolInstruction::TwoHopSwap(from_str(&json)?)),
+    "updateFeesAndRewards" => Ok(DecodedWhirlpoolInstruction::UpdateFeesAndRewards(from_str(&json)?)),
+    _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
+  }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -452,4 +520,18 @@ pub struct DecodedUpdateFeesAndRewards {
     key_position: String,
     key_tick_array_lower: String,
     key_tick_array_upper: String,
+}
+
+
+// 0 to false, 1 to true
+fn deserialize_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    let n: u8 = de::Deserialize::deserialize(deserializer)?;
+    match n {
+        0 => Ok(false),
+        1 => Ok(true),
+        _ => Err(de::Error::custom("expected 0 or 1")),
+    }
 }

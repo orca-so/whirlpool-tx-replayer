@@ -12,7 +12,6 @@ use mysql::*;
 use mysql::prelude::*;
 
 #[derive(Debug, PartialEq, Eq)]
-#[allow(non_snake_case)]
 struct Slot {
     slot: u64,
     block_height: u64,
@@ -20,7 +19,6 @@ struct Slot {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-#[allow(non_snake_case)]
 struct WhirlpoolInstruction {
     txid: u64,
     order: u32,
@@ -28,6 +26,7 @@ struct WhirlpoolInstruction {
     json: String,
 }
 
+mod errors;
 mod decoded_instructions;
 
 
@@ -109,9 +108,15 @@ fn main() {
 
         for ix in selected_ixs.unwrap() {
             println!("  {:?}", ix.ix);
-            if ix.ix == "swap" {
-                let deserialized: decoded_instructions::DecodedSwapInstruction = serde_json::from_str(&ix.json).unwrap();
-                println!("  {:?}", deserialized);
+            let whirlpool_ix = decoded_instructions::from_json(&ix.ix, &ix.json).unwrap();
+            match whirlpool_ix {
+            decoded_instructions::DecodedWhirlpoolInstruction::Swap(detail) => {
+                println!("    {:?}", detail);
+            },
+            decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {
+                println!("    {:?}", detail);
+            },
+            _ => {},
             }
         }
     }
