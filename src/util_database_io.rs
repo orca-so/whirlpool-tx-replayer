@@ -18,6 +18,7 @@ pub struct Slot {
 pub struct WhirlpoolInstruction {
     pub txid: u64,
     pub order: u32,
+    pub ix_name: String,
     pub ix: DecodedWhirlpoolInstruction,
 }
 
@@ -107,10 +108,12 @@ pub fn fetch_instructions_in_slot(slot: u64, database: &mut PooledConn) -> Vec<W
           "e" => txid_end,
       },
       |(txid, order, ix, json)| {
+          let ix_name: String = ix;
           WhirlpoolInstruction {
               txid,
               order,
-              ix: from_json(&ix, &json).unwrap(),
+              ix_name: ix_name.clone(),
+              ix: from_json(&ix_name, &json).unwrap(),
           }
       },
   ).unwrap();

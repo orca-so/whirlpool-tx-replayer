@@ -4,6 +4,7 @@ use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
 
 use poc_framework::{Environment, LocalEnvironment, LocalEnvironmentBuilder};
 
+use crate::errors::ErrorCode;
 use crate::{decoded_instructions::DecodedWhirlpoolInstruction, types::AccountMap};
 use crate::util_replay;
 
@@ -36,7 +37,7 @@ pub fn replay_whirlpool_instruction(
   clock_unixtimestamp: i64,
   whirlpool_program_so: &[u8],
   token_metadata_program_so: &[u8],
-) -> ReplayInstructionResult {
+) -> Result<ReplayInstructionResult, ErrorCode> {
   let mut builder = LocalEnvironment::builder();
 
   // emulate SYSVAR/Clock
@@ -51,13 +52,13 @@ pub fn replay_whirlpool_instruction(
   util_replay::add_upgradable_program(&mut builder, METAPLEX_METADATA_PROGRAM_ID, token_metadata_program_so);
 
   match instruction {
-    DecodedWhirlpoolInstruction::Swap(decoded) => replay_instructions::swap::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    DecodedWhirlpoolInstruction::TwoHopSwap(decoded) => replay_instructions::two_hop_swap::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    DecodedWhirlpoolInstruction::UpdateFeesAndRewards(decoded) => replay_instructions::update_fees_and_rewards::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    DecodedWhirlpoolInstruction::CollectFees(decoded) => replay_instructions::collect_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    DecodedWhirlpoolInstruction::CollectReward(decoded) => replay_instructions::collect_reward::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    DecodedWhirlpoolInstruction::IncreaseLiquidity(decoded) => replay_instructions::increase_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    DecodedWhirlpoolInstruction::DecreaseLiquidity(decoded) => replay_instructions::decrease_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
+    DecodedWhirlpoolInstruction::Swap(decoded) => Ok(replay_instructions::swap::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::TwoHopSwap(decoded) => Ok(replay_instructions::two_hop_swap::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::UpdateFeesAndRewards(decoded) => Ok(replay_instructions::update_fees_and_rewards::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::CollectFees(decoded) => Ok(replay_instructions::collect_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::CollectReward(decoded) => Ok(replay_instructions::collect_reward::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::IncreaseLiquidity(decoded) => Ok(replay_instructions::increase_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::DecreaseLiquidity(decoded) => Ok(replay_instructions::decrease_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
 
     // OpenPosition
     // OpenPositionWithMetadata
@@ -89,8 +90,8 @@ pub fn replay_whirlpool_instruction(
     // SetRewardEmissionsSuperAuthority
     // AdminIncreaseLiquidity
     _ => {
-      println!("IGNORE INSTRUCTION AT THE MOMENT: {:?}", instruction);
-      panic!("instruction not supported yet");
+      
+      Err(ErrorCode::UnknownWhirlpoolInstruction("not implemented yet".to_string()))
     }
   }
 }

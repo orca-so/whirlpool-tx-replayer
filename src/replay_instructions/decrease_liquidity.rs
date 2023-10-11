@@ -40,28 +40,28 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDecrease
     pubkey(&ix.key_token_owner_account_a),
     mint_a,
     pubkey(&ix.key_position_authority),
-    amount_a
+    0u64
   );
   // token_owner_account_b
   builder.add_account_with_tokens(
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
     pubkey(&ix.key_position_authority),
-    amount_b
+    0u64
   );
   // token_vault_a
   builder.add_account_with_tokens(
     pubkey(&ix.key_token_vault_a),
     mint_a,
     pubkey(&ix.key_whirlpool),
-    0u64
+    amount_a
   );
   // token_vault_b
   builder.add_account_with_tokens(
     pubkey(&ix.key_token_vault_b),
     mint_b,
     pubkey(&ix.key_whirlpool),
-    0u64
+    amount_b
   );
   // tick_array_lower
   util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_lower, &account_map);

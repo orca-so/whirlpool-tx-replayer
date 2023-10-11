@@ -58,39 +58,32 @@ fn main() {
 
         let ixs_in_slot = util_database_io::fetch_instructions_in_slot(slot.slot, &mut conn);
         for ix in ixs_in_slot {
-            match ix.ix {
-            decoded_instructions::DecodedWhirlpoolInstruction::Swap(detail) => {
-                //println!("    {:?}", detail);
-                println!("replaying swap...");
+            println!("replaying instruction = {} ...", ix.ix_name);
 
-                let result = replay_core::replay_whirlpool_instruction(
-                    DecodedWhirlpoolInstruction::Swap(detail),
-                    &account_map,
-                    slot.block_time,
-                    programs::ORCA_WHIRLPOOL_20230901_A574AE5,
-                    programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3
-                );
-
-                
-                if let Some(meta) = result.transaction_status.transaction.clone().meta {
-                    if meta.err.is_some() {
-                        result.transaction_status.print_named("swap");
-                        println!("🔥REPLAY TRANSACTION FAILED!!!");
-                        //panic!("🔥REPLAY TRANSACTION FAILED!!!");
+            let result = replay_core::replay_whirlpool_instruction(
+                ix.ix,
+                &account_map,
+                slot.block_time,
+                programs::ORCA_WHIRLPOOL_20230901_A574AE5,
+                programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3
+            );
+            
+            match result {
+                Ok(result) => {
+                    if let Some(meta) = result.transaction_status.transaction.clone().meta {
+                        if meta.err.is_some() {
+                            result.transaction_status.print_named("swap");
+                            println!("🔥REPLAY TRANSACTION FAILED!!!");
+                            //panic!("🔥REPLAY TRANSACTION FAILED!!!");
+                        }
                     }
+
+                    // write back
+                    util_replay::update_account_map(&mut account_map, result.snapshot.post_snapshot);
+                },
+                Err(err) => {
+                    println!("REPLAY INSTRUCTION FAILED!!! {:?}", err);
                 }
-
-                // write back
-                util_replay::update_account_map(&mut account_map, result.snapshot.post_snapshot);
-            },
-            /* 
-            decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {
-                //println!("    {:?}", detail);
-            },*/
-            _ => {
-
-                //println!("IGNORE INSTRUCTION AT THE MOMENT: {:?}", ix.ix);
-            },
             }
         }
     }
