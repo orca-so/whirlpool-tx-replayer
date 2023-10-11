@@ -24,7 +24,6 @@ struct Slot {
 struct WhirlpoolInstruction {
     txid: u64,
     order: u32,
-    signature: String,
     ix: String,
     json: String,
 }
@@ -93,18 +92,52 @@ fn main() {
         let end = ((slot.slot + 1) << 24) - 1;
 
         println!("  start: {:?}, end: {:?}", start, end);
+
         let selected_ixs = conn.exec_map(
             //"SELECT txid, order, signature, ix, json FROM vwixsSwap t WHERE txid BETWEEN :txidMin AND :txidMax ORDER BY t.txid ASC, t.order ASC",
-            "SELECT t.txid, t.order, t.signature, t.ix, t.json FROM vwixsSwap t WHERE txid BETWEEN :s and :e ORDER BY t.txid ASC, t.order ASC",
+            //"SELECT t.txid, t.order, t.ix, t.json FROM vwixsSwap t WHERE txid BETWEEN :s and :e ORDER BY t.txid ASC, t.order ASC",
+            // Since select for UNION ALL view of these views was too slow, I didn't use UNION ALL view.
+            "
+                SELECT * FROM vwixsAdminIncreaseLiquidity WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsCloseBundledPosition WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsClosePosition WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsCollectFees WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsCollectProtocolFees WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsCollectReward WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsDecreaseLiquidity WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsDeletePositionBundle WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsIncreaseLiquidity WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializeConfig WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializeFeeTier WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializePool WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializePositionBundle WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializePositionBundleWithMetadata WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializeReward WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsInitializeTickArray WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsOpenBundledPosition WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsOpenPosition WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsOpenPositionWithMetadata WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetCollectProtocolFeesAuthority WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetDefaultFeeRate WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetDefaultProtocolFeeRate WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetFeeAuthority WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetFeeRate WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetProtocolFeeRate WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetRewardAuthority WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetRewardAuthorityBySuperAuthority WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetRewardEmissions WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSetRewardEmissionsSuperAuthority WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsSwap WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsTwoHopSwap WHERE txid BETWEEN :s and :e
+                UNION ALL SELECT * FROM vwixsUpdateFeesAndRewards WHERE txid BETWEEN :s and :e",
             params! {
                 "s" => start,
                 "e" => end,
             },
-            |(txid, order, signature, ix, json)| {
+            |(txid, order, ix, json)| {
                 WhirlpoolInstruction {
                     txid,
                     order,
-                    signature,
                     ix,
                     json,
                 }
@@ -112,9 +145,9 @@ fn main() {
         );
 
         for ix in selected_ixs.unwrap() {
-            //println!("  {:?}", ix);
-            let deserialized: SwapInstruction = serde_json::from_str(&ix.json).unwrap();
-            println!("  {:?}", deserialized);
+            println!("  {:?}", ix.ix);
+            //let deserialized: SwapInstruction = serde_json::from_str(&ix.json).unwrap();
+            //println!("  {:?}", deserialized);
         }
     }
 }
