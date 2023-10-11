@@ -45,7 +45,7 @@ fn main() {
 
     let mut last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
-    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 10, &mut conn);
+    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 255, &mut conn);
 
     assert_eq!(next_slots[0].slot, last_processed_slot.slot);
     next_slots.pop();
@@ -57,7 +57,8 @@ fn main() {
         for ix in ixs_in_slot {
             match ix.ix {
             decoded_instructions::DecodedWhirlpoolInstruction::Swap(detail) => {
-                println!("    {:?}", detail);
+                //println!("    {:?}", detail);
+                println!("replaying swap...");
 
                 let result = replay_core::replay_whirlpool_instruction(
                     DecodedWhirlpoolInstruction::Swap(detail),
@@ -67,10 +68,16 @@ fn main() {
                     programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3
                 );
 
-                result.replay_result.print_named("swap");
+                
+                if let Some(meta) = result.replay_result.transaction.clone().meta {
+                    if meta.err.is_some() {
+                        result.replay_result.print_named("swap");
+                        panic!("🔥REPLAY TRANSACTION FAILED!!!");
+                    }
+                }
             },
             decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {
-                println!("    {:?}", detail);
+                //println!("    {:?}", detail);
             },
             _ => {},
             }

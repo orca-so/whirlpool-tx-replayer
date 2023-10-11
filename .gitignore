@@ -13,8 +13,11 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
+# Log
+*.log
 
 # Added by cargo
-
 /target
+
+# Temp files
 data/whirlpool-snapshot-215135999.csv.2.gz

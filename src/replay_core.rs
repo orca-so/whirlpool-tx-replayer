@@ -31,11 +31,14 @@ use crate::util_replay;
 use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
+use crate::programs;
+
 pub struct WritableAccountMap {
   pub pre: HashMap<String, String>,
   pub post: HashMap<String, String>,
 }
 
+const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
@@ -51,6 +54,10 @@ pub fn replay_whirlpool_instruction(
   // emulate SYSVAR/Clock
   builder.set_creation_time(clock_unixtimestamp);
 
+  // deploy programs: SPL Token
+  // TODO: ATA
+  // TODO: receive as params
+  util_replay::add_upgradable_program(&mut builder, SPL_TOKEN_PROGRAM_ID, programs::SPL_TOKEN);
   // deploy programs: Orca Whirlpool & Metaplex Token Metadata
   util_replay::add_upgradable_program(&mut builder, ORCA_WHIRLPOOL_PROGRAM_ID, whirlpool_program_so);
   util_replay::add_upgradable_program(&mut builder, METAPLEX_METADATA_PROGRAM_ID, token_metadata_program_so);
@@ -95,10 +102,16 @@ fn replay_swap(req: ReplayInstructionParams<DecodedSwap>) -> ReplayInstructionRe
   let mint_b_is_input = !mint_a_is_input;
   let input_amount = ix.transfer_amount0;
   let output_amount = ix.transfer_amount1;
-
-  println!("token_mint_a = {:?}", mint_a);
-  println!("token_mint_b = {:?}", mint_b);
-
+/* 
+  println!("replay swap: pool = {}, direction = {}, mode = {}, mint_a = {}, mint_b = {}",
+    ix.key_whirlpool,
+    if ix.data_a_to_b { "A->B" } else { "B->A" },
+    if ix.data_amount_specified_is_input { "ExactIn" } else { "ExactOut" },
+    mint_a.to_string()[0..10].to_string(),
+    mint_b.to_string()[0..10].to_string(),
+  );
+  println!("{:?}", ix);
+*/
   // token_program
   // token_authority
   // whirlpool
@@ -122,7 +135,7 @@ fn replay_swap(req: ReplayInstructionParams<DecodedSwap>) -> ReplayInstructionRe
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
     pubkey(&ix.key_token_authority),
-    if mint_b_is_input { input_amount} else { 0u64 }
+    if mint_b_is_input { input_amount } else { 0u64 }
   );
   // token_vault_b
   builder.add_account_with_tokens(
@@ -189,3 +202,4 @@ fn replay_swap(req: ReplayInstructionParams<DecodedSwap>) -> ReplayInstructionRe
 fn pubkey(pubkey_string: &String) -> Pubkey {
   return Pubkey::from_str(pubkey_string).unwrap();
 }
+
