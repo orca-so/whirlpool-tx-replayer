@@ -1,15 +1,5 @@
-use std::borrow::BorrowMut;
-use std::{fs::File, collections::BTreeMap};
-use flate2::read::GzDecoder;
-use flate2::write::GzEncoder;
-use csv;
-use serde_derive::{Deserialize, Serialize};
-use serde::de;
-use serde_json;
-use base64::{Engine, prelude::BASE64_STANDARD};
-
 use mysql::*;
-use mysql::prelude::*;
+//use mysql::prelude::*;
 
 mod errors;
 mod decoded_instructions;
@@ -19,12 +9,9 @@ mod util_replay;
 mod replay_core;
 mod programs;
 mod types;
-
 mod replay_instructions;
 
-use decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
-
-use poc_framework::{Environment, LocalEnvironment, PrintableTransaction, setup_logging, LogLevel};
+use poc_framework::PrintableTransaction; // setup_logging, LogLevel};
 
 #[derive(Debug, PartialEq, Eq)]
 struct Slot {
