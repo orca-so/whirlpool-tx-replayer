@@ -3,6 +3,7 @@ use serde::de;
 
 use crate::errors::ErrorCode;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum DecodedWhirlpoolInstruction {
   AdminIncreaseLiquidity(DecodedAdminIncreaseLiquidity),
   CloseBundledPosition(DecodedCloseBundledPosition),
@@ -82,7 +83,7 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedWhirlpoolInstructi
   }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedAdminIncreaseLiquidity {
     data_liquidity: u128,
@@ -91,7 +92,7 @@ pub struct DecodedAdminIncreaseLiquidity {
     key_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCloseBundledPosition {
     data_bundle_index: u16,
@@ -102,7 +103,7 @@ pub struct DecodedCloseBundledPosition {
     key_receiver: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedClosePosition {
     key_position_authority: String,
@@ -113,7 +114,7 @@ pub struct DecodedClosePosition {
     key_token_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCollectFees {
     key_whirlpool: String,
@@ -129,7 +130,7 @@ pub struct DecodedCollectFees {
     transfer_amount1: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCollectProtocolFees {
     key_whirlpools_config: String,
@@ -144,7 +145,7 @@ pub struct DecodedCollectProtocolFees {
     transfer_amount1: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedCollectReward {
     data_reward_index: u8,
@@ -158,7 +159,7 @@ pub struct DecodedCollectReward {
     transfer_amount0: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedDecreaseLiquidity {
     data_liquidity_amount: u128,
@@ -179,7 +180,7 @@ pub struct DecodedDecreaseLiquidity {
     transfer_amount1: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedDeletePositionBundle {
     key_position_bundle: String,
@@ -190,7 +191,7 @@ pub struct DecodedDeletePositionBundle {
     key_token_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedIncreaseLiquidity {
     data_liquidity_amount: u128,
@@ -211,7 +212,7 @@ pub struct DecodedIncreaseLiquidity {
     transfer_amount1: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeConfig {
     data_default_protocol_fee_rate: u16,
@@ -223,7 +224,7 @@ pub struct DecodedInitializeConfig {
     key_system_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeFeeTier {
     data_tick_spacing: u16,
@@ -235,7 +236,7 @@ pub struct DecodedInitializeFeeTier {
     key_system_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePool {
     data_tick_spacing: u16,
@@ -253,7 +254,7 @@ pub struct DecodedInitializePool {
     key_rent: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePositionBundle {
     key_position_bundle: String,
@@ -267,7 +268,7 @@ pub struct DecodedInitializePositionBundle {
     key_associated_token_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePositionBundleWithMetadata {
     key_position_bundle: String,
@@ -284,7 +285,7 @@ pub struct DecodedInitializePositionBundleWithMetadata {
     key_metadata_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeReward {
     data_reward_index: u8,
@@ -298,7 +299,7 @@ pub struct DecodedInitializeReward {
     key_rent: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializeTickArray {
     data_start_tick_index: u16,
@@ -308,7 +309,7 @@ pub struct DecodedInitializeTickArray {
     key_system_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedOpenBundledPosition {
     data_bundle_index: u16,
@@ -324,7 +325,7 @@ pub struct DecodedOpenBundledPosition {
     key_rent: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedOpenPosition {
     data_tick_lower_index: i32,
@@ -341,7 +342,7 @@ pub struct DecodedOpenPosition {
     key_associated_token_program: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedOpenPositionWithMetadata {
     data_tick_lower_index: i32,
@@ -361,7 +362,7 @@ pub struct DecodedOpenPositionWithMetadata {
     key_metadata_update_auth: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetCollectProtocolFeesAuthority {
     key_whirlpools_config: String,
@@ -369,7 +370,7 @@ pub struct DecodedSetCollectProtocolFeesAuthority {
     key_new_collect_protocol_fees_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetDefaultFeeRate {
     data_default_fee_rate: u16,
@@ -378,7 +379,7 @@ pub struct DecodedSetDefaultFeeRate {
     key_fee_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetDefaultProtocolFeeRate {
     data_default_protocol_fee_rate: u16,
@@ -386,7 +387,7 @@ pub struct DecodedSetDefaultProtocolFeeRate {
     key_fee_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetFeeAuthority {
     key_whirlpools_config: String,
@@ -394,7 +395,7 @@ pub struct DecodedSetFeeAuthority {
     key_new_fee_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetFeeRate {
     data_fee_rate: u16,
@@ -403,7 +404,7 @@ pub struct DecodedSetFeeRate {
     key_fee_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetProtocolFeeRate {
     data_protocol_fee_rate: u16,
@@ -412,7 +413,7 @@ pub struct DecodedSetProtocolFeeRate {
     key_fee_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardAuthority {
     data_reward_index: u8,
@@ -421,7 +422,7 @@ pub struct DecodedSetRewardAuthority {
     key_new_reward_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardAuthorityBySuperAuthority {
     data_reward_index: u8,
@@ -431,7 +432,7 @@ pub struct DecodedSetRewardAuthorityBySuperAuthority {
     key_new_reward_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardEmissions {
     data_reward_index: u8,
@@ -441,7 +442,7 @@ pub struct DecodedSetRewardEmissions {
     key_reward_vault: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardEmissionsSuperAuthority {
     key_whirlpools_config: String,
@@ -449,7 +450,7 @@ pub struct DecodedSetRewardEmissionsSuperAuthority {
     key_new_reward_emissions_super_authority: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSwap {
     data_amount: u64,
@@ -474,7 +475,7 @@ pub struct DecodedSwap {
     transfer_amount1: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedTwoHopSwap {
     data_amount: u64,
@@ -513,7 +514,7 @@ pub struct DecodedTwoHopSwap {
     transfer_amount_3: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedUpdateFeesAndRewards {
     key_whirlpool: String,

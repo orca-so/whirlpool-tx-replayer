@@ -11,6 +11,11 @@ use base64::{Engine, prelude::BASE64_STANDARD};
 use mysql::*;
 use mysql::prelude::*;
 
+mod errors;
+mod decoded_instructions;
+
+use decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
+
 #[derive(Debug, PartialEq, Eq)]
 struct Slot {
     slot: u64,
@@ -22,12 +27,8 @@ struct Slot {
 struct WhirlpoolInstruction {
     txid: u64,
     order: u32,
-    ix: String,
-    json: String,
+    ix: DecodedWhirlpoolInstruction,
 }
-
-mod errors;
-mod decoded_instructions;
 
 
 fn main() {
@@ -100,16 +101,13 @@ fn main() {
                 WhirlpoolInstruction {
                     txid,
                     order,
-                    ix,
-                    json,
+                    ix: from_json(&ix, &json).unwrap(),
                 }
             },
         );
 
         for ix in selected_ixs.unwrap() {
-            println!("  {:?}", ix.ix);
-            let whirlpool_ix = decoded_instructions::from_json(&ix.ix, &ix.json).unwrap();
-            match whirlpool_ix {
+            match ix.ix {
             decoded_instructions::DecodedWhirlpoolInstruction::Swap(detail) => {
                 println!("    {:?}", detail);
             },
