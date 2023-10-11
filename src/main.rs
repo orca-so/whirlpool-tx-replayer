@@ -15,6 +15,8 @@ mod errors;
 mod decoded_instructions;
 mod util_database_io;
 mod util_file_io;
+mod util_replay;
+mod replay_core;
 
 use decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
 
