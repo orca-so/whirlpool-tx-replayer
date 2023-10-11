@@ -55,7 +55,7 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::TwoHopSwap(decoded) => replay_instructions::two_hop_swap::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
     DecodedWhirlpoolInstruction::UpdateFeesAndRewards(decoded) => replay_instructions::update_fees_and_rewards::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
     DecodedWhirlpoolInstruction::CollectFees(decoded) => replay_instructions::collect_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    // CollectReward
+    DecodedWhirlpoolInstruction::CollectReward(decoded) => replay_instructions::collect_reward::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
     // IncreaseLiquidity
     // DecreaseLiquidity
 
