@@ -81,10 +81,14 @@ fn main() {
                 // write back
                 util_replay::update_account_map(&mut account_map, result.writable_account_map.post_snapshot);
             },
+            /* 
             decoded_instructions::DecodedWhirlpoolInstruction::IncreaseLiquidity(detail) => {
                 //println!("    {:?}", detail);
+            },*/
+            _ => {
+
+                //println!("IGNORE INSTRUCTION AT THE MOMENT: {:?}", ix.ix);
             },
-            _ => {},
             }
         }
     }
