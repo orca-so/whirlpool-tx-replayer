@@ -56,8 +56,8 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::UpdateFeesAndRewards(decoded) => replay_instructions::update_fees_and_rewards::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
     DecodedWhirlpoolInstruction::CollectFees(decoded) => replay_instructions::collect_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
     DecodedWhirlpoolInstruction::CollectReward(decoded) => replay_instructions::collect_reward::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
-    // IncreaseLiquidity
-    // DecreaseLiquidity
+    DecodedWhirlpoolInstruction::IncreaseLiquidity(decoded) => replay_instructions::increase_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
+    DecodedWhirlpoolInstruction::DecreaseLiquidity(decoded) => replay_instructions::decrease_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map }),
 
     // OpenPosition
     // OpenPositionWithMetadata
