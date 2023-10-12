@@ -59,12 +59,14 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::UpdateFeesAndRewards(decoded) => Ok(replay_instructions::update_fees_and_rewards::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::CollectFees(decoded) => Ok(replay_instructions::collect_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::CollectReward(decoded) => Ok(replay_instructions::collect_reward::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::CollectProtocolFees(decoded) => Ok(replay_instructions::collect_protocol_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::IncreaseLiquidity(decoded) => Ok(replay_instructions::increase_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::DecreaseLiquidity(decoded) => Ok(replay_instructions::decrease_liquidity::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::OpenPosition(decoded) => Ok(replay_instructions::open_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::OpenPositionWithMetadata(decoded) => Ok(replay_instructions::open_position_with_metadata::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::ClosePosition(decoded) => Ok(replay_instructions::close_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
-    DecodedWhirlpoolInstruction::CollectProtocolFees(decoded) => Ok(replay_instructions::collect_protocol_fees::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::OpenBundledPosition(decoded) => Ok(replay_instructions::open_bundled_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
+    DecodedWhirlpoolInstruction::CloseBundledPosition(decoded) => Ok(replay_instructions::close_bundled_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::InitializeTickArray(decoded) => Ok(replay_instructions::initialize_tick_array::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     // minor instructions
     DecodedWhirlpoolInstruction::InitializePool(decoded) => Ok(replay_instructions::initialize_pool::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
@@ -72,8 +74,6 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetRewardEmissions(decoded) => Ok(replay_instructions::set_reward_emissions::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::InitializePositionBundle(decoded) => Ok(replay_instructions::initialize_position_bundle::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::InitializePositionBundleWithMetadata(decoded) => Ok(replay_instructions::initialize_position_bundle_with_metadata::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
-    DecodedWhirlpoolInstruction::OpenBundledPosition(decoded) => Ok(replay_instructions::open_bundled_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
-    DecodedWhirlpoolInstruction::CloseBundledPosition(decoded) => Ok(replay_instructions::close_bundled_position::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
     DecodedWhirlpoolInstruction::DeletePositionBundle(decoded) => Ok(replay_instructions::delete_position_bundle::replay(ReplayInstructionParams { env_builder: &mut builder, decoded_instruction: &decoded, account_map: &account_map })),
 
     // ---------------------------------
