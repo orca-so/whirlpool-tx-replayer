@@ -1,4 +1,5 @@
 use flate2::read::GzDecoder;
+use flate2::write::GzEncoder;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 
@@ -31,4 +32,22 @@ pub fn load_from_snapshot_file(file_path: &String) -> AccountMap {
     account_map
 }
 
-// TODO: store_to_file
+pub fn save_to_snapshot_file(file_path: &String, account_map: &AccountMap) {
+    let file = File::create(file_path).unwrap();
+
+    let encoder = GzEncoder::new(file, flate2::Compression::default());
+    let mut writer = csv::WriterBuilder::new()
+        .has_headers(false)
+        .from_writer(encoder);
+
+    for (pubkey, data) in account_map {
+        let data_base64 = BASE64_STANDARD.encode(data);
+        let row = PubkeyAndDataBase64 {
+            pubkey: pubkey.to_string(),
+            data_base64,
+        };
+        writer.serialize(row).unwrap();
+    }
+
+    writer.flush().unwrap();
+}
