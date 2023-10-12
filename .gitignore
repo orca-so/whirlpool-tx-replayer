@@ -21,3 +21,4 @@ Cargo.lock
 
 # Temp files
 data/whirlpool-snapshot-215135999.csv.2.gz
+data/test/

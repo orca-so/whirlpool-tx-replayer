@@ -26,8 +26,11 @@ fn main() {
     let pool = Pool::new(url).unwrap();
     let mut conn = pool.get_conn().unwrap();
 
-    let start_snapshot_slot = 215135999;
-    let start_snapshot_file = "data/whirlpool-snapshot-215135999.csv.gz";
+    let start_snapshot_slot = 215135999u64;
+    let target_snapshot_slot = start_snapshot_slot + 150;
+    let snapshot_interval = 100u64;
+
+    let start_snapshot_file = format!("data/test/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
 
     // TODO: protect account_map (stop using HashMap directly)
     let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
@@ -76,6 +79,14 @@ fn main() {
                     println!("🤦‍REPLAY INSTRUCTION FAILED!!! {:?}", err);
                 }
             }
+        }
+
+        let should_save_snapshot = slot.slot == target_snapshot_slot || slot.slot % snapshot_interval == 0;
+        if should_save_snapshot {
+            println!("saving snapshot ...");
+            let snapshot_file = format!("data/test/whirlpool-snapshot-{}.csv.gz", slot.slot);
+            util_file_io::save_to_snapshot_file(&snapshot_file.to_string(), &account_map);
+            println!("saved snapshot to {}", snapshot_file);
         }
     }
 }
