@@ -35,7 +35,7 @@ fn main() {
 
     let last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
-    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 4096*8, &mut conn);
+    let mut next_slots = util_database_io::fetch_next_slot_infos(last_processed_slot.slot, 4096, &mut conn);
 
     assert_eq!(next_slots[0].slot, last_processed_slot.slot);
     next_slots.pop();
