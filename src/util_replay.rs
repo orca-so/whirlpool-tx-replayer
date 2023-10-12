@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use anchor_lang::AccountDeserialize;
 use solana_sdk::{pubkey::Pubkey, transaction::Transaction};
 use solana_sdk::signature::Keypair;
@@ -50,6 +48,7 @@ pub fn add_whirlpool_account_with_data(
   account_map: &AccountMap,
 ) {
   // TODO: refactor
+  #[allow(non_snake_case)]
   let ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 
   builder.add_account_with_data(
@@ -65,6 +64,7 @@ pub fn add_funder_account(
   pubkey_string: &String,
 ) {
   // TODO: refactor
+  #[allow(non_snake_case)]
   let SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
 
   builder.add_account_with_lamports(
@@ -108,6 +108,7 @@ pub fn build_unsigned_whirlpool_transaction(
   recent_blockhash: Hash,
 ) -> Transaction {
   // TODO: refactor
+  #[allow(non_snake_case)]
   let ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
   return build_unsigned_transaction(ORCA_WHIRLPOOL_PROGRAM_ID, args, accounts, payer, recent_blockhash);
 }

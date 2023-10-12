@@ -1,13 +1,9 @@
-use std::borrow::BorrowMut;
-use std::{fs::File, collections::BTreeMap};
-use flate2::read::GzDecoder;
-use flate2::write::GzEncoder;
 use mysql::*;
 use mysql::prelude::*;
 
 use crate::decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Slot {
     pub slot: u64,
     pub block_height: u64,

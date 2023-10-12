@@ -2,7 +2,7 @@ use solana_sdk::pubkey::Pubkey;
 
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
 
-use poc_framework::{Environment, LocalEnvironment, LocalEnvironmentBuilder};
+use poc_framework::{LocalEnvironment, LocalEnvironmentBuilder};
 
 use crate::errors::ErrorCode;
 use crate::{decoded_instructions::DecodedWhirlpoolInstruction, types::AccountMap};

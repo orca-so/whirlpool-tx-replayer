@@ -16,6 +16,9 @@ Cargo.lock
 # Log
 *.log
 
+# Mac
+.DS_Store
+
 # Added by cargo
 /target
 
