@@ -21,7 +21,7 @@ fn main() {
     let mut conn = pool.get_conn().unwrap();
 
     let start_snapshot_slot = 215135999u64;
-    let target_snapshot_slot = 215567999u64; // start_snapshot_slot + 100;
+    let target_snapshot_slot = 215150000u64;// 215567999u64; // start_snapshot_slot + 100;
     let save_snapshot_interval_slot = 10000u64;
     let need_to_process = target_snapshot_slot - start_snapshot_slot;
 

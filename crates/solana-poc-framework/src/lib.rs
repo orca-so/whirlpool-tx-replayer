@@ -32,7 +32,7 @@ use solana_runtime::{
     accounts_index::AccountSecondaryIndexes,
     bank::{Bank, TransactionBalancesSet, TransactionExecutionResult, TransactionResults},
     genesis_utils,
-    runtime_config::RuntimeConfig,
+    runtime_config::RuntimeConfig, accounts,
 };
 use solana_sdk::{
     account::{Account, AccountSharedData},
@@ -842,12 +842,111 @@ impl LocalEnvironmentBuilder {
 
     /// Finalizes the environment.
     pub fn build(&mut self) -> LocalEnvironment {
-        let tmpdir = Path::new("/tmp/");
+        //let tmpdir = Path::new("/tmp/");
+        // /Volumes/RAMDisk
+        let tmpdir = Path::new("/Volumes/RAMDisk/tmp/");
         let exit = Arc::new(AtomicBool::new(false));
+        
+/*
+
+#[derive(Serialize, Deserialize, Debug, Clone, AbiExample, PartialEq)]
+pub struct GenesisConfig {
+    /// when the network (bootstrap validator) was started relative to the UNIX Epoch
+    pub creation_time: UnixTimestamp,
+    /// initial accounts
+    pub accounts: BTreeMap<Pubkey, Account>,
+    /// built-in programs
+    pub native_instruction_processors: Vec<(String, Pubkey)>,
+    /// accounts for network rewards, these do not count towards capitalization
+    pub rewards_pools: BTreeMap<Pubkey, Account>,
+    pub ticks_per_slot: u64,
+    pub unused: u64,
+    /// network speed configuration
+    pub poh_config: PohConfig,
+    /// this field exists only to ensure that the binary layout of GenesisConfig remains compatible
+    /// with the Solana v0.23 release line
+    pub __backwards_compat_with_v0_23: u64,
+    /// transaction fee config
+    pub fee_rate_governor: FeeRateGovernor,
+    /// rent config
+    pub rent: Rent,
+    /// inflation config
+    pub inflation: Inflation,
+    /// how slots map to epochs
+    pub epoch_schedule: EpochSchedule,
+    /// network runlevel
+    pub cluster_type: ClusterType,
+}
+
+pub struct RuntimeConfig {
+    pub compute_budget: Option<ComputeBudget>,
+    pub log_messages_bytes_limit: Option<usize>,
+    pub transaction_account_lock_limit: Option<usize>,
+}
+
+pub const ITER_BATCH_SIZE: usize = 1000;
+pub const BINS_DEFAULT: usize = 8192;
+pub const BINS_FOR_TESTING: usize = 2; // we want > 1, but each bin is a few disk files with a disk based index, so fewer is better
+pub const BINS_FOR_BENCHMARKS: usize = 8192;
+pub const FLUSH_THREADS_TESTING: usize = 1;
+
+// TESTING /////////////////////////////////////////////////////////////////////////////////////////////////////////
+pub const ACCOUNTS_INDEX_CONFIG_FOR_TESTING: AccountsIndexConfig = AccountsIndexConfig {
+    bins: Some(BINS_FOR_TESTING),
+    flush_threads: Some(FLUSH_THREADS_TESTING),
+    drives: None,
+    index_limit_mb: IndexLimitMb::Unspecified,
+    ages_to_stay_in_cache: None,
+    scan_results_limit_bytes: None,
+    started_from_validator: false,
+};
+
+pub const ACCOUNTS_DB_CONFIG_FOR_TESTING: AccountsDbConfig = AccountsDbConfig {
+    index: Some(ACCOUNTS_INDEX_CONFIG_FOR_TESTING),
+    accounts_hash_cache_path: None,
+    filler_accounts_config: FillerAccountsConfig::const_default(),
+    write_cache_limit_bytes: None,
+    ancient_append_vec_offset: None,
+    skip_initial_hash_calc: false,
+    exhaustively_verify_refcounts: false,
+    create_ancient_storage: CreateAncientStorage::Pack,
+    test_partitioned_epoch_rewards: TestPartitionedEpochRewards::CompareResults,
+};
+
+// BENCHMARKS /////////////////////////////////////////////////////////////////////////////////////////////////////////
+pub const ACCOUNTS_INDEX_CONFIG_FOR_BENCHMARKS: AccountsIndexConfig = AccountsIndexConfig {
+    bins: Some(BINS_FOR_BENCHMARKS),
+    flush_threads: Some(FLUSH_THREADS_TESTING),
+    drives: None,
+    index_limit_mb: IndexLimitMb::Unspecified,
+    ages_to_stay_in_cache: None,
+    scan_results_limit_bytes: None,
+    started_from_validator: false,
+};
+
+pub const ACCOUNTS_DB_CONFIG_FOR_BENCHMARKS: AccountsDbConfig = AccountsDbConfig {
+    index: Some(ACCOUNTS_INDEX_CONFIG_FOR_BENCHMARKS),
+    accounts_hash_cache_path: None,
+    filler_accounts_config: FillerAccountsConfig::const_default(),
+    write_cache_limit_bytes: None,
+    ancient_append_vec_offset: None,
+    skip_initial_hash_calc: false,
+    exhaustively_verify_refcounts: false,
+    create_ancient_storage: CreateAncientStorage::Pack,
+    test_partitioned_epoch_rewards: TestPartitionedEpochRewards::None,
+};
+*/
+        let mut accounts_index_config = solana_runtime::accounts_index::ACCOUNTS_INDEX_CONFIG_FOR_TESTING;
+        accounts_index_config.index_limit_mb = solana_runtime::accounts_index::IndexLimitMb::InMemOnly;
+        //accounts_index_config.flush_threads = Some(5);
+
+        let mut accounts_db_config = solana_runtime::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
+        accounts_db_config.index = Some(accounts_index_config);
+    
         let bank = Bank::new_with_paths(
             &self.config,
             Arc::new(RuntimeConfig::default()),
-            vec![tmpdir.to_path_buf()],
+            vec![/*tmpdir.to_path_buf()*/],
             None,
             None,
             AccountSecondaryIndexes {
@@ -856,10 +955,21 @@ impl LocalEnvironmentBuilder {
             },
             AccountShrinkThreshold::default(),
             false,
-            None,
+            Some(accounts_db_config),  //None,
             None,
             &exit,
         );
+        /* 
+        let bank = Bank::new_with_paths_for_tests(
+            &self.config,
+            Arc::new(RuntimeConfig::default()),
+            vec![tmpdir.to_path_buf()],
+            AccountSecondaryIndexes {
+                keys: None,
+                indexes: HashSet::new(),
+            },
+            AccountShrinkThreshold::default(),            
+        );*/
 
         let env = LocalEnvironment {
             bank,
