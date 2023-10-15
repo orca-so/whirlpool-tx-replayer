@@ -37,7 +37,8 @@ solana-client = "=1.16.16"
 #solana-banks-server = "=1.16.16"
 #solana-program-test = "=1.16.16"
 
-poc-framework = { git = "https://github.com/neodyme-labs/solana-poc-framework.git", branch = "1.16" }
+#poc-framework = { git = "https://github.com/neodyme-labs/solana-poc-framework.git", branch = "1.16" }
+poc-framework = { path = "crates/solana-poc-framework" }
 
 
 [patch.crates-io]
