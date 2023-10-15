@@ -7,12 +7,20 @@ mod decoded_instructions;
 mod util_database_io;
 mod util_file_io;
 mod util_replay;
+mod util_bank;
 mod replay_core;
 mod programs;
 mod types;
 mod replay_instructions;
 
 use poc_framework::PrintableTransaction; // setup_logging, LogLevel};
+
+use solana_program::pubkey::Pubkey;
+const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: Pubkey = solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
 
 fn main() {
@@ -61,35 +69,54 @@ fn main() {
             println!("[{}, {:.2}%] processing slot = {:?} ...", now.format("%H:%M:%S"), processed_percent, slot);
 
             let ixs_in_slot = util_database_io::fetch_instructions_in_slot(slot.slot, &mut conn);
-            for ix in ixs_in_slot {
-                println!("  replaying instruction = {} ...", ix.ix_name);
+            if ixs_in_slot.len() > 0 {
 
-                let result = replay_core::replay_whirlpool_instruction(
-                    ix.ix,
-                    &account_map,
-                    slot.block_time,
-                    programs::ORCA_WHIRLPOOL_20230901_A574AE5,
-                    programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3
-                );
-                
-                match result {
-                    Ok(result) => {
-                        if let Some(meta) = result.transaction_status.transaction.clone().meta {
-                            if meta.err.is_some() {
-                                result.transaction_status.print_named("instruction");
-                                panic!("🔥REPLAY TRANSACTION FAILED!!");
+                let mut builder = util_bank::ReplayEnvironment::builder();
+
+                // emulate SYSVAR/Clock
+                builder.set_creation_time(slot.block_time);
+
+                // deploy programs: SPL Token & SPL Associated Token Account
+                builder.add_upgradable_program(SPL_TOKEN_PROGRAM_ID, programs::SPL_TOKEN);
+                builder.add_upgradable_program(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, programs::SPL_ASSOCIATED_TOKEN_ACCOUNT);
+                builder.add_upgradable_program(SPL_MEMO_PROGRAM_ID, programs::SPL_MEMO);
+                // deploy programs: Orca Whirlpool & Metaplex Token Metadata
+                builder.add_upgradable_program(ORCA_WHIRLPOOL_PROGRAM_ID, programs::ORCA_WHIRLPOOL_20230901_A574AE5);
+                builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3);
+
+                let mut replayer = builder.build();
+
+                for ix in ixs_in_slot {
+                    println!("  replaying instruction = {} ...", ix.ix_name);
+
+                    let result = replay_core::replay_whirlpool_instruction(
+                        ix.ix,
+                        &account_map,
+                        slot.block_time,
+                        programs::ORCA_WHIRLPOOL_20230901_A574AE5,
+                        programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3,
+                        &mut replayer,
+                    );
+                    
+                    match result {
+                        Ok(result) => {
+                            if let Some(meta) = result.transaction_status.transaction.clone().meta {
+                                if meta.err.is_some() {
+                                    result.transaction_status.print_named("instruction");
+                                    panic!("🔥REPLAY TRANSACTION FAILED!!");
+                                }
                             }
-                        }
 
-                        // write back
-                        util_replay::update_account_map(
-                            &mut account_map,
-                            result.snapshot.pre_snapshot,
-                            result.snapshot.post_snapshot
-                        );
-                    },
-                    Err(err) => {
-                        panic!("🤦‍SOMETHING WENT WRONG!! {:?}", err);
+                            // write back
+                            util_replay::update_account_map(
+                                &mut account_map,
+                                result.snapshot.pre_snapshot,
+                                result.snapshot.post_snapshot
+                            );
+                        },
+                        Err(err) => {
+                            panic!("🤦‍SOMETHING WENT WRONG!! {:?}", err);
+                        }
                     }
                 }
             }

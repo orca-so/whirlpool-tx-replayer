@@ -6,9 +6,10 @@ use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
 use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
+use crate::util_bank;
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSwap>) -> ReplayInstructionResult {
-  let builder = req.env_builder;
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSwap>, replayer: &mut util_bank::ReplayEnvironment) -> ReplayInstructionResult {
+  //let builder = req.env_builder;
   let ix = req.decoded_instruction;
   let account_map = req.account_map;
 
@@ -28,88 +29,145 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   let intermediate_amount = ix.transfer_amount_1;
   let output_amount = ix.transfer_amount_3;
 
+  let ORCA_WHIRLPOOL_PROGRAM_ID = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+
   // token_program
   // token_authority
   // whirlpool_one
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool_one, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool_one, &account_map);
+  //replayer.set_account_with_data(
+  replayer.set_account_with_data(
+    pubkey(&ix.key_whirlpool_one),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_whirlpool_one).unwrap(),
+    false);
   // whirlpool_two
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool_two, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool_two, &account_map);
+  //replayer.set_account_with_data(
+  replayer.set_account_with_data(
+    pubkey(&ix.key_whirlpool_two),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_whirlpool_two).unwrap(),
+    false);
   // token_owner_account_one_a
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_token_owner_account_one_a),
     mint_one_a,
     pubkey(&ix.key_token_authority),
     if ix.key_token_owner_account_one_a == input_token_owner_account { input_amount } else { 0u64 }
   );
   // vault_one_a
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_vault_one_a),
     mint_one_a,
     pubkey(&ix.key_whirlpool_one),
     if mint_one_a == input_mint { 0u64 } else { intermediate_amount }
   );
   // token_owner_account_one_b
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_token_owner_account_one_b),
     mint_one_b,
     pubkey(&ix.key_token_authority),
     if ix.key_token_owner_account_one_b == input_token_owner_account { input_amount } else { 0u64 }
   );
   // vault_one_b
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_vault_one_b),
     mint_one_b,
     pubkey(&ix.key_whirlpool_one),
     if mint_one_b == input_mint { 0u64 } else { intermediate_amount }
   );
   // token_owner_account_two_a
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_token_owner_account_two_a),
     mint_two_a,
     pubkey(&ix.key_token_authority),
     if ix.key_token_owner_account_two_a == input_token_owner_account { input_amount } else { 0u64 }
   );
   // vault_two_a
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_vault_two_a),
     mint_two_a,
     pubkey(&ix.key_whirlpool_two),
     if mint_two_a == output_mint { output_amount } else { 0u64 }
   );
   // token_owner_account_two_b
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_token_owner_account_two_b),
     mint_two_b,
     pubkey(&ix.key_token_authority),
     if ix.key_token_owner_account_two_b == input_token_owner_account { input_amount } else { 0u64 }
   );
   // vault_two_b
-  builder.add_account_with_tokens(
+  //builder.add_account_with_tokens(
+  replayer.set_account_with_tokens(
     pubkey(&ix.key_vault_two_b),
     mint_two_b,
     pubkey(&ix.key_whirlpool_two),
     if mint_two_b == output_mint { output_amount } else { 0u64 }
   );
   // tick_array_one_0
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_one_0, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_one_0, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_tick_array_one_0),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_tick_array_one_0).unwrap(),
+    false);
   // tick_array_one_1
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_one_1, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_one_1, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_tick_array_one_1),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_tick_array_one_1).unwrap(),
+    false);
   // tick_array_one_2
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_one_2, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_one_2, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_tick_array_one_2),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_tick_array_one_2).unwrap(),
+    false);
   // tick_array_two_0
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_two_0, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_two_0, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_tick_array_two_0),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_tick_array_two_0).unwrap(),
+    false);
   // tick_array_two_1
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_two_1, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_two_1, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_tick_array_two_1),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_tick_array_two_1).unwrap(),
+    false);
   // tick_array_two_2
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_two_2, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_two_2, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_tick_array_two_2),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_tick_array_two_2).unwrap(),
+    false);
   // oracle_one
   // oracle_two
 
-  let mut env = builder.build();
-  let payer = env.payer();
-  let latest_blockhash = env.get_latest_blockhash();
+  //let mut env = builder.build();
+  //let payer = env.payer();
+  //let latest_blockhash = env.get_latest_blockhash();
 
-  let tx = util_replay::build_unsigned_whirlpool_transaction(
+  let payer = replayer.payer();
+  let latest_blockhash = replayer.get_latest_blockhash();
+  let nonce = replayer.get_next_nonce();
+
+  //let tx = util_replay::build_unsigned_whirlpool_transaction(
+  let tx = util_replay::build_unsigned_whirlpool_transaction_with_nonce(
     whirlpool_ix_args::TwoHopSwap {
       amount: ix.data_amount,
       other_amount_threshold: ix.data_other_amount_threshold,
@@ -142,9 +200,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
       oracle_two: pubkey(&ix.key_oracle_two),
     },
     &payer,
-    latest_blockhash);
+    latest_blockhash,
+    nonce
+  );
 
-  let pre_snapshot = util_replay::take_snapshot(&env, &[
+  let pre_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
     &ix.key_whirlpool_one,
     &ix.key_whirlpool_two,
     &ix.key_tick_array_one_0,
@@ -155,9 +215,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     &ix.key_tick_array_two_2,
   ]);
   
-  let replay_result = env.execute_transaction(tx);
+  let replay_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = util_replay::take_snapshot(&env, &[
+  let post_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
     &ix.key_whirlpool_one,
     &ix.key_whirlpool_two,
     &ix.key_tick_array_one_0,

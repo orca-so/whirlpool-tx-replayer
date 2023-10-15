@@ -6,30 +6,45 @@ use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
 use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
+use crate::util_bank;
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPosition>) -> ReplayInstructionResult {
-  let builder = req.env_builder;
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPosition>, replayer: &mut util_bank::ReplayEnvironment) -> ReplayInstructionResult {
+  //let builder = req.env_builder;
   let ix = req.decoded_instruction;
   let account_map = req.account_map;
+  
+  let ORCA_WHIRLPOOL_PROGRAM_ID = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 
   // funder
-  util_replay::add_funder_account(builder, &ix.key_funder);
+  //util_replay::add_funder_account(builder, &ix.key_funder);
+  util_replay::replayer_add_funder_account(replayer, &ix.key_funder);
   // owner
   // position
   // position_mint
   // position_token_account
   // whirlpool
-  util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool, &account_map);
+  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool, &account_map);
+  replayer.set_account_with_data(
+    pubkey(&ix.key_whirlpool),
+    ORCA_WHIRLPOOL_PROGRAM_ID,
+    &account_map.get(&ix.key_whirlpool).unwrap(),
+    false,
+  );
   // token_program
   // system_program
   // rent
   // associated_token_program
 
-  let mut env = builder.build();
-  let payer = env.payer();
-  let latest_blockhash = env.get_latest_blockhash();
+  //let mut env = builder.build();
+  //let payer = env.payer();
+  //let latest_blockhash = env.get_latest_blockhash();
 
-  let tx = util_replay::build_unsigned_whirlpool_transaction(
+  let payer = replayer.payer();
+  let latest_blockhash = replayer.get_latest_blockhash();
+  let nonce = replayer.get_next_nonce();
+
+  //let tx = util_replay::build_unsigned_whirlpool_transaction(
+  let tx = util_replay::build_unsigned_whirlpool_transaction_with_nonce(
     whirlpool_ix_args::OpenPosition {
       bumps: whirlpool_base::state::OpenPositionBumps {
         position_bump: 0, // dummy
@@ -50,15 +65,17 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPosi
       associated_token_program: pubkey(&ix.key_associated_token_program),
     },
     &payer,
-    latest_blockhash);
+    latest_blockhash,
+    nonce
+  );
 
-  let pre_snapshot = util_replay::take_snapshot(&env, &[
+  let pre_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
     &ix.key_whirlpool,
   ]);
   
-  let replay_result = env.execute_transaction(tx);
+  let replay_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = util_replay::take_snapshot(&env, &[
+  let post_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
     &ix.key_whirlpool,
     &ix.key_position, // created
   ]);

@@ -605,8 +605,8 @@ impl Environment for LocalEnvironment {
 }
 
 pub struct LocalEnvironmentBuilder {
-    config: GenesisConfig,
-    faucet: Keypair,
+    pub config: GenesisConfig,
+    pub faucet: Keypair,
 }
 
 impl LocalEnvironmentBuilder {
