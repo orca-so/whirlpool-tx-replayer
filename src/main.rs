@@ -29,7 +29,7 @@ fn main() {
     let mut conn = pool.get_conn().unwrap();
 
     let start_snapshot_slot = 215135999u64;
-    let target_snapshot_slot = /*215150000u64;// */ 215567999u64; // start_snapshot_slot + 100;
+    let target_snapshot_slot = 215150000u64;//  215567999u64; // start_snapshot_slot + 100;
     let save_snapshot_interval_slot = 10000u64;
     let need_to_process = target_snapshot_slot - start_snapshot_slot;
 
@@ -90,12 +90,9 @@ fn main() {
                     println!("  replaying instruction = {} ...", ix.ix_name);
 
                     let result = replay_core::replay_whirlpool_instruction(
+                        &mut replayer,
                         ix.ix,
                         &account_map,
-                        slot.block_time,
-                        programs::ORCA_WHIRLPOOL_20230901_A574AE5,
-                        programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3,
-                        &mut replayer,
                     );
                     
                     match result {

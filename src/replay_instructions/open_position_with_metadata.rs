@@ -8,8 +8,8 @@ use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
 use crate::util_bank;
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPositionWithMetadata>, replayer: &mut util_bank::ReplayEnvironment) -> ReplayInstructionResult {
-  //let builder = req.env_builder;
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPositionWithMetadata>) -> ReplayInstructionResult {
+  let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let account_map = req.account_map;
 
