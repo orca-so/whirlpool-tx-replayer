@@ -39,7 +39,6 @@ use solana_transaction_status::{
     VersionedTransactionWithStatusMeta,
 };
 
-
 pub use bincode;
 pub use serde;
 pub use solana_client;
