@@ -580,7 +580,7 @@ impl ReplayEnvironmentBuilder {
     pub fn build(&mut self) -> ReplayEnvironment {
         //let tmpdir = Path::new("/tmp/");
         // /Volumes/RAMDisk
-        let tmpdir = Path::new("/Volumes/RAMDisk/tmp/");
+        let tmpdir = Path::new("/tmp/");
         let exit = Arc::new(AtomicBool::new(false));
 
         /*
