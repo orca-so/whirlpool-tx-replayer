@@ -32,6 +32,7 @@ pub struct ReplayInstructionParams<'info, T> {
   pub account_map: &'info AccountMap,
 }
 
+const SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
 const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: Pubkey = solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
@@ -100,6 +101,17 @@ impl ReplayEnvironment {
     );
   }
 
+  pub fn set_funder_account(
+    &mut self,
+    pubkey: &String,
+  ) {
+    self.set_account_with_lamports(
+      solana_program::pubkey::Pubkey::from_str(pubkey.as_str()).unwrap(),
+      SYSTEM_PROGRAM_ID,
+      10_000_000_000, // 10 SOL
+    );
+  }
+  
   pub fn build_whirlpool_replay_transaction(
     &mut self,
     args: impl InstructionData,

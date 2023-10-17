@@ -90,7 +90,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     &ix.key_tick_array_2,
   ]);
   
-  //let replay_result = env.execute_transaction(tx);
   let replay_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
