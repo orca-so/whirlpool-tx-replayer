@@ -1,10 +1,8 @@
-use poc_framework::Environment;
 use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::replay_environment;
 use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
 
@@ -23,28 +21,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
   let amount_a = ix.transfer_amount_0;
   let amount_b = ix.transfer_amount_1;
 
-  let ORCA_WHIRLPOOL_PROGRAM_ID = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
-
   // whirlpool
-  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_whirlpool),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_whirlpool).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
   // token_program
   // position_authority
   // position
-  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_position, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_position),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_position).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_position, account_map);
   // position_token_amount
-  //builder.add_account_with_tokens(
   replayer.set_token_account(
     pubkey(&ix.key_position_token_account),
     position_mint,
@@ -52,7 +35,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
     1u64
   );
   // token_owner_account_a
-  //builder.add_account_with_tokens(
   replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_a),
     mint_a,
@@ -60,7 +42,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
     amount_a
   );
   // token_owner_account_b
-  //builder.add_account_with_tokens(
   replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
@@ -68,7 +49,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
     amount_b
   );
   // token_vault_a
-  //builder.add_account_with_tokens(
   replayer.set_token_account(
     pubkey(&ix.key_token_vault_a),
     mint_a,
@@ -76,7 +56,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
     0u64
   );
   // token_vault_b
-  //builder.add_account_with_tokens(
   replayer.set_token_account(
     pubkey(&ix.key_token_vault_b),
     mint_b,
@@ -84,32 +63,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
     0u64
   );
   // tick_array_lower
-  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_lower, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_tick_array_lower),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_tick_array_lower).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_tick_array_lower, account_map);
   // tick_array_upper
-  //util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_upper, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_tick_array_upper),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_tick_array_upper).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_tick_array_upper, account_map);
 
-  //let mut env = builder.build();
-  //let payer = env.payer();
-  //let latest_blockhash = env.get_latest_blockhash();
-
-  let payer = replayer.payer();
-  let latest_blockhash = replayer.get_latest_blockhash();
-  let nonce = replayer.get_next_nonce();
-
-  //let tx = util_replay::build_unsigned_whirlpool_transaction(
-  let tx = util_replay::build_unsigned_whirlpool_transaction_with_nonce(
+  let tx = replayer.build_whirlpool_replay_transaction(
     whirlpool_ix_args::IncreaseLiquidity {
       liquidity_amount: ix.data_liquidity_amount,
       token_max_a: ix.data_token_amount_max_a,
@@ -128,12 +86,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
       tick_array_lower: pubkey(&ix.key_tick_array_lower),
       tick_array_upper: pubkey(&ix.key_tick_array_upper),
     },
-    &payer,
-    latest_blockhash,
-    nonce,
   );
 
-  let pre_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
+  let pre_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
     &ix.key_tick_array_lower,
@@ -142,7 +97,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
   
   let replay_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
+  let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
     &ix.key_tick_array_lower,
