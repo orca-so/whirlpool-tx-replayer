@@ -1,16 +1,20 @@
-use solana_sdk::pubkey::Pubkey;
-
 use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
 
+use std::str::FromStr;
 use poc_framework::{LocalEnvironment, LocalEnvironmentBuilder};
 
 use crate::errors::ErrorCode;
 use crate::{decoded_instructions::DecodedWhirlpoolInstruction, types::AccountMap};
 use crate::util_replay;
+use solana_sdk::{pubkey::Pubkey, transaction::Transaction, instruction::{Instruction, AccountMeta}, message::Message};
+use solana_sdk::signer::Signer;
+
+use anchor_lang::{InstructionData, ToAccountMetas};
 
 use crate::programs;
 use crate::replay_instructions;
 use crate::replay_environment;
+use crate::replay_environment::ReplayEnvironment;
 
 pub struct WritableAccountSnapshot {
   pub pre_snapshot: AccountMap,
@@ -30,6 +34,7 @@ pub struct ReplayInstructionParams<'info, T> {
 
 const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: Pubkey = solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
@@ -81,4 +86,62 @@ pub fn replay_whirlpool_instruction(
       Err(ErrorCode::UnknownWhirlpoolInstruction("not implemented yet".to_string()))
     }
   }
+}
+
+
+
+impl ReplayEnvironment {
+  pub fn set_whirlpool_account(&mut self, pubkey: &String, account_map: &AccountMap) {
+    self.set_account_with_data(
+      Pubkey::from_str(pubkey).unwrap(),
+      ORCA_WHIRLPOOL_PROGRAM_ID,
+      account_map.get(pubkey).unwrap(),
+      false
+    );
+  }
+
+  pub fn build_whirlpool_replay_transaction(
+    &mut self,
+    args: impl InstructionData,
+    accounts: impl ToAccountMetas,
+  ) -> Transaction {
+    let payer = self.payer();
+    let recent_blockhash = self.get_latest_blockhash();
+
+    let whirlpool_instruction = Instruction {
+      program_id: ORCA_WHIRLPOOL_PROGRAM_ID,
+      data: args.data(), // using Anchor, at least instruction code (8 bytes)
+      accounts: accounts.to_account_metas(None),
+    };
+
+    // to avoid duplicated transaction signature for instructions with same args & accounts
+    let nonce = format!("{:x}", self.get_next_nonce());
+    let memo_instruction = Instruction {
+      program_id: SPL_MEMO_PROGRAM_ID,
+      data: nonce.as_bytes().to_vec(),
+      accounts: vec![AccountMeta::new(payer.pubkey(), true)],
+    };
+
+    // create transaction with only sign of payer
+    let message = Message::new(&[whirlpool_instruction, memo_instruction], Some(&payer.pubkey()));
+    let mut tx = Transaction::new_unsigned(message);
+    tx.partial_sign(&[&payer], recent_blockhash);
+
+    return tx;
+  }
+
+  pub fn take_snapshot(
+    &self,
+    pubkeys: &[&String],
+  ) -> AccountMap {
+    let mut snapshot = AccountMap::new();
+  
+    for pubkey_string in pubkeys {
+      let account = self.get_account(Pubkey::from_str(pubkey_string).unwrap()).unwrap();
+      snapshot.insert((*pubkey_string).clone(), account.data);
+    }
+  
+    return snapshot;
+  }
+
 }

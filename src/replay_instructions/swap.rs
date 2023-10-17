@@ -1,15 +1,10 @@
-use poc_framework::Environment;
-use solana_program::account_info::Account;
 use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::types::AccountMap;
-use crate::replay_environment::ReplayEnvironment;
 use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
-use crate::replay_environment;
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -> ReplayInstructionResult {
   let replayer = req.replayer;
@@ -25,34 +20,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
   let input_amount = ix.transfer_amount_0;
   let output_amount = ix.transfer_amount_1;
 
-  let ORCA_WHIRLPOOL_PROGRAM_ID = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
-/* 
-  replayer.set_account(pubkey(&ix.key_oracle), &solana_sdk::account::Account {
-    lamports: 1_000_000_000,
-    data: account_map.get(&ix.key_whirlpool).unwrap().clone(),
-    executable: false,
-    owner: ORCA_WHIRLPOOL_PROGRAM_ID,
-    rent_epoch: 0,
-});
-*/
-
   // token_program
   // token_authority
   // whirlpool
-  //// util_replay::add_whirlpool_account_with_data(builder, &ix.key_whirlpool, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_whirlpool),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_whirlpool).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
   // token_owner_account_a
-  /*builder.add_account_with_tokens(
-    pubkey(&ix.key_token_owner_account_a),
-    mint_a,
-    pubkey(&ix.key_token_authority),
-    if mint_a_is_input { input_amount } else { 0u64 }
-  );*/
   replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_a),
     mint_a,
@@ -60,12 +32,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     if mint_a_is_input { input_amount } else { 0u64 }
   );
   // vault_a
-  /*builder.add_account_with_tokens(
-    pubkey(&ix.key_vault_a),
-    mint_a,
-    pubkey(&ix.key_whirlpool),
-    if mint_a_is_input { 0u64 } else { output_amount }
-  );*/
   replayer.set_token_account(
     pubkey(&ix.key_vault_a),
     mint_a,
@@ -73,12 +39,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     if mint_a_is_input { 0u64 } else { output_amount }
   );
   // token_owner_account_b
-  /*builder.add_account_with_tokens(
-    pubkey(&ix.key_token_owner_account_b),
-    mint_b,
-    pubkey(&ix.key_token_authority),
-    if mint_b_is_input { input_amount } else { 0u64 }
-  );*/
   replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
@@ -86,12 +46,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     if mint_b_is_input { input_amount } else { 0u64 }
   );
   // vault_b
-  /*builder.add_account_with_tokens(
-    pubkey(&ix.key_vault_b),
-    mint_b,
-    pubkey(&ix.key_whirlpool),
-    if mint_b_is_input { 0u64 } else { output_amount }
-  );*/
   replayer.set_token_account(
     pubkey(&ix.key_vault_b),
     mint_b,
@@ -99,41 +53,14 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     if mint_b_is_input { 0u64 } else { output_amount }
   );
   // tick_array_0
-  ////util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_0, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_tick_array_0),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_tick_array_0).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_tick_array_0, account_map);
   // tick_array_1
-  ////util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_1, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_tick_array_1),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_tick_array_1).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_tick_array_1, account_map);
   // tick_array_2
-  ////util_replay::add_whirlpool_account_with_data(builder, &ix.key_tick_array_2, &account_map);
-  replayer.set_account_with_data(
-    pubkey(&ix.key_tick_array_2),
-    ORCA_WHIRLPOOL_PROGRAM_ID,
-    &account_map.get(&ix.key_tick_array_2).unwrap(),
-    false,
-  );
+  replayer.set_whirlpool_account(&ix.key_tick_array_2, account_map);
   // oracle
 
-  //let mut env = builder.build();
-  //let payer = env.payer();
-  //let latest_blockhash = env.get_latest_blockhash();
-
-  let payer = replayer.payer();
-  let latest_blockhash = replayer.get_latest_blockhash();
-  let nonce = replayer.get_next_nonce();
-
-  //let tx = util_replay::build_unsigned_whirlpool_transaction(
-  let tx = util_replay::build_unsigned_whirlpool_transaction_with_nonce(
+  let tx = replayer.build_whirlpool_replay_transaction(
       whirlpool_ix_args::Swap {
       amount: ix.data_amount,
       other_amount_threshold: ix.data_other_amount_threshold,
@@ -154,12 +81,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
       tick_array_2: pubkey(&ix.key_tick_array_2),
       oracle: pubkey(&ix.key_oracle),
     },
-    &payer,
-    latest_blockhash,
-    nonce,
   );
 
-  let pre_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
+  let pre_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_tick_array_0,
     &ix.key_tick_array_1,
@@ -169,7 +93,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
   //let replay_result = env.execute_transaction(tx);
   let replay_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = util_replay::replayer_take_snapshot(&replayer, &[
+  let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_tick_array_0,
     &ix.key_tick_array_1,
