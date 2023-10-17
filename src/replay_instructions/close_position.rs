@@ -39,7 +39,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePos
   );
   // position_token_amount
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_position_token_account),
     position_mint,
     pubkey(&ix.key_position_authority),

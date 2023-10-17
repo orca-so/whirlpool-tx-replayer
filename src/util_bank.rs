@@ -10,24 +10,21 @@ use itertools::izip;
 use solana_program::{
     bpf_loader, bpf_loader_upgradeable,
     hash::Hash,
-    instruction::Instruction,
-    loader_instruction,
-    message::Message,
     program_option::COption,
     program_pack::Pack,
     pubkey::Pubkey,
-    system_instruction, system_program,
+    system_program,
     sysvar::{self, rent},
 };
 use solana_runtime::{
     accounts_db::AccountShrinkThreshold,
-    accounts_index::{AccountSecondaryIndexes, ZeroLamport},
+    accounts_index::AccountSecondaryIndexes,
     bank::{Bank, TransactionBalancesSet, TransactionExecutionResult, TransactionResults},
     genesis_utils,
     runtime_config::RuntimeConfig,
 };
 use solana_sdk::{
-    account::{Account, AccountSharedData, ReadableAccount},
+    account::{Account, AccountSharedData},
     feature_set,
     genesis_config::GenesisConfig,
     packet,
@@ -44,7 +41,6 @@ use solana_transaction_status::{
 
 
 pub use bincode;
-//pub use borsh;
 pub use serde;
 pub use solana_client;
 pub use solana_program;
@@ -64,10 +60,6 @@ impl ReplayEnvironment {
         ReplayEnvironmentBuilder::new()
     }
 
-    pub fn new() -> ReplayEnvironment {
-        Self::builder().build()
-    }
-
     pub fn bank(&mut self) -> &mut Bank {
         &mut self.bank
     }
@@ -76,12 +68,15 @@ impl ReplayEnvironment {
         self.faucet.insecure_clone()
     }
 
+    // to prevent generating same transaction signature
     pub fn get_next_nonce(&mut self) -> u64 {
         let nonce = self.nonce;
         self.nonce += 1;
         nonce
     }
 
+    // https://github.com/neodyme-labs/solana-poc-framework/blob/c08d95c209f580b8e828860d73284a22e596277c/src/lib.rs#L443
+    // TODO: think removing unnecessary processing
     pub fn execute_transaction<T>(&mut self, tx: T) -> EncodedConfirmedTransactionWithStatusMeta
     where
         VersionedTransaction: From<T>,
@@ -237,7 +232,7 @@ impl ReplayEnvironment {
         self.bank.last_blockhash()
     }
 
-    fn get_rent_excemption(&self, data: usize) -> u64 {
+    pub fn get_rent_excemption(&self, data: usize) -> u64 {
         self.bank.get_minimum_balance_for_rent_exemption(data)
     }
 
@@ -323,7 +318,7 @@ impl ReplayEnvironment {
     }
 
     // Add a token-account into the environment.
-    pub fn set_account_with_tokens(
+    pub fn set_token_account(
         &mut self,
         pubkey: Pubkey,
         mint: Pubkey,
@@ -345,27 +340,6 @@ impl ReplayEnvironment {
             },
         )
     }
-
-    pub fn set_clock_unix_timestamp(&mut self, unix_timestamp: i64) {
-        let original_clock = self.bank.clock();
-
-        let clock = sysvar::clock::Clock {
-            slot: original_clock.slot,
-            epoch_start_timestamp: original_clock.epoch_start_timestamp,
-            epoch: original_clock.epoch,
-            leader_schedule_epoch: original_clock.leader_schedule_epoch,
-            unix_timestamp,
-        };
-        //self.bank.store_account(&sysvar::clock::id(), &clock);
-
-        self.set_account_with_data(
-            sysvar::clock::id(),
-            sysvar::id(),
-            &bincode::serialize(&clock).unwrap(),
-            false,
-        );
-    }
-
     
     /// Advance the bank to the next blockhash.
     pub fn advance_blockhash(&self) -> Hash {
@@ -383,8 +357,7 @@ impl ReplayEnvironment {
         }
 
         self.get_latest_blockhash()
-    }
-    
+    }    
 }
 
 pub struct ReplayEnvironmentBuilder {
@@ -515,66 +488,6 @@ impl ReplayEnvironmentBuilder {
         )
     }
 
-    // Adds a rent-excempt account into the environment.
-    pub fn add_account_with_packable<P: Pack>(
-        &mut self,
-        pubkey: Pubkey,
-        owner: Pubkey,
-        data: P,
-    ) -> &mut Self {
-        let data = {
-            let mut buf = vec![0u8; P::LEN];
-            data.pack_into_slice(&mut buf[..]);
-            buf
-        };
-        self.add_account_with_data(pubkey, owner, &data, false)
-    }
-
-    // Add a token-mint into the environment.
-    pub fn add_token_mint(
-        &mut self,
-        pubkey: Pubkey,
-        mint_authority: Option<Pubkey>,
-        supply: u64,
-        decimals: u8,
-        freeze_authority: Option<Pubkey>,
-    ) -> &mut Self {
-        self.add_account_with_packable(
-            pubkey,
-            spl_token::ID,
-            spl_token::state::Mint {
-                mint_authority: COption::from(mint_authority.map(|c| c.clone())),
-                supply,
-                decimals,
-                is_initialized: true,
-                freeze_authority: COption::from(freeze_authority.map(|c| c.clone())),
-            },
-        )
-    }
-
-    // Add a token-account into the environment.
-    pub fn add_account_with_tokens(
-        &mut self,
-        pubkey: Pubkey,
-        mint: Pubkey,
-        owner: Pubkey,
-        amount: u64,
-    ) -> &mut Self {
-        self.add_account_with_packable(
-            pubkey,
-            spl_token::ID,
-            spl_token::state::Account {
-                mint,
-                owner,
-                amount,
-                delegate: COption::None,
-                state: spl_token::state::AccountState::Initialized,
-                is_native: COption::None,
-                delegated_amount: 0,
-                close_authority: COption::None,
-            },
-        )
-    }
 
     /// Finalizes the environment.
     pub fn build(&mut self) -> ReplayEnvironment {

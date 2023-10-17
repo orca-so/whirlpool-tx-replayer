@@ -51,7 +51,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     false);
   // token_owner_account_one_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_one_a),
     mint_one_a,
     pubkey(&ix.key_token_authority),
@@ -59,7 +59,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // vault_one_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_vault_one_a),
     mint_one_a,
     pubkey(&ix.key_whirlpool_one),
@@ -67,7 +67,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // token_owner_account_one_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_one_b),
     mint_one_b,
     pubkey(&ix.key_token_authority),
@@ -75,7 +75,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // vault_one_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_vault_one_b),
     mint_one_b,
     pubkey(&ix.key_whirlpool_one),
@@ -83,7 +83,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // token_owner_account_two_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_two_a),
     mint_two_a,
     pubkey(&ix.key_token_authority),
@@ -91,7 +91,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // vault_two_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_vault_two_a),
     mint_two_a,
     pubkey(&ix.key_whirlpool_two),
@@ -99,7 +99,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // token_owner_account_two_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_two_b),
     mint_two_b,
     pubkey(&ix.key_token_authority),
@@ -107,7 +107,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // vault_two_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_vault_two_b),
     mint_two_b,
     pubkey(&ix.key_whirlpool_two),

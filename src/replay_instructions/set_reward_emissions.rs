@@ -29,7 +29,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetRewar
   // reward_authority
   // reward_vault
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_reward_vault),
     mint_reward,
     pubkey(&ix.key_whirlpool),

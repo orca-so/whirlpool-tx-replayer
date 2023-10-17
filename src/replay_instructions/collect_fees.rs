@@ -44,7 +44,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // position_token_amount
 //  builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
 
     pubkey(&ix.key_position_token_account),
     position_mint,
@@ -53,7 +53,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_owner_account_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_a),
     mint_a,
     pubkey(&ix.key_position_authority),
@@ -61,7 +61,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_vault_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_vault_a),
     mint_a,
     pubkey(&ix.key_whirlpool),
@@ -69,7 +69,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_owner_account_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
     pubkey(&ix.key_position_authority),
@@ -77,7 +77,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_vault_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_vault_b),
     mint_b,
     pubkey(&ix.key_whirlpool),

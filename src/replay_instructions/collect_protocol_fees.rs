@@ -41,7 +41,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectP
   // collect_protocol_fees_authority
   // token_vault_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_vault_a),
     mint_a,
     pubkey(&ix.key_whirlpool),
@@ -49,7 +49,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectP
   );
   // token_vault_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_vault_b),
     mint_b,
     pubkey(&ix.key_whirlpool),
@@ -57,7 +57,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectP
   );
   // token_destination_a
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_destination_a),
     mint_a,
     pubkey(&ix.key_collect_protocol_fees_authority),
@@ -65,7 +65,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectP
   );
   // token_destination_b
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_destination_b),
     mint_b,
     pubkey(&ix.key_collect_protocol_fees_authority),

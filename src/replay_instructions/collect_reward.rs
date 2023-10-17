@@ -42,7 +42,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   );
   // position_token_amount
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_position_token_account),
     position_mint,
     pubkey(&ix.key_position_authority),
@@ -50,7 +50,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   );
   // reward_owner_account
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_reward_owner_account),
     mint_reward,
     pubkey(&ix.key_position_authority),
@@ -58,7 +58,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   );
   // reward_vault
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_reward_vault),
     mint_reward,
     pubkey(&ix.key_whirlpool),

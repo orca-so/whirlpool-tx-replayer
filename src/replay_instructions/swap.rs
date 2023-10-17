@@ -53,7 +53,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     pubkey(&ix.key_token_authority),
     if mint_a_is_input { input_amount } else { 0u64 }
   );*/
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_a),
     mint_a,
     pubkey(&ix.key_token_authority),
@@ -66,7 +66,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     pubkey(&ix.key_whirlpool),
     if mint_a_is_input { 0u64 } else { output_amount }
   );*/
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_vault_a),
     mint_a,
     pubkey(&ix.key_whirlpool),
@@ -79,7 +79,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     pubkey(&ix.key_token_authority),
     if mint_b_is_input { input_amount } else { 0u64 }
   );*/
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
     pubkey(&ix.key_token_authority),
@@ -92,7 +92,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     pubkey(&ix.key_whirlpool),
     if mint_b_is_input { 0u64 } else { output_amount }
   );*/
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_vault_b),
     mint_b,
     pubkey(&ix.key_whirlpool),

@@ -37,7 +37,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDeletePo
   );
   // position_bundle_token_account
   //builder.add_account_with_tokens(
-  replayer.set_account_with_tokens(
+  replayer.set_token_account(
     pubkey(&ix.key_position_bundle_token_account),
     position_bundle_mint,
     pubkey(&ix.key_position_bundle_owner),
