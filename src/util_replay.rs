@@ -16,7 +16,7 @@ use anchor_lang::{InstructionData, ToAccountMetas};
 
 use crate::types::AccountMap;
 
-use crate::util_bank::ReplayEnvironment;
+use crate::replay_environment::ReplayEnvironment;
 
 // LocalEnvironmentBuilder.add_program doesn't work for upgradeable programs
 // https://github.com/solana-labs/solana/blob/170478924705c9c62dbeb475c5425b68ba61b375/sdk/program/src/bpf_loader_upgradeable.rs#L27-L53

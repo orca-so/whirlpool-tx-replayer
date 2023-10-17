@@ -10,7 +10,7 @@ use crate::util_replay;
 
 use crate::programs;
 use crate::replay_instructions;
-use crate::util_bank;
+use crate::replay_environment;
 
 pub struct WritableAccountSnapshot {
   pub pre_snapshot: AccountMap,
@@ -23,7 +23,7 @@ pub struct ReplayInstructionResult {
 }
 
 pub struct ReplayInstructionParams<'info, T> {
-  pub replayer: &'info mut util_bank::ReplayEnvironment,
+  pub replayer: &'info mut replay_environment::ReplayEnvironment,
   pub decoded_instruction: &'info T,
   pub account_map: &'info AccountMap,
 }
@@ -34,7 +34,7 @@ const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdi
 const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
 pub fn replay_whirlpool_instruction(
-  replayer: &mut util_bank::ReplayEnvironment,
+  replayer: &mut replay_environment::ReplayEnvironment,
   instruction: DecodedWhirlpoolInstruction,
   account_map: &AccountMap, // readonly
 ) -> Result<ReplayInstructionResult, ErrorCode> {

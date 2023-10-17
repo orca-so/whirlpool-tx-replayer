@@ -4,7 +4,7 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::util_bank;
+use crate::replay_environment;
 use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
 

@@ -6,7 +6,7 @@ use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
 use crate::util_replay;
 use crate::util_replay::pubkey; // abbr
-use crate::util_bank;
+use crate::replay_environment;
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDecreaseLiquidity>) -> ReplayInstructionResult {
   let replayer = req.replayer;

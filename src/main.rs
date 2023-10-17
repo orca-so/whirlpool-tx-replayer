@@ -7,7 +7,7 @@ mod decoded_instructions;
 mod util_database_io;
 mod util_file_io;
 mod util_replay;
-mod util_bank;
+mod replay_environment;
 mod replay_core;
 mod programs;
 mod types;
@@ -71,7 +71,7 @@ fn main() {
             let ixs_in_slot = util_database_io::fetch_instructions_in_slot(slot.slot, &mut conn);
             if ixs_in_slot.len() > 0 {
 
-                let mut builder = util_bank::ReplayEnvironment::builder();
+                let mut builder = replay_environment::ReplayEnvironment::builder();
 
                 // emulate SYSVAR/Clock
                 builder.set_creation_time(slot.block_time);
