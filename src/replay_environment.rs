@@ -14,7 +14,7 @@ use solana_program::{
     program_pack::Pack,
     pubkey::Pubkey,
     system_program,
-    sysvar::{self, rent},
+    sysvar,
 };
 use solana_runtime::{
     accounts_db::AccountShrinkThreshold,
@@ -235,6 +235,18 @@ impl ReplayEnvironment {
         self.bank.get_minimum_balance_for_rent_exemption(data)
     }
 
+    pub fn set_sysvar_clock_unix_timestamp(&mut self, unix_timestamp: i64) {
+        let clock = self.bank.get_sysvar_cache_for_tests().get_clock().unwrap();
+        let new_clock = sysvar::clock::Clock {
+            slot: clock.slot,
+            epoch_start_timestamp: clock.epoch_start_timestamp,
+            epoch: clock.epoch,
+            leader_schedule_epoch: clock.leader_schedule_epoch,
+            unix_timestamp,
+        };
+        self.bank.set_sysvar_for_tests(&new_clock);
+    }
+
     pub fn get_account(&self, pubkey: Pubkey) -> Option<Account> {
         self.bank.get_account(&pubkey).map(|acc| acc.into())
     }
@@ -400,7 +412,7 @@ impl ReplayEnvironmentBuilder {
         builder.add_account_with_data(spl_memo::ID, bpf_loader::ID, programs::SPL_MEMO3, true);
         builder.add_account_with_data(spl_token::ID, bpf_loader::ID, programs::SPL_TOKEN, true);
         */
-        builder.add_account_with_lamports(rent::ID, sysvar::ID, 1);
+        builder.add_account_with_lamports(sysvar::rent::ID, sysvar::ID, 1);
         builder
     }
 
