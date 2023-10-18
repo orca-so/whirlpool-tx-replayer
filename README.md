@@ -157,3 +157,40 @@ sys     0m43.366s
 - will save some snapshot into ``tests/output-snapshot``
 - will stop at slot 21515000+
 - you can verify the correctness of the replaying by comparing snapshots between ``tests/output-snapshot`` and ``tests/target-snapshot``. please see [README](https://github.com/orca-so/whirlpool-tx-replayer/blob/main/tests/output-snapshot/README.md) for details.
+
+
+## TODO
+### Performance tuning
+Now I believe that it can process 50 slots per seconds in average, and it is x20 faster than real validators.
+
+But there is obvious hot spot and it is whirlpool program compilation everytime to execute transaction.
+
+### Support all instruction
+The following instructions do not yet implement replay.
+They are only rarely executed, and they are not technically difficult.
+
+- InitializeConfig
+- InitializeFeeTier
+- SetCollectProtocolFeesAuthority
+- SetDefaultFeeRate
+- SetDefaultProtocolFeeRate
+- SetFeeAuthority
+- SetFeeRate
+- SetProtocolFeeRate
+- SetRewardAuthority
+- SetRewardAuthorityBySuperAuthority
+- SetRewardEmissionsSuperAuthority
+- AdminIncreaseLiquidity
+
+### Validation at instruction level
+By performing the following verification before and after each instruction is executed, abnormal situations may be detected at an early stage.
+
+- Accounts that should not exist do not exist
+- Accounts that should exist do exist
+- Token volume consistent with the transaction log has been transferred
+
+### think: use RDBMS to store Whirlpool account snapshots
+At the moment, simple gzipped csv files on Filesystem is used.
+
+### think: direct use from Node.js (Typescript) similar to Bankrun
+https://kevinheavey.github.io/solana-bankrun/
