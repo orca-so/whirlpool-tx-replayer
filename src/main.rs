@@ -24,7 +24,7 @@ const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUe
 
 
 fn main() {
-    let url = "mysql://root:password@localhost:3306/localtest";
+    let url = "mysql://root:password@localhost:3306/whirlpool";
     let pool = Pool::new(url).unwrap();
     let mut conn = pool.get_conn().unwrap();
 
@@ -33,7 +33,7 @@ fn main() {
     let save_snapshot_interval_slot = 10000u64;
     let need_to_process = target_snapshot_slot - start_snapshot_slot;
 
-    let start_snapshot_file = format!("data/test/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
+    let start_snapshot_file = format!("tests/input-snapshot/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
 
     // TODO: protect account_map (stop using HashMap directly)
     let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
@@ -122,7 +122,7 @@ fn main() {
             let should_save_snapshot = slot.slot == target_snapshot_slot || slot.slot % save_snapshot_interval_slot == 0;
             if should_save_snapshot {
                 println!("saving snapshot ...");
-                let snapshot_file = format!("data/test/whirlpool-snapshot-{}.csv.gz", slot.slot);
+                let snapshot_file = format!("tests/output-snapshot/whirlpool-snapshot-{}.csv.gz", slot.slot);
                 util_file_io::save_to_snapshot_file(&snapshot_file.to_string(), &account_map);
                 println!("saved snapshot to {}", snapshot_file);
             }

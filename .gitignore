@@ -19,12 +19,9 @@ Cargo.lock
 # Mac
 .DS_Store
 
-# Added by cargo
-/target
-
 # Temp files
-data/whirlpool-snapshot-215135999.csv.2.gz
 data/test/
+tests/output-snapshot/*.csv.gz
 
 # Profiler
 *.trace/
