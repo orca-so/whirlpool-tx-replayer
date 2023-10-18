@@ -53,6 +53,8 @@ fn main() {
             break;
         }
 
+        // TODO: Eliminate the problem of spending most of the time compiling programs.
+
         // The environment should be rebuilt periodically to avoid processing too many transactions in a single environment.
         // Since Solana is capable of handling 50,000 TPS, it should theoretically be able to safely handle 20,000 TPS per bank, haha.
         let mut builder = replay_environment::ReplayEnvironment::builder();
