@@ -155,7 +155,7 @@ sys     0m43.366s
 - will load ``tests/input-snapshot/whirlpool-snapshot-215135999.csv.gz`` as start point
 - will do replay based on whirlpool instructions extracted from the transaction DB
 - will save some snapshot into ``tests/output-snapshot``
-- will stop at slot 21515000+
+- will stop at slot 215150000+
 - you can verify the correctness of the replaying by comparing snapshots between ``tests/output-snapshot`` and ``tests/target-snapshot``. please see [README](https://github.com/orca-so/whirlpool-tx-replayer/blob/main/tests/output-snapshot/README.md) for details.
 
 
