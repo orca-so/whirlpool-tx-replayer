@@ -194,3 +194,25 @@ At the moment, simple gzipped csv files on Filesystem is used.
 
 ### think: direct use from Node.js (Typescript) similar to Bankrun
 https://kevinheavey.github.io/solana-bankrun/
+
+
+## Related works
+### solana-snapshot-gpa
+https://github.com/everlastingsong/solana-snapshot-gpa
+
+input-snapshot and target-snapshot are extracted jito's snapshots using solana-snapshot-gpa.
+
+### sedimentology
+https://github.com/everlastingsong/sedimentology
+
+The transaction DB used above is output of this project.
+
+### whirlpool-tx-decoder
+https://github.com/yugure-orca/whirlpool-tx-decoder
+
+sedimentology uses this package to extract whirlpool instructions from transactions.
+
+### solana-poc-framework
+https://github.com/neodyme-labs/solana-poc-framework
+
+``ReplayEnvironment`` is a modification of poc-framework's ``LocalEnvironment``. Because there were some points that were not suitable for replay, ``LocalEnvironment`` was copied and reworked into ``ReplayEnvironment``.
