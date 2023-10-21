@@ -50,8 +50,8 @@ b9d69b45ade8   mariadb   "docker-entrypoint.s…"   6 seconds ago   Up 5 seconds
 - minimum slot: 214824664 (September 01, 2023 00:00:00 +UTC)
 - maximum slot: 224369122 (October 18, 2023 03:30:50 +UTC)
 - all tables, views and stored procedures(functions) are included
-- [https://github.com/everlastingsong/sedimentology/blob/main/src/sql/definition.sql](DDL for tables and stored procedures)
-- [https://github.com/orca-so/whirlpool-tx-replayer/blob/main/sql/view.sql](DDL for views)
+- [DDL for tables and stored procedures](https://github.com/everlastingsong/sedimentology/blob/main/src/sql/definition.sql)
+- [DDL for views](https://github.com/orca-so/whirlpool-tx-replayer/blob/main/sql/view.sql)
 ```
 curl -L -o whirlpool-transactions-214824664-224369122.dump.sql.gz https://www.dropbox.com/scl/fi/eyokubd0h1m967w7skwsj/whirlpool-transactions-214824664-224369122.dump.sql.gz?rlkey=z4pd383bbzfq21yettv9dru9e&dl=1
 ```
