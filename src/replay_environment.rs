@@ -605,7 +605,7 @@ impl ReplayEnvironmentBuilder {
         let mut accounts_db_config = solana_runtime::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
         accounts_db_config.index = Some(accounts_index_config);
 
-        let bank = Bank::new_with_paths(
+        let bank_slot0 = Bank::new_with_paths(
             &self.config,
             Arc::new(RuntimeConfig::default()),
             vec![/*tmpdir.to_path_buf()*/],
@@ -633,8 +633,16 @@ impl ReplayEnvironmentBuilder {
             AccountShrinkThreshold::default(),
         );*/
 
+        // advance to slot2
+        // to avoid loading program every time, slot using for transaction processing > slot using for program deployment
+        // - slot0: genesis (always slot 0)
+        // - slot1: slot for program deployment
+        // - slot2: slot for transaction processing
+        let bank_slot1 = Bank::new_from_parent(&Arc::new(bank_slot0), &Pubkey::default(), 1u64);
+        let bank_slot2: Bank = Bank::new_from_parent(&Arc::new(bank_slot1), &Pubkey::default(), 2u64);
+
         let env = ReplayEnvironment {
-            bank,
+            bank: bank_slot2,
             faucet: self.faucet.insecure_clone(),
             config: self.config.clone(),
             nonce: 0,

@@ -29,7 +29,7 @@ fn main() {
     let mut conn = pool.get_conn().unwrap();
 
     let start_snapshot_slot = 215135999u64;
-    let target_snapshot_slot = 215150000u64;// 215567999u64; // start_snapshot_slot + 100;
+    let target_snapshot_slot = 215150000u64; // 215567999u64; // start_snapshot_slot + 100;
     let save_snapshot_interval_slot = 10000u64;
     let need_to_process = target_snapshot_slot - start_snapshot_slot;
 
@@ -53,18 +53,17 @@ fn main() {
             break;
         }
 
-        // TODO: Eliminate the problem of spending most of the time compiling programs.
-
         // The environment should be rebuilt periodically to avoid processing too many transactions in a single environment.
-        // Since Solana is capable of handling 50,000 TPS, it should theoretically be able to safely handle 20,000 TPS per bank, haha.
+        // Since Solana is capable of handling 50,000 TPS, it should theoretically be able to safely handle 20,000 txs per bank, haha.
         let mut builder = replay_environment::ReplayEnvironment::builder();
-        // deploy programs: SPL Token & SPL Associated Token Account & SPL Memo
+
+        // deploy programs
         builder.add_upgradable_program(SPL_TOKEN_PROGRAM_ID, programs::SPL_TOKEN);
         builder.add_upgradable_program(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, programs::SPL_ASSOCIATED_TOKEN_ACCOUNT);
         builder.add_upgradable_program(SPL_MEMO_PROGRAM_ID, programs::SPL_MEMO);
-        // deploy programs: Orca Whirlpool & Metaplex Token Metadata
         builder.add_upgradable_program(ORCA_WHIRLPOOL_PROGRAM_ID, programs::ORCA_WHIRLPOOL_20230901_A574AE5);
         builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3);
+
         let mut replayer = builder.build();
 
         for slot in next_slots {
