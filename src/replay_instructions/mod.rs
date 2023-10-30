@@ -19,6 +19,7 @@ pub mod open_bundled_position;
 pub mod close_bundled_position;
 pub mod delete_position_bundle;
 pub mod initialize_fee_tier;
+pub mod set_fee_rate;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -41,3 +42,4 @@ pub use open_bundled_position::*;
 pub use close_bundled_position::*;
 pub use delete_position_bundle::*;
 pub use initialize_fee_tier::*;
+pub use set_fee_rate::*;

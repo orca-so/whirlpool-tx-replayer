@@ -66,11 +66,10 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::DeletePositionBundle(decoded) => Ok(replay_instructions::delete_position_bundle::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     // very rare instructions
     DecodedWhirlpoolInstruction::InitializeFeeTier(decoded) => Ok(replay_instructions::initialize_fee_tier::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
+    DecodedWhirlpoolInstruction::SetFeeRate(decoded) => Ok(replay_instructions::set_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
 
     // ---------------------------------
     // very rare instructions
-    // SetFeeRate
-
     // InitializeConfig
     // SetCollectProtocolFeesAuthority
     // SetDefaultFeeRate
