@@ -64,16 +64,18 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::InitializePositionBundle(decoded) => Ok(replay_instructions::initialize_position_bundle::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     DecodedWhirlpoolInstruction::InitializePositionBundleWithMetadata(decoded) => Ok(replay_instructions::initialize_position_bundle_with_metadata::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     DecodedWhirlpoolInstruction::DeletePositionBundle(decoded) => Ok(replay_instructions::delete_position_bundle::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
+    // very rare instructions
+    DecodedWhirlpoolInstruction::InitializeFeeTier(decoded) => Ok(replay_instructions::initialize_fee_tier::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
 
     // ---------------------------------
     // very rare instructions
+    // SetFeeRate
+
     // InitializeConfig
-    // InitializeFeeTier
     // SetCollectProtocolFeesAuthority
     // SetDefaultFeeRate
     // SetDefaultProtocolFeeRate
     // SetFeeAuthority
-    // SetFeeRate
     // SetProtocolFeeRate
     // SetRewardAuthority
     // SetRewardAuthorityBySuperAuthority
