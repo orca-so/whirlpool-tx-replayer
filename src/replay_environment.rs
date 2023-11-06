@@ -605,9 +605,13 @@ impl ReplayEnvironmentBuilder {
         let mut accounts_db_config = solana_runtime::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
         accounts_db_config.index = Some(accounts_index_config);
 
+        // set compute budget to max
+        let mut runtime_config = RuntimeConfig::default();
+        runtime_config.compute_budget = Some(solana_program_runtime::compute_budget::ComputeBudget::new(1_400_000u64));
+
         let bank_slot0 = Bank::new_with_paths(
             &self.config,
-            Arc::new(RuntimeConfig::default()),
+            Arc::new(runtime_config),
             vec![/*tmpdir.to_path_buf()*/],
             None,
             None,

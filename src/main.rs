@@ -28,6 +28,10 @@ fn main() {
     let pool = Pool::new(url).unwrap();
     let mut conn = pool.get_conn().unwrap();
 
+    // compute budget
+    //let start_snapshot_slot = 216874099u64;
+    //let target_snapshot_slot = 216874200u64; // 215567999u64; // start_snapshot_slot + 100;
+
     let start_snapshot_slot = 215135999u64;
     let target_snapshot_slot = 215150000u64; // 215567999u64; // start_snapshot_slot + 100;
     let save_snapshot_interval_slot = 10000u64;
