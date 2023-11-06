@@ -166,6 +166,9 @@ sys     0m43.366s
 
 After eliminating program loading, replayer can process 2 days worth slots in 40 minutes. It is approx x70 replay performance! 🔥
 
+### ~~Set Compute Budget~~
+Allow instruction to use more compute budget.
+
 ### Use 1.16.18
 Now patch for solana-storage-proto can be removed.
 
@@ -174,12 +177,12 @@ The following instructions do not yet implement replay.
 They are only rarely executed, and they are not technically difficult.
 
 - InitializeConfig
-- InitializeFeeTier
+- ~~InitializeFeeTier~~
 - SetCollectProtocolFeesAuthority
 - SetDefaultFeeRate
 - SetDefaultProtocolFeeRate
 - SetFeeAuthority
-- SetFeeRate
+- ~~SetFeeRate~~
 - SetProtocolFeeRate
 - SetRewardAuthority
 - SetRewardAuthorityBySuperAuthority
