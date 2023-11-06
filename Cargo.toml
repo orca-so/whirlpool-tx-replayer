@@ -26,17 +26,15 @@ anchor-lang = "0.26.0"
 anchor-client = "0.26.0"
 whirlpool_base = { git = "https://github.com/orca-so/whirlpools", package = "whirlpool" }
 
-# use 1.16.16
-solana-sdk = "=1.16.16"
-solana-program = "=1.16.16"
-solana-program-runtime = "=1.16.16"
-solana-transaction-status = "=1.16.16"
-solana-client = "=1.16.16"
-solana-runtime = "=1.16.16"
-solana-cli-output = "=1.16.16"
-solana-ledger = "=1.16.16"
+# use 1.16.18
+solana-sdk = "=1.16.18"
+solana-program = "=1.16.18"
+solana-program-runtime = "=1.16.18"
+solana-transaction-status = "=1.16.18"
+solana-client = "=1.16.18"
+solana-runtime = "=1.16.18"
+solana-cli-output = "=1.16.18"
+solana-ledger = "=1.16.18"
 spl-token = "3.3.0"
 
 [patch.crates-io]
-# fix: Found a `cargo::key=value` build directive which is reserved for future use.
-solana-storage-proto = { path = "crates/solana-storage-proto" }
