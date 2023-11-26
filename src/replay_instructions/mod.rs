@@ -24,6 +24,8 @@ pub mod initialize_config;
 pub mod set_collect_protocol_fees_authority;
 pub mod set_default_fee_rate;
 pub mod set_default_protocol_fee_rate;
+pub mod set_fee_authority;
+pub mod set_protocol_fee_rate;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -51,3 +53,5 @@ pub use initialize_config::*;
 pub use set_collect_protocol_fees_authority::*;
 pub use set_default_fee_rate::*;
 pub use set_default_protocol_fee_rate::*;
+pub use set_fee_authority::*;
+pub use set_protocol_fee_rate::*;

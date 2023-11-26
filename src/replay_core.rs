@@ -71,11 +71,11 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetCollectProtocolFeesAuthority(decoded) => Ok(replay_instructions::set_collect_protocol_fees_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     DecodedWhirlpoolInstruction::SetDefaultFeeRate(decoded) => Ok(replay_instructions::set_default_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     DecodedWhirlpoolInstruction::SetDefaultProtocolFeeRate(decoded) => Ok(replay_instructions::set_default_protocol_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
+    DecodedWhirlpoolInstruction::SetFeeAuthority(decoded) => Ok(replay_instructions::set_fee_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
+    DecodedWhirlpoolInstruction::SetProtocolFeeRate(decoded) => Ok(replay_instructions::set_protocol_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
 
     // ---------------------------------
     // very rare instructions
-    // SetFeeAuthority
-    // SetProtocolFeeRate
     // SetRewardAuthority
     // SetRewardAuthorityBySuperAuthority
     // SetRewardEmissionsSuperAuthority
