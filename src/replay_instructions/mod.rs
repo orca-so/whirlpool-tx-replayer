@@ -26,6 +26,9 @@ pub mod set_default_fee_rate;
 pub mod set_default_protocol_fee_rate;
 pub mod set_fee_authority;
 pub mod set_protocol_fee_rate;
+pub mod set_reward_authority;
+pub mod set_reward_authority_by_super_authority;
+pub mod set_reward_emissions_super_authority;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -55,3 +58,6 @@ pub use set_default_fee_rate::*;
 pub use set_default_protocol_fee_rate::*;
 pub use set_fee_authority::*;
 pub use set_protocol_fee_rate::*;
+pub use set_reward_authority::*;
+pub use set_reward_authority_by_super_authority::*;
+pub use set_reward_emissions_super_authority::*;
