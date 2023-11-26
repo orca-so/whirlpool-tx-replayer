@@ -172,7 +172,7 @@ Allow instruction to use more compute budget.
 ### ~~Use 1.16.18~~
 Now patch for solana-storage-proto can be removed.
 
-### Support all instruction
+### ~~Support all instruction~~
 The following instructions do not yet implement replay.
 They are only rarely executed, and they are not technically difficult.
 
@@ -199,7 +199,6 @@ By performing the following verification before and after each instruction is ex
 ### More performance tuning
 - ConfirmedTransactionWithStatusMeta::encode in execute_transaction is the next hotspot
 - Delete unused features such as token balance snapshots
-
 
 ### think: use RDBMS to store Whirlpool account snapshots
 At the moment, simple gzipped csv files on Filesystem is used.
