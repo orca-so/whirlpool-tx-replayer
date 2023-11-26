@@ -20,6 +20,8 @@ pub mod close_bundled_position;
 pub mod delete_position_bundle;
 pub mod initialize_fee_tier;
 pub mod set_fee_rate;
+pub mod initialize_config;
+pub mod set_collect_protocol_fees_authority;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -43,3 +45,5 @@ pub use close_bundled_position::*;
 pub use delete_position_bundle::*;
 pub use initialize_fee_tier::*;
 pub use set_fee_rate::*;
+pub use initialize_config::*;
+pub use set_collect_protocol_fees_authority::*;
