@@ -176,18 +176,18 @@ Now patch for solana-storage-proto can be removed.
 The following instructions do not yet implement replay.
 They are only rarely executed, and they are not technically difficult.
 
-- InitializeConfig
+- ~~InitializeConfig~~
 - ~~InitializeFeeTier~~
-- SetCollectProtocolFeesAuthority
-- SetDefaultFeeRate
-- SetDefaultProtocolFeeRate
-- SetFeeAuthority
+- ~~SetCollectProtocolFeesAuthority~~
+- ~~SetDefaultFeeRate~~
+- ~~SetDefaultProtocolFeeRate~~
+- ~~SetFeeAuthority~~
 - ~~SetFeeRate~~
-- SetProtocolFeeRate
-- SetRewardAuthority
-- SetRewardAuthorityBySuperAuthority
-- SetRewardEmissionsSuperAuthority
-- AdminIncreaseLiquidity
+- ~~SetProtocolFeeRate~~
+- ~~SetRewardAuthority~~
+- ~~SetRewardAuthorityBySuperAuthority~~
+- ~~SetRewardEmissionsSuperAuthority~~
+- ~~AdminIncreaseLiquidity~~
 
 ### Validation at instruction level
 By performing the following verification before and after each instruction is executed, abnormal situations may be detected at an early stage.

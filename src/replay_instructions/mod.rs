@@ -29,6 +29,7 @@ pub mod set_protocol_fee_rate;
 pub mod set_reward_authority;
 pub mod set_reward_authority_by_super_authority;
 pub mod set_reward_emissions_super_authority;
+pub mod admin_increase_liquidity;
 
 pub use swap::*;
 pub use two_hop_swap::*;
@@ -61,3 +62,4 @@ pub use set_protocol_fee_rate::*;
 pub use set_reward_authority::*;
 pub use set_reward_authority_by_super_authority::*;
 pub use set_reward_emissions_super_authority::*;
+pub use admin_increase_liquidity::*;

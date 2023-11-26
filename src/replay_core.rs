@@ -76,14 +76,11 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetRewardAuthority(decoded) => Ok(replay_instructions::set_reward_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     DecodedWhirlpoolInstruction::SetRewardAuthorityBySuperAuthority(decoded) => Ok(replay_instructions::set_reward_authority_by_super_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
     DecodedWhirlpoolInstruction::SetRewardEmissionsSuperAuthority(decoded) => Ok(replay_instructions::set_reward_emissions_super_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
-
-    // ---------------------------------
-    // very rare instructions
-    // AdminIncreaseLiquidity
-    _ => {
-      
-      Err(ErrorCode::UnknownWhirlpoolInstruction("not implemented yet".to_string()))
-    }
+    // temporary patch instructions
+    DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, account_map })),
+    //_ => {
+    //  Err(ErrorCode::UnknownWhirlpoolInstruction("not implemented yet".to_string()))
+    //}
   }
 }
 
