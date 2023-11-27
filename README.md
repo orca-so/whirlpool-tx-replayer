@@ -189,6 +189,17 @@ They are only rarely executed, and they are not technically difficult.
 - ~~SetRewardEmissionsSuperAuthority~~
 - ~~AdminIncreaseLiquidity~~
 
+### Switching program version dynamically based on a txid
+We need to switch whirlpool program in src/programs/whirlpool.
+
+### Separate core and use crate
+
+### WASM build for client use
+
+### Handling new deployment release
+We know when whirlpool program have been updated in the past exactly.
+But we cannot know which slot and which tx index in the block the next version will be released.
+
 ### Validation at instruction level
 By performing the following verification before and after each instruction is executed, abnormal situations may be detected at an early stage.
 
