@@ -12,6 +12,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
 
   // config
   // funder
+  replayer.set_funder_account(&ix.key_funder);
   // system_program
 
   let tx = replayer.build_whirlpool_replay_transaction(
