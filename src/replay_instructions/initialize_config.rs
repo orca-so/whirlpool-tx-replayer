@@ -29,7 +29,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   );
 
   let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
   ]);
   
   let replay_result = replayer.execute_transaction(tx);
