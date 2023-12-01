@@ -25,6 +25,7 @@ const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUe
 
 fn main() {
     let url = "mysql://root:password@localhost:3306/whirlpool";
+    //let url = "mysql://root:password@localhost:53306/whirlpool";
     let pool = Pool::new(url).unwrap();
     let mut conn = pool.get_conn().unwrap();
 
@@ -34,14 +35,14 @@ fn main() {
 
     let start_snapshot_slot = 215135999u64;
     let target_snapshot_slot = 215150000u64; // 215567999u64; // start_snapshot_slot + 100;
-    let save_snapshot_interval_slot = 10000u64;
+    let save_snapshot_interval_slot = 100_000u64;
     let need_to_process = target_snapshot_slot - start_snapshot_slot;
 
-    let start_snapshot_file = format!("tests/input-snapshot/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
-
+    let start_snapshot_file = format!("data/jito-snapshot/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
+    
     // TODO: protect account_map (stop using HashMap directly)
     let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
-    println!("loaded {} accounts", account_map.len());
+        println!("loaded {} accounts", account_map.len());
 
     let mut last_processed_slot = util_database_io::fetch_slot_info(start_snapshot_slot, &mut conn);
 
@@ -66,7 +67,16 @@ fn main() {
         builder.add_upgradable_program(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, programs::SPL_ASSOCIATED_TOKEN_ACCOUNT);
         builder.add_upgradable_program(SPL_MEMO_PROGRAM_ID, programs::SPL_MEMO);
         builder.add_upgradable_program(ORCA_WHIRLPOOL_PROGRAM_ID, programs::ORCA_WHIRLPOOL_20230901_A574AE5);
-        builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3);
+        // DEV_NULL_PROGRAM will do nothing for every instruction.  It will always succeed.
+        //
+        // The work of Metaplex Token Program is to create Metadata account,
+        // and it does NOT affect the state of Whirlpool accounts, so it can be ignored in replay context.
+        // If we handle this program, we need to pay attention to swith V2/V3.
+        // I think Metaplex removed V2 instructions at slot 196,112,106.
+        // https://solscan.io/tx/5hKy1aL5Si4ymFvUGX7DAhAhDCEWBgpRUdQJNXYC5d4qKfD2xEEAnGfBJpQKRQQt9cZeQ4EZpze5PQjxj5SMBeiP
+        // https://github.com/metaplex-foundation/mpl-token-metadata/commit/28f8410f67ce364798f5c36c1dcb244a206b4371
+        //builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3);
+        builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::DEV_NULL_PROGRAM);
 
         let mut replayer = builder.build();
 

@@ -3,6 +3,7 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::util_replay::derive_whirlpool_bump;
 use crate::util_replay::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePool>) -> ReplayInstructionResult {
@@ -42,7 +43,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   let tx = replayer.build_whirlpool_replay_transaction(
     whirlpool_ix_args::InitializePool {
       bumps: whirlpool_base::state::WhirlpoolBumps {
-        whirlpool_bump: 0, // dummy
+        // whirlpool_bump: after slot 189278833 this can be a dummy value, but older slots need to derive the bump
+        whirlpool_bump: derive_whirlpool_bump(
+          &pubkey(&ix.key_whirlpools_config),
+          &pubkey(&ix.key_token_mint_a),
+          &pubkey(&ix.key_token_mint_b),
+          ix.data_tick_spacing,
+        ),
       },
       initial_sqrt_price: ix.data_initial_sqrt_price,
       tick_spacing: ix.data_tick_spacing,
