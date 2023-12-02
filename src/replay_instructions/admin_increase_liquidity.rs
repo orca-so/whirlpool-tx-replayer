@@ -24,7 +24,7 @@ impl ToAccountMetas for AdminIncreaseLiquidityInstructionAccounts {
   fn to_account_metas(&self, is_signer: Option<bool>) -> Vec<solana_program::instruction::AccountMeta> {
     let mut metas = Vec::new();
     metas.push(solana_program::instruction::AccountMeta::new_readonly(self.whirlpools_config, false));
-    metas.push(solana_program::instruction::AccountMeta::new_readonly(self.whirlpool, false));
+    metas.push(solana_program::instruction::AccountMeta::new(self.whirlpool, false));
     metas.push(solana_program::instruction::AccountMeta::new_readonly(self.authority, is_signer.unwrap_or(true)));
     return metas;
   }
