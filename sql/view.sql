@@ -1,17 +1,33 @@
-CREATE VIEW vwixsAdminIncreaseLiquidity AS
+DELIMITER ;;
+
+CREATE FUNCTION toU64String(n bigint unsigned) RETURNS varchar(24) CHARSET utf8mb4 COLLATE utf8mb4_bin
+DETERMINISTIC
+BEGIN
+   RETURN CAST(n AS varchar(24));
+END;;
+
+CREATE FUNCTION toU128String(n decimal(39, 0)) RETURNS varchar(48) CHARSET utf8mb4 COLLATE utf8mb4_bin
+DETERMINISTIC
+BEGIN
+   RETURN CAST(n AS varchar(48));
+END;;
+
+DELIMITER ;
+
+CREATE OR REPLACE VIEW vwixsAdminIncreaseLiquidity AS
 SELECT
     t.txid,
     t.order,
     "adminIncreaseLiquidity" AS "ix",
     JSON_OBJECT(
-        'dataLiquidity', t.dataLiquidity,
+        'dataLiquidity', toU128String(t.dataLiquidity),
         'keyWhirlpoolsConfig', toPubkeyBase58(t.keyWhirlpoolsConfig),
         'keyWhirlpool', toPubkeyBase58(t.keyWhirlpool),
         'keyAuthority', toPubkeyBase58(t.keyAuthority)
     ) AS "json"
 FROM ixsAdminIncreaseLiquidity t;
 
-CREATE VIEW vwixsCloseBundledPosition AS
+CREATE OR REPLACE VIEW vwixsCloseBundledPosition AS
 SELECT
     t.txid,
     t.order,
@@ -26,7 +42,7 @@ SELECT
     ) AS "json"
 FROM ixsCloseBundledPosition t;
 
-CREATE VIEW vwixsClosePosition AS
+CREATE OR REPLACE VIEW vwixsClosePosition AS
 SELECT
     t.txid,
     t.order,
@@ -41,7 +57,7 @@ SELECT
     ) AS "json"
 FROM ixsClosePosition t;
 
-CREATE VIEW vwixsCollectFees AS
+CREATE OR REPLACE VIEW vwixsCollectFees AS
 SELECT
     t.txid,
     t.order,
@@ -56,12 +72,12 @@ SELECT
         'keyTokenOwnerAccountB', toPubkeyBase58(t.keyTokenOwnerAccountB),
         'keyTokenVaultB', toPubkeyBase58(t.keyTokenVaultB),
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
-        'transferAmount0', t.transferAmount0,
-        'transferAmount1', t.transferAmount1
+        'transferAmount0', toU64String(t.transferAmount0),
+        'transferAmount1', toU64String(t.transferAmount1)
     ) AS "json"
 FROM ixsCollectFees t;
 
-CREATE VIEW vwixsCollectProtocolFees AS
+CREATE OR REPLACE VIEW vwixsCollectProtocolFees AS
 SELECT
     t.txid,
     t.order,
@@ -75,12 +91,12 @@ SELECT
         'keyTokenDestinationA', toPubkeyBase58(t.keyTokenDestinationA),
         'keyTokenDestinationB', toPubkeyBase58(t.keyTokenDestinationB),
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
-        'transferAmount0', t.transferAmount0,
-        'transferAmount1', t.transferAmount1
+        'transferAmount0', toU64String(t.transferAmount0),
+        'transferAmount1', toU64String(t.transferAmount1)
     ) AS "json"
 FROM ixsCollectProtocolFees t;
 
-CREATE VIEW vwixsCollectReward AS
+CREATE OR REPLACE VIEW vwixsCollectReward AS
 SELECT
     t.txid,
     t.order,
@@ -94,19 +110,19 @@ SELECT
         'keyRewardOwnerAccount', toPubkeyBase58(t.keyRewardOwnerAccount),
         'keyRewardVault', toPubkeyBase58(t.keyRewardVault),
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
-        'transferAmount0', t.transferAmount0
+        'transferAmount0', toU64String(t.transferAmount0)
     ) AS "json"
 FROM ixsCollectReward t;
 
-CREATE VIEW vwixsDecreaseLiquidity AS
+CREATE OR REPLACE VIEW vwixsDecreaseLiquidity AS
 SELECT
     t.txid,
     t.order,
     "decreaseLiquidity" AS "ix",
     JSON_OBJECT(
-        'dataLiquidityAmount', t.dataLiquidityAmount,
-        'dataTokenAmountMinA', t.dataTokenAmountMinA,
-        'dataTokenAmountMinB', t.dataTokenAmountMinB,
+        'dataLiquidityAmount', toU128String(t.dataLiquidityAmount),
+        'dataTokenAmountMinA', toU64String(t.dataTokenAmountMinA),
+        'dataTokenAmountMinB', toU64String(t.dataTokenAmountMinB),
         'keyWhirlpool', toPubkeyBase58(t.keyWhirlpool),
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
         'keyPositionAuthority', toPubkeyBase58(t.keyPositionAuthority),
@@ -118,12 +134,12 @@ SELECT
         'keyTokenVaultB', toPubkeyBase58(t.keyTokenVaultB),
         'keyTickArrayLower', toPubkeyBase58(t.keyTickArrayLower),
         'keyTickArrayUpper', toPubkeyBase58(t.keyTickArrayUpper),
-        'transferAmount0', t.transferAmount0,
-        'transferAmount1', t.transferAmount1
+        'transferAmount0', toU64String(t.transferAmount0),
+        'transferAmount1', toU64String(t.transferAmount1)
     ) AS "json"
 FROM ixsDecreaseLiquidity t;
 
-CREATE VIEW vwixsDeletePositionBundle AS
+CREATE OR REPLACE VIEW vwixsDeletePositionBundle AS
 SELECT
     t.txid,
     t.order,
@@ -138,15 +154,15 @@ SELECT
     ) AS "json"
 FROM ixsDeletePositionBundle t;
 
-CREATE VIEW vwixsIncreaseLiquidity AS
+CREATE OR REPLACE VIEW vwixsIncreaseLiquidity AS
 SELECT
     t.txid,
     t.order,
     "increaseLiquidity" AS "ix",
     JSON_OBJECT(
-        'dataLiquidityAmount', t.dataLiquidityAmount,
-        'dataTokenAmountMaxA', t.dataTokenAmountMaxA,
-        'dataTokenAmountMaxB', t.dataTokenAmountMaxB,
+        'dataLiquidityAmount', toU128String(t.dataLiquidityAmount),
+        'dataTokenAmountMaxA', toU64String(t.dataTokenAmountMaxA),
+        'dataTokenAmountMaxB', toU64String(t.dataTokenAmountMaxB),
         'keyWhirlpool', toPubkeyBase58(t.keyWhirlpool),
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
         'keyPositionAuthority', toPubkeyBase58(t.keyPositionAuthority),
@@ -158,12 +174,12 @@ SELECT
         'keyTokenVaultB', toPubkeyBase58(t.keyTokenVaultB),
         'keyTickArrayLower', toPubkeyBase58(t.keyTickArrayLower),
         'keyTickArrayUpper', toPubkeyBase58(t.keyTickArrayUpper),
-        'transferAmount0', t.transferAmount0,
-        'transferAmount1', t.transferAmount1
+        'transferAmount0', toU64String(t.transferAmount0),
+        'transferAmount1', toU64String(t.transferAmount1)
     ) AS "json"
 FROM ixsIncreaseLiquidity t;
 
-CREATE VIEW vwixsInitializeConfig AS
+CREATE OR REPLACE VIEW vwixsInitializeConfig AS
 SELECT
     t.txid,
     t.order,
@@ -179,7 +195,7 @@ SELECT
     ) AS "json"
 FROM ixsInitializeConfig t;
 
-CREATE VIEW vwixsInitializeFeeTier AS
+CREATE OR REPLACE VIEW vwixsInitializeFeeTier AS
 SELECT
     t.txid,
     t.order,
@@ -195,14 +211,14 @@ SELECT
     ) AS "json"
 FROM ixsInitializeFeeTier t;
 
-CREATE VIEW vwixsInitializePool AS
+CREATE OR REPLACE VIEW vwixsInitializePool AS
 SELECT
     t.txid,
     t.order,
     "initializePool" AS "ix",
     JSON_OBJECT(
         'dataTickSpacing', t.dataTickSpacing,
-        'dataInitialSqrtPrice', t.dataInitialSqrtPrice,
+        'dataInitialSqrtPrice', toU128String(t.dataInitialSqrtPrice),
         'keyWhirlpoolsConfig', toPubkeyBase58(t.keyWhirlpoolsConfig),
         'keyTokenMintA', toPubkeyBase58(t.keyTokenMintA),
         'keyTokenMintB', toPubkeyBase58(t.keyTokenMintB),
@@ -217,7 +233,7 @@ SELECT
     ) AS "json"
 FROM ixsInitializePool t;
 
-CREATE VIEW vwixsInitializePositionBundle AS
+CREATE OR REPLACE VIEW vwixsInitializePositionBundle AS
 SELECT
     t.txid,
     t.order,
@@ -235,7 +251,7 @@ SELECT
     ) AS "json"
 FROM ixsInitializePositionBundle t;
 
-CREATE VIEW vwixsInitializePositionBundleWithMetadata AS
+CREATE OR REPLACE VIEW vwixsInitializePositionBundleWithMetadata AS
 SELECT
     t.txid,
     t.order,
@@ -256,7 +272,7 @@ SELECT
     ) AS "json"
 FROM ixsInitializePositionBundleWithMetadata t;
 
-CREATE VIEW vwixsInitializeReward AS
+CREATE OR REPLACE VIEW vwixsInitializeReward AS
 SELECT
     t.txid,
     t.order,
@@ -274,7 +290,7 @@ SELECT
     ) AS "json"
 FROM ixsInitializeReward t;
 
-CREATE VIEW vwixsInitializeTickArray AS
+CREATE OR REPLACE VIEW vwixsInitializeTickArray AS
 SELECT
     t.txid,
     t.order,
@@ -288,7 +304,7 @@ SELECT
     ) AS "json"
 FROM ixsInitializeTickArray t;
 
-CREATE VIEW vwixsOpenBundledPosition AS
+CREATE OR REPLACE VIEW vwixsOpenBundledPosition AS
 SELECT
     t.txid,
     t.order,
@@ -308,7 +324,7 @@ SELECT
     ) AS "json"
 FROM ixsOpenBundledPosition t;
 
-CREATE VIEW vwixsOpenPosition AS
+CREATE OR REPLACE VIEW vwixsOpenPosition AS
 SELECT
     t.txid,
     t.order,
@@ -329,7 +345,7 @@ SELECT
     ) AS "json"
 FROM ixsOpenPosition t;
 
-CREATE VIEW vwixsOpenPositionWithMetadata AS
+CREATE OR REPLACE VIEW vwixsOpenPositionWithMetadata AS
 SELECT
     t.txid,
     t.order,
@@ -353,7 +369,7 @@ SELECT
     ) AS "json"
 FROM ixsOpenPositionWithMetadata t;
 
-CREATE VIEW vwixsSetCollectProtocolFeesAuthority AS
+CREATE OR REPLACE VIEW vwixsSetCollectProtocolFeesAuthority AS
 SELECT
     t.txid,
     t.order,
@@ -365,7 +381,7 @@ SELECT
     ) AS "json"
 FROM ixsSetCollectProtocolFeesAuthority t;
 
-CREATE VIEW vwixsSetDefaultFeeRate AS
+CREATE OR REPLACE VIEW vwixsSetDefaultFeeRate AS
 SELECT
     t.txid,
     t.order,
@@ -378,7 +394,7 @@ SELECT
     ) AS "json"
 FROM ixsSetDefaultFeeRate t;
 
-CREATE VIEW vwixsSetDefaultProtocolFeeRate AS
+CREATE OR REPLACE VIEW vwixsSetDefaultProtocolFeeRate AS
 SELECT
     t.txid,
     t.order,
@@ -390,7 +406,7 @@ SELECT
     ) AS "json"
 FROM ixsSetDefaultProtocolFeeRate t;
 
-CREATE VIEW vwixsSetFeeAuthority AS
+CREATE OR REPLACE VIEW vwixsSetFeeAuthority AS
 SELECT
     t.txid,
     t.order,
@@ -402,7 +418,7 @@ SELECT
     ) AS "json"
 FROM ixsSetFeeAuthority t;
 
-CREATE VIEW vwixsSetFeeRate AS
+CREATE OR REPLACE VIEW vwixsSetFeeRate AS
 SELECT
     t.txid,
     t.order,
@@ -415,7 +431,7 @@ SELECT
     ) AS "json"
 FROM ixsSetFeeRate t;
 
-CREATE VIEW vwixsSetProtocolFeeRate AS
+CREATE OR REPLACE VIEW vwixsSetProtocolFeeRate AS
 SELECT
     t.txid,
     t.order,
@@ -428,7 +444,7 @@ SELECT
     ) AS "json"
 FROM ixsSetProtocolFeeRate t;
 
-CREATE VIEW vwixsSetRewardAuthority AS
+CREATE OR REPLACE VIEW vwixsSetRewardAuthority AS
 SELECT
     t.txid,
     t.order,
@@ -441,7 +457,7 @@ SELECT
     ) AS "json"
 FROM ixsSetRewardAuthority t;
 
-CREATE VIEW vwixsSetRewardAuthorityBySuperAuthority AS
+CREATE OR REPLACE VIEW vwixsSetRewardAuthorityBySuperAuthority AS
 SELECT
     t.txid,
     t.order,
@@ -455,21 +471,21 @@ SELECT
     ) AS "json"
 FROM ixsSetRewardAuthorityBySuperAuthority t;
 
-CREATE VIEW vwixsSetRewardEmissions AS
+CREATE OR REPLACE VIEW vwixsSetRewardEmissions AS
 SELECT
     t.txid,
     t.order,
     "setRewardEmissions" AS "ix",
     JSON_OBJECT(
         'dataRewardIndex', t.dataRewardIndex,
-        'dataEmissionsPerSecondX64', t.dataEmissionsPerSecondX64,
+        'dataEmissionsPerSecondX64', toU128String(t.dataEmissionsPerSecondX64),
         'keyWhirlpool', toPubkeyBase58(t.keyWhirlpool),
         'keyRewardAuthority', toPubkeyBase58(t.keyRewardAuthority),
         'keyRewardVault', toPubkeyBase58(t.keyRewardVault)
     ) AS "json"
 FROM ixsSetRewardEmissions t;
 
-CREATE VIEW vwixsSetRewardEmissionsSuperAuthority AS
+CREATE OR REPLACE VIEW vwixsSetRewardEmissionsSuperAuthority AS
 SELECT
     t.txid,
     t.order,
@@ -481,15 +497,15 @@ SELECT
     ) AS "json"
 FROM ixsSetRewardEmissionsSuperAuthority t;
 
-CREATE VIEW vwixsSwap AS
+CREATE OR REPLACE VIEW vwixsSwap AS
 SELECT
     t.txid,
     t.order,
     "swap" AS "ix",
     JSON_OBJECT(
-        'dataAmount', t.dataAmount,
-        'dataOtherAmountThreshold', t.dataOtherAmountThreshold,
-        'dataSqrtPriceLimit', t.dataSqrtPriceLimit,
+        'dataAmount', toU64String(t.dataAmount),
+        'dataOtherAmountThreshold', toU64String(t.dataOtherAmountThreshold),
+        'dataSqrtPriceLimit', toU128String(t.dataSqrtPriceLimit),
         'dataAmountSpecifiedIsInput', t.dataAmountSpecifiedIsInput,
         'dataAToB', t.dataAToB,
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
@@ -503,24 +519,24 @@ SELECT
         'keyTickArray1', toPubkeyBase58(t.keyTickArray1),
         'keyTickArray2', toPubkeyBase58(t.keyTickArray2),
         'keyOracle', toPubkeyBase58(t.keyOracle),
-        'transferAmount0', t.transferAmount0,
-        'transferAmount1', t.transferAmount1
+        'transferAmount0', toU64String(t.transferAmount0),
+        'transferAmount1', toU64String(t.transferAmount1)
     ) AS "json"
 FROM ixsSwap t;
 
-CREATE VIEW vwixsTwoHopSwap AS
+CREATE OR REPLACE VIEW vwixsTwoHopSwap AS
 SELECT
     t.txid,
     t.order,
     "twoHopSwap" AS "ix",
     JSON_OBJECT(
-        'dataAmount', t.dataAmount,
-        'dataOtherAmountThreshold', t.dataOtherAmountThreshold,
+        'dataAmount', toU64String(t.dataAmount),
+        'dataOtherAmountThreshold', toU64String(t.dataOtherAmountThreshold),
         'dataAmountSpecifiedIsInput', t.dataAmountSpecifiedIsInput,
         'dataAToBOne', t.dataAToBOne,
         'dataAToBTwo', t.dataAToBTwo,
-        'dataSqrtPriceLimitOne', t.dataSqrtPriceLimitOne,
-        'dataSqrtPriceLimitTwo', t.dataSqrtPriceLimitTwo,
+        'dataSqrtPriceLimitOne', toU128String(t.dataSqrtPriceLimitOne),
+        'dataSqrtPriceLimitTwo', toU128String(t.dataSqrtPriceLimitTwo),
         'keyTokenProgram', toPubkeyBase58(t.keyTokenProgram),
         'keyTokenAuthority', toPubkeyBase58(t.keyTokenAuthority),
         'keyWhirlpoolOne', toPubkeyBase58(t.keyWhirlpoolOne),
@@ -541,14 +557,14 @@ SELECT
         'keyTickArrayTwo2', toPubkeyBase58(t.keyTickArrayTwo2),
         'keyOracleOne', toPubkeyBase58(t.keyOracleOne),
         'keyOracleTwo', toPubkeyBase58(t.keyOracleTwo),
-        'transferAmount0', t.transferAmount0,
-        'transferAmount1', t.transferAmount1,
-        'transferAmount2', t.transferAmount2,
-        'transferAmount3', t.transferAmount3
+        'transferAmount0', toU64String(t.transferAmount0),
+        'transferAmount1', toU64String(t.transferAmount1),
+        'transferAmount2', toU64String(t.transferAmount2),
+        'transferAmount3', toU64String(t.transferAmount3)
     ) AS "json"
 FROM ixsTwoHopSwap t;
 
-CREATE VIEW vwixsUpdateFeesAndRewards AS
+CREATE OR REPLACE VIEW vwixsUpdateFeesAndRewards AS
 SELECT
     t.txid,
     t.order,

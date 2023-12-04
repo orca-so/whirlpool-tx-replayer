@@ -86,6 +86,7 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedWhirlpoolInstructi
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedAdminIncreaseLiquidity {
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_liquidity: u128,
   pub key_whirlpools_config: String,
   pub key_whirlpool: String,
@@ -126,7 +127,9 @@ pub struct DecodedCollectFees {
   pub key_token_owner_account_b: String,
   pub key_token_vault_b: String,
   pub key_token_program: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_1: u64,
 }
 
@@ -141,7 +144,9 @@ pub struct DecodedCollectProtocolFees {
   pub key_token_destination_a: String,
   pub key_token_destination_b: String,
   pub key_token_program: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_1: u64,
 }
 
@@ -156,14 +161,18 @@ pub struct DecodedCollectReward {
   pub key_reward_owner_account: String,
   pub key_reward_vault: String,
   pub key_token_program: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedDecreaseLiquidity {
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_liquidity_amount: u128,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_token_amount_min_a: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_token_amount_min_b: u64,
   pub key_whirlpool: String,
   pub key_token_program: String,
@@ -176,7 +185,9 @@ pub struct DecodedDecreaseLiquidity {
   pub key_token_vault_b: String,
   pub key_tick_array_lower: String,
   pub key_tick_array_upper: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_1: u64,
 }
 
@@ -194,8 +205,11 @@ pub struct DecodedDeletePositionBundle {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedIncreaseLiquidity {
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_liquidity_amount: u128,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_token_amount_max_a: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_token_amount_max_b: u64,
   pub key_whirlpool: String,
   pub key_token_program: String,
@@ -208,7 +222,9 @@ pub struct DecodedIncreaseLiquidity {
   pub key_token_vault_b: String,
   pub key_tick_array_lower: String,
   pub key_tick_array_upper: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_1: u64,
 }
 
@@ -240,6 +256,7 @@ pub struct DecodedInitializeFeeTier {
 #[serde(rename_all = "camelCase")]
 pub struct DecodedInitializePool {
   pub data_tick_spacing: u16,
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_initial_sqrt_price: u128,
   pub key_whirlpools_config: String,
   pub key_token_mint_a: String,
@@ -436,6 +453,7 @@ pub struct DecodedSetRewardAuthorityBySuperAuthority {
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSetRewardEmissions {
   pub data_reward_index: u8,
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_emissions_per_second_x64: u128,
   pub key_whirlpool: String,
   pub key_reward_authority: String,
@@ -453,8 +471,11 @@ pub struct DecodedSetRewardEmissionsSuperAuthority {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedSwap {
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_amount: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_other_amount_threshold: u64,
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_sqrt_price_limit: u128,
   #[serde(deserialize_with = "deserialize_bool")]
   pub data_amount_specified_is_input: bool,
@@ -471,14 +492,18 @@ pub struct DecodedSwap {
   pub key_tick_array_1: String,
   pub key_tick_array_2: String,
   pub key_oracle: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_1: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DecodedTwoHopSwap {
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_amount: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub data_other_amount_threshold: u64,
   #[serde(deserialize_with = "deserialize_bool")]
   pub data_amount_specified_is_input: bool,
@@ -486,7 +511,9 @@ pub struct DecodedTwoHopSwap {
   pub data_a_to_b_one: bool,
   #[serde(deserialize_with = "deserialize_bool")]
   pub data_a_to_b_two: bool,
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_sqrt_price_limit_one: u128,
+  #[serde(deserialize_with = "deserialize_u128")]
   pub data_sqrt_price_limit_two: u128,
   pub key_token_program: String,
   pub key_token_authority: String,
@@ -508,9 +535,13 @@ pub struct DecodedTwoHopSwap {
   pub key_tick_array_two_2: String,
   pub key_oracle_one: String,
   pub key_oracle_two: String,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_0: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_1: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_2: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_amount_3: u64,
 }
 
@@ -534,5 +565,29 @@ where
         0 => Ok(false),
         1 => Ok(true),
         _ => Err(de::Error::custom("expected 0 or 1")),
+    }
+}
+
+// string to u64
+fn deserialize_u64<'de, D>(deserializer: D) -> Result<u64, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    let n: String = de::Deserialize::deserialize(deserializer)?;
+    match n.parse::<u64>() {
+        Ok(n) => Ok(n),
+        Err(_) => Err(de::Error::custom("expected u64")),
+    }
+}
+
+// string to u128
+fn deserialize_u128<'de, D>(deserializer: D) -> Result<u128, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    let n: String = de::Deserialize::deserialize(deserializer)?;
+    match n.parse::<u128>() {
+        Ok(n) => Ok(n),
+        Err(_) => Err(de::Error::custom("expected u128")),
     }
 }
