@@ -20,7 +20,7 @@ Cargo.lock
 .DS_Store
 
 # Temp files
-data/test/
+data/tmp/
 tests/output-snapshot/*.csv.gz
 
 # Profiler

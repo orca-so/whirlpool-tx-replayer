@@ -1,7 +1,7 @@
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use serde_derive::{Deserialize, Serialize};
-use std::fs::File;
+use std::{fs::File, io::{BufRead, BufReader}};
 
 use base64::prelude::{Engine as _, BASE64_STANDARD};
 
@@ -50,4 +50,13 @@ pub fn save_to_snapshot_file(file_path: &String, account_map: &AccountMap) {
     }
 
     writer.flush().unwrap();
+}
+
+pub fn load_from_transaction_file(file_path: &String) -> Vec<String> {
+    let file = File::open(file_path).unwrap();
+
+    let decoder = GzDecoder::new(file);
+    let buf = BufReader::new(decoder);
+    let lines = buf.lines().map(|l| l.unwrap()).collect::<Vec<String>>();
+    return lines;
 }
