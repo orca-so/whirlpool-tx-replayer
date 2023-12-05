@@ -73,3 +73,22 @@ pub fn derive_whirlpool_bump(
   );
   return bump;
 }
+
+pub fn update_account_map(
+  account_map: &mut AccountMap,
+  pre_snapshot: AccountMap,
+  post_snapshot: AccountMap,
+) {
+  let closed_account_pubkeys: Vec<String> = pre_snapshot.keys()
+    .filter(|k| !post_snapshot.contains_key(*k))
+    .map(|k| k.clone())
+    .collect();
+
+  // add created & update accounts
+  account_map.extend(post_snapshot);
+
+  // remove closed accounts
+  for pubkey_string in closed_account_pubkeys {
+    account_map.remove(&pubkey_string);
+  }
+}

@@ -5,6 +5,7 @@ use crate::types::Slot;
 use crate::types::AccountMap;
 use crate::programs;
 use crate::errors::ErrorCode;
+use crate::util;
 
 use solana_program::pubkey::Pubkey;
 const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
@@ -104,10 +105,33 @@ impl ReplayEngine {
     }
 
     self.replay_execution_counter += 1;
-    return replay_whirlpool_instruction(
+    let result = replay_whirlpool_instruction(
       &mut self.environment,
       ix,
       &self.accounts,
     );
+
+    match result {
+      Ok(result) => {
+        if let Some(meta) = result.transaction_status.transaction.clone().meta {
+          if meta.err.is_some() {
+            // rethink improvement (Ok response is appropriate ?)
+            return Ok(result);
+          }
+        }
+
+        // write back
+        util::update_account_map(
+          &mut self.accounts,
+          result.snapshot.pre_snapshot.clone(),
+          result.snapshot.post_snapshot.clone()
+        );
+
+        return Ok(result);
+      },
+      Err(err) => {
+        return Err(err);
+      },
+    }
   }
 }
