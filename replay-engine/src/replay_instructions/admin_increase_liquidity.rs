@@ -1,5 +1,5 @@
 use crate::decoded_instructions;
-use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
 use crate::util::pubkey; // abbr
 
 use anchor_lang::{InstructionData, ToAccountMetas, Discriminator};

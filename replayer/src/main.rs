@@ -8,7 +8,7 @@ mod util_database_io;
 mod util_file_io;
 mod util;
 use replay_engine::replay_environment;
-use replay_engine::replay_core;
+use replay_engine::replay_instruction::replay_whirlpool_instruction;
 mod programs;
 //mod types;
 //mod replay_instructions;
@@ -77,7 +77,7 @@ fn main() {
     let mut replayer = builder.build();
 
     for slotTransactionsString in txs {
-        let slotTransactions = decoded_instructions::json_to_slot_transactions(&slotTransactionsString).unwrap();
+        let slotTransactions = util_file_io::json_to_slot_transactions(&slotTransactionsString).unwrap();
 
         // print progress
         let now = Local::now();
@@ -95,7 +95,7 @@ fn main() {
 
                 println!("  replaying instruction = {} ...", name);
 
-                let result = replay_core::replay_whirlpool_instruction(
+                let result = replay_whirlpool_instruction(
                     &mut replayer,
                     decoded,
                     &account_map,

@@ -1,6 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
 use serde::de;
-use serde_json::Value;
 
 use crate::errors::ErrorCode;
 
@@ -557,7 +556,7 @@ pub struct DecodedUpdateFeesAndRewards {
 
 
 // 0 to false, 1 to true
-fn deserialize_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
+pub fn deserialize_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -570,7 +569,7 @@ where
 }
 
 // string to u64
-fn deserialize_u64<'de, D>(deserializer: D) -> Result<u64, D::Error>
+pub fn deserialize_u64<'de, D>(deserializer: D) -> Result<u64, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -582,7 +581,7 @@ where
 }
 
 // string to u128
-fn deserialize_u128<'de, D>(deserializer: D) -> Result<u128, D::Error>
+pub fn deserialize_u128<'de, D>(deserializer: D) -> Result<u128, D::Error>
 where
     D: de::Deserializer<'de>,
 {
@@ -592,45 +591,3 @@ where
         Err(_) => Err(de::Error::custom("expected u128")),
     }
 }
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SlotTransactionBalance {
-  pub account: String,
-  #[serde(deserialize_with = "deserialize_u64")]
-  pub pre: u64,
-  #[serde(deserialize_with = "deserialize_u64")]
-  pub post: u64,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SlotTransactionInstruction {
-  pub name: String,
-  pub payload: Value,
-}
-
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SlotTransaction {
-  pub index: u32,
-  pub signature: String,
-  pub payer: String,
-  pub balances: Vec<SlotTransactionBalance>,
-  pub instructions: Vec<SlotTransactionInstruction>,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct SlotTransactions {
-  pub slot: u64,
-  pub block_height: u64,
-  pub block_time: i64,
-  pub transactions: Vec<SlotTransaction>,
-}
-
-pub fn json_to_slot_transactions(json: &str) -> Result<SlotTransactions, serde_json::Error> {
-  serde_json::from_str(json)
-}
-

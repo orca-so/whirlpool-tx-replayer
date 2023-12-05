@@ -3,9 +3,12 @@ use flate2::write::GzEncoder;
 use serde_derive::{Deserialize, Serialize};
 use std::{fs::File, io::{BufRead, BufReader}};
 
+use serde_json::Value;
+
 use base64::prelude::{Engine as _, BASE64_STANDARD};
 
 use replay_engine::types::AccountMap;
+use replay_engine::decoded_instructions::deserialize_u64;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct PubkeyAndDataBase64 {
@@ -60,3 +63,49 @@ pub fn load_from_transaction_file(file_path: &String) -> Vec<String> {
     let lines = buf.lines().map(|l| l.unwrap()).collect::<Vec<String>>();
     return lines;
 }
+
+
+
+
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotTransactionBalance {
+  pub account: String,
+  #[serde(deserialize_with = "deserialize_u64")]
+  pub pre: u64,
+  #[serde(deserialize_with = "deserialize_u64")]
+  pub post: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotTransactionInstruction {
+  pub name: String,
+  pub payload: Value,
+}
+
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotTransaction {
+  pub index: u32,
+  pub signature: String,
+  pub payer: String,
+  pub balances: Vec<SlotTransactionBalance>,
+  pub instructions: Vec<SlotTransactionInstruction>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SlotTransactions {
+  pub slot: u64,
+  pub block_height: u64,
+  pub block_time: i64,
+  pub transactions: Vec<SlotTransaction>,
+}
+
+pub fn json_to_slot_transactions(json: &str) -> Result<SlotTransactions, serde_json::Error> {
+  serde_json::from_str(json)
+}
+

@@ -3,7 +3,7 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 use whirlpool_base::state as whirlpool_ix_bumps;
 
 use crate::decoded_instructions;
-use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
 use crate::util::derive_position_bump;
 use crate::util::pubkey; // abbr
 
