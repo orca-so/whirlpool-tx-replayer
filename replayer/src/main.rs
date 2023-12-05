@@ -64,11 +64,11 @@ fn main() {
             for ix in tx.instructions {
                 let name = ix.name;
                 let payload = ix.payload.to_string();
+
+                // TODO: handle deploy program
                 let decoded = decoded_instructions::from_json(&name, &payload).unwrap();
 
                 println!("  replaying instruction = {} ...", name);
-
-                // TODO: handle deploy program
 
                 let result = replay_engine.replay_instruction(decoded);
                 match result {
