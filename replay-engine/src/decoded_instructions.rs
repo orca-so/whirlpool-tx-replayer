@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use serde::de;
-
+use base64::prelude::{Engine as _, BASE64_STANDARD};
 use crate::errors::ErrorCode;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -39,14 +39,25 @@ pub enum DecodedWhirlpoolInstruction {
   UpdateFeesAndRewards(DecodedUpdateFeesAndRewards),
 }
 
-pub fn from_json(ix: &String, json: &String) -> Result<DecodedWhirlpoolInstruction, ErrorCode> {
+#[derive(Debug, PartialEq, Eq)]
+pub enum DecodedInstruction {
+  ProgramDeployInstruction(DecodedProgramDeployInstruction),
+  WhirlpoolInstruction(DecodedWhirlpoolInstruction),
+}
+
+pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, ErrorCode> {
   fn from_str<'de, T>(json: &'de String) -> Result<T, ErrorCode>
   where T: de::Deserialize<'de>,
   {
     serde_json::from_str(json).map_err(|_| ErrorCode::InvalidWhirlpoolInstructionJsonString)
   }
 
-  match ix.as_str() {
+  if ix.as_str() == "programDeploy" {
+    let ix = from_str::<DecodedProgramDeployInstruction>(&json)?;
+    return Ok(DecodedInstruction::ProgramDeployInstruction(ix));
+  }
+
+  let ix = match ix.as_str() {
     "adminIncreaseLiquidity" => Ok(DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(from_str(&json)?)),
     "closeBundledPosition" => Ok(DecodedWhirlpoolInstruction::CloseBundledPosition(from_str(&json)?)),
     "closePosition" => Ok(DecodedWhirlpoolInstruction::ClosePosition(from_str(&json)?)),
@@ -80,7 +91,19 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedWhirlpoolInstructi
     "twoHopSwap" => Ok(DecodedWhirlpoolInstruction::TwoHopSwap(from_str(&json)?)),
     "updateFeesAndRewards" => Ok(DecodedWhirlpoolInstruction::UpdateFeesAndRewards(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
+  };
+
+  match ix {
+    Ok(ix) => Ok(DecodedInstruction::WhirlpoolInstruction(ix)),
+    Err(err) => Err(err),
   }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedProgramDeployInstruction {
+  #[serde(deserialize_with = "deserialize_base64")]
+  pub program_data: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -589,5 +612,17 @@ where
     match n.parse::<u128>() {
         Ok(n) => Ok(n),
         Err(_) => Err(de::Error::custom("expected u128")),
+    }
+}
+
+// base64 string to Vec<u8>
+pub fn deserialize_base64<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    let base64: String = de::Deserialize::deserialize(deserializer)?;
+    match BASE64_STANDARD.decode(base64).ok() {
+        Some(data) => Ok(data),
+        None => Err(de::Error::custom("expected base64 string")),
     }
 }

@@ -1,15 +1,15 @@
 use mysql::*;
 use mysql::prelude::*;
 
-use replay_engine::decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
+use replay_engine::decoded_instructions::{from_json, DecodedInstruction};
 use replay_engine::types::Slot;
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct WhirlpoolInstruction {
+pub struct Instruction {
     pub txid: u64,
     pub order: u32,
     pub ix_name: String,
-    pub ix: DecodedWhirlpoolInstruction,
+    pub ix: DecodedInstruction,
 }
 
 // TODO: error handling
@@ -53,7 +53,7 @@ pub fn fetch_next_slot_infos(start_slot: u64, limit: u8, database: &mut PooledCo
 }
 
 // TODO: error handling
-pub fn fetch_instructions_in_slot(slot: u64, database: &mut PooledConn) -> Vec<WhirlpoolInstruction> {
+pub fn fetch_instructions_in_slot(slot: u64, database: &mut PooledConn) -> Vec<Instruction> {
   let txid_start = slot << 24;
   let txid_end = ((slot + 1) << 24) - 1;
 
@@ -99,7 +99,7 @@ pub fn fetch_instructions_in_slot(slot: u64, database: &mut PooledConn) -> Vec<W
       },
       |(txid, order, ix, json)| {
           let ix_name: String = ix;
-          WhirlpoolInstruction {
+          Instruction {
               txid,
               order,
               ix_name: ix_name.clone(),

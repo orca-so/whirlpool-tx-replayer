@@ -97,8 +97,6 @@ impl ReplayEngine {
   }
 
   pub fn replay_instruction(&mut self, ix: DecodedWhirlpoolInstruction) -> Result<ReplayInstructionResult, ErrorCode> {
-    // TODO(must): handling deploygment
-
     // rebuild periodically to avoid processing too many transactions in a single environment
     // TODO: threshold tuning if needed
     if self.replay_execution_counter > 20000 {

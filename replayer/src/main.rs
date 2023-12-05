@@ -70,18 +70,25 @@ fn main() {
 
                 println!("  replaying instruction = {} ...", name);
 
-                let result = replay_engine.replay_instruction(decoded);
-                match result {
-                    Ok(result) => {
-                        if let Some(meta) = result.transaction_status.transaction.clone().meta {
-                            if meta.err.is_some() {
-                                result.transaction_status.print_named("instruction");
-                                panic!("🔥REPLAY TRANSACTION FAILED!!");
-                            }
-                        }
+                match decoded {
+                    decoded_instructions::DecodedInstruction::ProgramDeployInstruction(ix) => {
+                        replay_engine.update_program_data(ix.program_data);
                     },
-                    Err(err) => {
-                        panic!("🤦‍SOMETHING WENT WRONG!! {:?}", err);
+                    decoded_instructions::DecodedInstruction::WhirlpoolInstruction(ix) => {
+                        let result = replay_engine.replay_instruction(ix);
+                        match result {
+                            Ok(result) => {
+                                if let Some(meta) = result.transaction_status.transaction.clone().meta {
+                                    if meta.err.is_some() {
+                                        result.transaction_status.print_named("instruction");
+                                        panic!("🔥REPLAY TRANSACTION FAILED!!");
+                                    }
+                                }
+                            },
+                            Err(err) => {
+                                panic!("🤦‍SOMETHING WENT WRONG!! {:?}", err);
+                            }
+                        }        
                     }
                 }
             }
