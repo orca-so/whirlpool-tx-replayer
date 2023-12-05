@@ -3,8 +3,8 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::util_replay::derive_whirlpool_bump;
-use crate::util_replay::pubkey; // abbr
+use crate::util::derive_whirlpool_bump;
+use crate::util::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePool>) -> ReplayInstructionResult {
   let replayer = req.replayer;

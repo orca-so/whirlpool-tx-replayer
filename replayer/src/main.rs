@@ -6,14 +6,14 @@ use chrono::Local;
 use replay_engine::decoded_instructions;
 mod util_database_io;
 mod util_file_io;
-use replay_engine::util_replay;
+mod util;
 use replay_engine::replay_environment;
 use replay_engine::replay_core;
 mod programs;
 //mod types;
 //mod replay_instructions;
 
-use replay_engine::util_replay::PrintableTransaction;
+use util::PrintableTransaction;
 
 use solana_program::pubkey::Pubkey;
 const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
@@ -111,7 +111,7 @@ fn main() {
                         }
 
                         // write back
-                        util_replay::update_account_map(
+                        util::update_account_map(
                             &mut account_map,
                             result.snapshot.pre_snapshot,
                             result.snapshot.post_snapshot

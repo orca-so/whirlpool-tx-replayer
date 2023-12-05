@@ -3,18 +3,18 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::util_replay;
-use crate::util_replay::pubkey; // abbr
+use crate::util;
+use crate::util::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectReward>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let account_map = req.account_map;
 
-  let whirlpool_data = util_replay::get_whirlpool_data(&ix.key_whirlpool, account_map);
+  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, account_map);
   let mint_reward = whirlpool_data.reward_infos[ix.data_reward_index as usize].mint;
 
-  let position_data = util_replay::get_position_data(&ix.key_position, account_map);
+  let position_data = util::get_position_data(&ix.key_position, account_map);
   let position_mint = position_data.position_mint;
 
   let amount_reward = ix.transfer_amount_0;

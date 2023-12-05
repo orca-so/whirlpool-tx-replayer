@@ -4,8 +4,8 @@ use whirlpool_base::state as whirlpool_ix_bumps;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::util_replay::derive_position_bump;
-use crate::util_replay::pubkey; // abbr
+use crate::util::derive_position_bump;
+use crate::util::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPositionWithMetadata>) -> ReplayInstructionResult {
   let replayer = req.replayer;

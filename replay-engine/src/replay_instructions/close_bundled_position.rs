@@ -3,15 +3,15 @@ use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::util_replay;
-use crate::util_replay::pubkey; // abbr
+use crate::util;
+use crate::util::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCloseBundledPosition>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let account_map = req.account_map;
 
-  let position_bundle_data = util_replay::get_position_bundle_data(&ix.key_position_bundle, account_map);
+  let position_bundle_data = util::get_position_bundle_data(&ix.key_position_bundle, account_map);
   let position_bundle_mint = position_bundle_data.position_bundle_mint;
 
   // bundled_position

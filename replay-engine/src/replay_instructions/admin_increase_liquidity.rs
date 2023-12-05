@@ -1,6 +1,6 @@
 use crate::decoded_instructions;
 use crate::replay_core::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
-use crate::util_replay::pubkey; // abbr
+use crate::util::pubkey; // abbr
 
 use anchor_lang::{InstructionData, ToAccountMetas, Discriminator};
 use anchor_lang::solana_program::pubkey::Pubkey;
