@@ -1,0 +1,43 @@
+[package]
+name = "replay-engine"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bincode = "1.3.3"
+serde = "*"
+serde_derive = "*"
+serde_json = "1.0.107"
+flate2 = "1.0.27"
+csv = "1.3.0"
+base64 = "0.21.4"
+chrono = "0.4.31"
+thiserror = "*"
+itertools = "0.10.1"
+tokio = { version = "1.14.1", features = ["full"] }
+
+# DB
+mysql = "24.0.0"
+
+# anchor & whirlpool
+anchor-lang = "0.26.0"
+anchor-client = "0.26.0"
+whirlpool_base = { git = "https://github.com/orca-so/whirlpools", package = "whirlpool" }
+
+# borsh
+borsh = "0.9"
+
+# use 1.16.18
+solana-sdk = "=1.16.18"
+solana-program = "=1.16.18"
+solana-program-runtime = "=1.16.18"
+solana-transaction-status = "=1.16.18"
+solana-client = "=1.16.18"
+solana-runtime = "=1.16.18"
+solana-cli-output = "=1.16.18"
+solana-ledger = "=1.16.18"
+spl-token = "3.3.0"
+
+[patch.crates-io]

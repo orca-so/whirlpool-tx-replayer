@@ -2,18 +2,18 @@ use mysql::*;
 //use mysql::prelude::*;
 use chrono::Local;
 
-mod errors;
-mod decoded_instructions;
+//mod errors;
+use replay_engine::decoded_instructions;
 mod util_database_io;
 mod util_file_io;
-mod util_replay;
-mod replay_environment;
-mod replay_core;
+use replay_engine::util_replay;
+use replay_engine::replay_environment;
+use replay_engine::replay_core;
 mod programs;
-mod types;
-mod replay_instructions;
+//mod types;
+//mod replay_instructions;
 
-use util_replay::PrintableTransaction;
+use replay_engine::util_replay::PrintableTransaction;
 
 use solana_program::pubkey::Pubkey;
 const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
@@ -31,7 +31,7 @@ fn main() {
     let save_snapshot_interval_slot = 100_000u64;
     let need_to_process = target_snapshot_slot - start_snapshot_slot;
 
-    let start_snapshot_file = format!("data/tmp/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
+    let start_snapshot_file = format!("../data/tmp/whirlpool-snapshot-{start_snapshot_slot}.csv.gz");
     
     // TODO: protect account_map (stop using HashMap directly)
     let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
@@ -43,7 +43,7 @@ fn main() {
         block_time: start_snapshot_block_time,
     };
 
-    let txs = util_file_io::load_from_transaction_file(&"data/tmp/transaction-1698451200.jsonl.gz".to_string());
+    let txs = util_file_io::load_from_transaction_file(&"../data/tmp/transaction-1698451200.jsonl.gz".to_string());
 /* 
     println!("txs0 = {}", txs[0]);
     let x = decoded_instructions::json_to_slot_transactions(&txs[0]).unwrap();
@@ -128,7 +128,7 @@ fn main() {
         let should_save_snapshot = slotTransactions.slot == target_snapshot_slot || slotTransactions.slot % save_snapshot_interval_slot == 0;
         if should_save_snapshot {
             println!("saving snapshot ...");
-            let snapshot_file = format!("tests/output-snapshot/whirlpool-snapshot-{}.csv.gz", slotTransactions.slot);
+            let snapshot_file = format!("../tests/output-snapshot/whirlpool-snapshot-{}.csv.gz", slotTransactions.slot);
             util_file_io::save_to_snapshot_file(&snapshot_file.to_string(), &account_map);
             println!("saved snapshot to {}", snapshot_file);
         }

@@ -1,7 +1,7 @@
 use mysql::*;
 use mysql::prelude::*;
 
-use crate::decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
+use replay_engine::decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Slot {

@@ -5,7 +5,7 @@ use std::{fs::File, io::{BufRead, BufReader}};
 
 use base64::prelude::{Engine as _, BASE64_STANDARD};
 
-use crate::types::AccountMap;
+use replay_engine::types::AccountMap;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct PubkeyAndDataBase64 {

@@ -593,18 +593,6 @@ where
     }
 }
 
-fn deserialize_whirlpool_ix<'de, D>(deserializer: D) -> Result<u128, D::Error>
-where
-    D: de::Deserializer<'de>,
-{
-    let n: String = de::Deserialize::deserialize(deserializer)?;
-    match n.parse::<u128>() {
-        Ok(n) => Ok(n),
-        Err(_) => Err(de::Error::custom("expected u128")),
-    }
-}
-
-
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SlotTransactionBalance {
