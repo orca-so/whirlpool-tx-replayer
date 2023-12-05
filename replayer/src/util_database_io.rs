@@ -2,13 +2,7 @@ use mysql::*;
 use mysql::prelude::*;
 
 use replay_engine::decoded_instructions::{from_json, DecodedWhirlpoolInstruction};
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct Slot {
-    pub slot: u64,
-    pub block_height: u64,
-    pub block_time: i64,
-}
+use replay_engine::types::Slot;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct WhirlpoolInstruction {

@@ -9,7 +9,7 @@ mod util_file_io;
 mod util;
 use replay_engine::replay_environment;
 use replay_engine::replay_instruction::replay_whirlpool_instruction;
-mod programs;
+use replay_engine::programs;
 //mod types;
 //mod replay_instructions;
 
@@ -37,7 +37,7 @@ fn main() {
     let mut account_map = util_file_io::load_from_snapshot_file(&start_snapshot_file.to_string());
     println!("loaded {} accounts", account_map.len());
 
-    let mut last_processed_slot = util_database_io::Slot {
+    let mut last_processed_slot = replay_engine::types::Slot {
         slot: start_snapshot_slot,
         block_height: start_snapshot_block_height,
         block_time: start_snapshot_block_time,
