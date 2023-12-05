@@ -14,6 +14,16 @@ END;;
 
 DELIMITER ;
 
+CREATE OR REPLACE VIEW vwdeployments AS
+SELECT
+    t.txid,
+    t.order,
+    "programDeploy" AS "ix",
+    JSON_OBJECT(
+        'programData', TO_BASE64(t.programData)
+    ) AS "json"
+FROM deployments t;
+
 CREATE OR REPLACE VIEW vwixsAdminIncreaseLiquidity AS
 SELECT
     t.txid,
