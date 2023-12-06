@@ -626,3 +626,12 @@ where
         None => Err(de::Error::custom("expected base64 string")),
     }
 }
+
+// Vec<u8> to base64 string
+pub fn serialize_base64<S>(data: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let base64: String = BASE64_STANDARD.encode(data);
+    serializer.serialize_str(&base64)
+}

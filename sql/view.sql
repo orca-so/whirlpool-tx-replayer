@@ -20,7 +20,7 @@ SELECT
     t.order,
     "programDeploy" AS "ix",
     JSON_OBJECT(
-        'programData', TO_BASE64(t.programData)
+        'programData', REPLACE(TO_BASE64(t.programData), '\n', '') -- TO_BASE64 adds line breaks, so we remove them
     ) AS "json"
 FROM deployments t;
 

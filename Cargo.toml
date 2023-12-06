@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "replay-engine",
-  "replayer"
+  "replayer",
+  "replayer_day",
 ]
 
