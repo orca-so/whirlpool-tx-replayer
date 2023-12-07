@@ -1,13 +1,5 @@
-//use chrono::Local;
-//use replay_engine::decoded_instructions;
-mod file_io;
-mod util;
-//use replay_engine::replay_engine::ReplayEngine;
-//use solana_transaction_status::UiTransactionEncoding;
-//use util::PrintableTransaction;
 use std::env;
-
-use replayer::{WhirlpoolReplayer, ReplayUntil, SlotCallback, InstructionCallback};
+use replayer::{file_io, WhirlpoolReplayer, ReplayUntil, SlotCallback, InstructionCallback};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -33,16 +25,16 @@ fn main() {
         println!("processing slot: {} ({}) ...", slot.slot, slot.block_height);
     });
 
-    let instruction_callback: Option<InstructionCallback> = Some(|slot, transaction, name, instruction, accounts, result| {
+    let instruction_callback: Option<InstructionCallback> = Some(|_slot, _transaction, name, _instruction, _accounts, _result| {
         println!("  replayed instruction: {}", name);
     });
 
     replayer.replay(until_slot, slot_callback, instruction_callback);
-    
+
     // save snapshot
-    let snapshot_file = "next-whirlpool-state.json.gz";
     let latest_slot = replayer.get_slot();
     let latest_accounts = file_io::convert_account_map_to_accounts(replayer.get_accounts());
+    let snapshot_file = format!("whirlpool-state-slot-{}.json.gz", latest_slot.slot);
     file_io::save_to_whirlpool_state_file(
         &snapshot_file.to_string(),
         &file_io::WhirlpoolState {

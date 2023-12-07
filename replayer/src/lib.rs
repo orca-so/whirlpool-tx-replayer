@@ -4,7 +4,7 @@ use replay_engine::replay_engine::ReplayEngine;
 use replay_engine::replay_instruction::ReplayInstructionResult;
 use replay_engine::types::{AccountMap, Slot};
 
-mod file_io;
+pub mod file_io;
 use file_io::{WhirlpoolTransaction, Transaction};
 mod util;
 
