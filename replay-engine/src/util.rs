@@ -5,9 +5,7 @@ use whirlpool_base::state::{Whirlpool, Position, PositionBundle};
 use std::str::FromStr;
 
 use crate::types::AccountMap;
-
-// TODO: refactor (dedup definitions of pubkeys)
-const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
+use crate::pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID;
 
 pub fn get_whirlpool_data(
   pubkey_string: &String,

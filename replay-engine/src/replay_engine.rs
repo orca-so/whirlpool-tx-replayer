@@ -6,14 +6,7 @@ use crate::types::AccountMap;
 use crate::programs;
 use crate::errors::ErrorCode;
 use crate::util;
-
-use solana_program::pubkey::Pubkey;
-const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
-const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: Pubkey = solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
-const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
-const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-
+use crate::pubkeys;
 
 pub struct ReplayEngine {
   slot: Slot,
@@ -52,9 +45,9 @@ impl ReplayEngine {
     builder.set_creation_time(block_time);
 
     // deploy programs
-    builder.add_upgradable_program(SPL_TOKEN_PROGRAM_ID, programs::SPL_TOKEN);
-    builder.add_upgradable_program(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, programs::SPL_ASSOCIATED_TOKEN_ACCOUNT);
-    builder.add_upgradable_program(SPL_MEMO_PROGRAM_ID, programs::SPL_MEMO);
+    builder.add_upgradable_program(pubkeys::SPL_TOKEN_PROGRAM_ID, programs::SPL_TOKEN);
+    builder.add_upgradable_program(pubkeys::SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, programs::SPL_ASSOCIATED_TOKEN_ACCOUNT);
+    builder.add_upgradable_program(pubkeys::SPL_MEMO_PROGRAM_ID, programs::SPL_MEMO);
 
     // DEV_NULL_PROGRAM will do nothing for every instruction.  It will always succeed.
     //
@@ -65,10 +58,10 @@ impl ReplayEngine {
     // https://solscan.io/tx/5hKy1aL5Si4ymFvUGX7DAhAhDCEWBgpRUdQJNXYC5d4qKfD2xEEAnGfBJpQKRQQt9cZeQ4EZpze5PQjxj5SMBeiP
     // https://github.com/metaplex-foundation/mpl-token-metadata/commit/28f8410f67ce364798f5c36c1dcb244a206b4371
     //builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::METAPLEX_TOKEN_METADATA_20230903_1_13_3);
-    builder.add_upgradable_program(METAPLEX_METADATA_PROGRAM_ID, programs::DEV_NULL_PROGRAM);
+    builder.add_upgradable_program(pubkeys::METAPLEX_METADATA_PROGRAM_ID, programs::DEV_NULL_PROGRAM);
 
     // whirlpool program
-    builder.add_upgradable_program(ORCA_WHIRLPOOL_PROGRAM_ID, &program_data);
+    builder.add_upgradable_program(pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID, &program_data);
 
     return builder.build();
   }

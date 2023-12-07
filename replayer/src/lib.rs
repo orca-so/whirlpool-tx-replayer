@@ -35,7 +35,7 @@ impl WhirlpoolReplayer {
         yyyymmdd: &String,
     ) -> WhirlpoolReplayer {
         let yyyymmdd_date = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
-        let previous_yyyymmdd_date = yyyymmdd_date.pred();
+        let previous_yyyymmdd_date = yyyymmdd_date.pred_opt().unwrap();
 
         // snapshot of the previous day
         let state_file_path = format!(

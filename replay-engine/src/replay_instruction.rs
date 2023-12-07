@@ -13,6 +13,8 @@ use crate::replay_instructions;
 use crate::replay_environment;
 use crate::replay_environment::ReplayEnvironment;
 
+use crate::pubkeys;
+
 pub struct WritableAccountSnapshot {
   pub pre_snapshot: AccountMap,
   pub post_snapshot: AccountMap,
@@ -28,14 +30,6 @@ pub struct ReplayInstructionParams<'info, T> {
   pub decoded_instruction: &'info T,
   pub account_map: &'info AccountMap,
 }
-
-// TODO: refactor
-const SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
-//const SPL_TOKEN_PROGRAM_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-//const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: Pubkey = solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
-const SPL_MEMO_PROGRAM_ID: Pubkey = solana_program::pubkey!("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
-const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
-//const METAPLEX_METADATA_PROGRAM_ID: Pubkey = solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
 pub fn replay_whirlpool_instruction(
   replayer: &mut replay_environment::ReplayEnvironment,
@@ -91,7 +85,7 @@ impl ReplayEnvironment {
   pub fn set_whirlpool_account(&mut self, pubkey: &String, account_map: &AccountMap) {
     self.set_account_with_data(
       Pubkey::from_str(pubkey).unwrap(),
-      ORCA_WHIRLPOOL_PROGRAM_ID,
+      pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
       account_map.get(pubkey).unwrap(),
       false
     );
@@ -103,7 +97,7 @@ impl ReplayEnvironment {
   ) {
     self.set_account_with_lamports(
       solana_program::pubkey::Pubkey::from_str(pubkey.as_str()).unwrap(),
-      SYSTEM_PROGRAM_ID,
+      pubkeys::SYSTEM_PROGRAM_ID,
       10_000_000_000, // 10 SOL
     );
   }
@@ -117,7 +111,7 @@ impl ReplayEnvironment {
     let recent_blockhash = self.get_latest_blockhash();
 
     let whirlpool_instruction = Instruction {
-      program_id: ORCA_WHIRLPOOL_PROGRAM_ID,
+      program_id: pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
       data: args.data(), // using Anchor, at least instruction code (8 bytes)
       accounts: accounts.to_account_metas(None),
     };
@@ -125,7 +119,7 @@ impl ReplayEnvironment {
     // to avoid duplicated transaction signature for instructions with same args & accounts
     let nonce = format!("{:x}", self.get_next_nonce());
     let memo_instruction = Instruction {
-      program_id: SPL_MEMO_PROGRAM_ID,
+      program_id: pubkeys::SPL_MEMO_PROGRAM_ID,
       data: nonce.as_bytes().to_vec(),
       accounts: vec![AccountMeta::new(payer.pubkey(), true)],
     };

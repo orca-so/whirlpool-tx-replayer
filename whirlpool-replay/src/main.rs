@@ -15,10 +15,6 @@ fn main() {
         ReplayUntil::End
     };
 
-    let yyyymmdd_date = chrono::NaiveDate::parse_from_str(&yyyymmdd, "%Y%m%d").unwrap();
-    let previous_yyyymmdd_date = yyyymmdd_date.pred();
-    println!("previous_yyyymmdd = {}", previous_yyyymmdd_date.format("%Y%m%d"));
-
     let mut replayer = WhirlpoolReplayer::build_with_local_file_storage(&base_path, &yyyymmdd);
 
     let slot_callback: Option<SlotCallback> = Some(|slot| {
