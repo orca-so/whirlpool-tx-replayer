@@ -69,6 +69,38 @@ impl WhirlpoolReplayer {
         };
     }
 
+    pub fn build_with_remote_file_storage(
+      base_url: &String,
+      yyyymmdd: &String,
+  ) -> WhirlpoolReplayer {
+      let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
+      let previous = current.pred_opt().unwrap();
+
+      // snapshot of the previous day
+      let state_file_relative_path = get_state_file_relative_path(&previous);
+      let state_file_url = format!("{}/{}", base_url, state_file_relative_path);
+      // transactions of the day
+      let transaction_file_relative_path = get_transaction_file_relative_path(&current);
+      let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
+
+      let state = file_io::load_from_remote_whirlpool_state_file(&state_file_url);
+      let transaction_iter =
+          file_io::load_from_remote_whirlpool_transaction_file(&transaction_file_url);
+
+      let replay_engine = ReplayEngine::new(
+          state.slot,
+          state.block_height,
+          state.block_time,
+          state.program_data,
+          file_io::convert_accounts_to_account_map(&state.accounts),
+      );
+
+      return WhirlpoolReplayer {
+          replay_engine,
+          transaction_iter: Box::new(transaction_iter),
+      };
+  }
+
     pub fn get_slot(&self) -> Slot {
         return self.replay_engine.get_slot();
     }

@@ -15,7 +15,8 @@ fn main() {
         ReplayUntil::End
     };
 
-    let mut replayer = WhirlpoolReplayer::build_with_local_file_storage(&base_path, &yyyymmdd);
+    //let mut replayer = WhirlpoolReplayer::build_with_local_file_storage(&base_path, &yyyymmdd);
+    let mut replayer = WhirlpoolReplayer::build_with_remote_file_storage(&base_path, &yyyymmdd);
 
     let slot_callback: Option<SlotCallback> = Some(|slot| {
         println!("processing slot: {} ({}) ...", slot.slot, slot.block_height);

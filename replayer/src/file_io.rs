@@ -5,6 +5,7 @@ use std::{fs::File, io::{BufRead, BufReader, BufWriter}};
 use serde_json::Value;
 use replay_engine::decoded_instructions::{deserialize_u64, deserialize_base64, serialize_base64};
 use replay_engine::types::AccountMap;
+use reqwest;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -37,6 +38,13 @@ pub fn save_to_whirlpool_state_file(file_path: &String, state: &WhirlpoolState) 
   let encoder = GzEncoder::new(file, flate2::Compression::default());
   let writer = BufWriter::new(encoder);
   serde_json::to_writer(writer, state).unwrap();
+}
+
+pub fn load_from_remote_whirlpool_state_file(url: &String) -> WhirlpoolState {
+  let response = reqwest::blocking::get(url).unwrap();
+  let decoder = GzDecoder::new(response);
+  let reader = BufReader::new(decoder);
+  return serde_json::from_reader(reader).unwrap();
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -80,6 +88,23 @@ pub fn load_from_whirlpool_transaction_file(file_path: &String) -> impl Iterator
     let file = File::open(file_path).unwrap();
 
     let decoder = GzDecoder::new(file);
+    let buf = BufReader::new(decoder);
+
+    let iter = buf.lines()
+      .map(|jsonl| jsonl.unwrap())
+      .map(|jsonl| {
+        let t: Result<WhirlpoolTransaction, serde_json::Error> = serde_json::from_str(jsonl.as_str());
+        return t.unwrap();
+      });
+
+    return iter;
+}
+
+pub fn load_from_remote_whirlpool_transaction_file(url: &String) -> impl Iterator<Item = WhirlpoolTransaction>
+{
+    let response = reqwest::blocking::get(url).unwrap();
+
+    let decoder = GzDecoder::new(response);
     let buf = BufReader::new(decoder);
 
     let iter = buf.lines()
