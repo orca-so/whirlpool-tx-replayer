@@ -4,6 +4,8 @@ version = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
+clap = { workspace = true }
+
 # internal
 replay-engine = { path = "../replay-engine" }
 replayer = { path = "../replayer" }

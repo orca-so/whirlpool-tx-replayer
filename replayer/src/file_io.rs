@@ -26,7 +26,7 @@ pub struct WhirlpoolStateAccount {
   pub data: Vec<u8>,
 }
 
-pub fn load_from_whirlpool_state_file(file_path: &String) -> WhirlpoolState {
+pub fn load_from_local_whirlpool_state_file(file_path: &String) -> WhirlpoolState {
   let file = File::open(file_path).unwrap();
   let decoder = GzDecoder::new(file);
   let reader = BufReader::new(decoder);
@@ -83,7 +83,7 @@ pub struct TransactionInstruction {
   pub payload: Value,
 }
 
-pub fn load_from_whirlpool_transaction_file(file_path: &String) -> impl Iterator<Item = WhirlpoolTransaction>
+pub fn load_from_local_whirlpool_transaction_file(file_path: &String) -> impl Iterator<Item = WhirlpoolTransaction>
 {
     let file = File::open(file_path).unwrap();
 
@@ -134,4 +134,11 @@ pub fn convert_account_map_to_accounts(account_map: &AccountMap) -> Vec<Whirlpoo
     });
   }
   return accounts;
+}
+
+pub fn download_from_remote_storage(url: &String, file_path: &String) {
+  let mut response = reqwest::blocking::get(url).unwrap();
+  std::fs::create_dir_all(std::path::Path::new(file_path).parent().unwrap()).unwrap();
+  let mut file = File::create(file_path).unwrap();
+  std::io::copy(&mut response, &mut file).unwrap();
 }
