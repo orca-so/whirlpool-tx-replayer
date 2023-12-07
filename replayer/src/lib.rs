@@ -5,7 +5,7 @@ use replay_engine::replay_instruction::ReplayInstructionResult;
 use replay_engine::types::{AccountMap, Slot};
 
 pub mod file_io;
-use file_io::{WhirlpoolTransaction, Transaction};
+use file_io::{Transaction, WhirlpoolTransaction};
 mod util;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -18,7 +18,14 @@ pub enum ReplayUntil {
 
 pub type SlotCallback = fn(&Slot);
 
-pub type InstructionCallback = fn(&Slot, &Transaction, &String, &DecodedWhirlpoolInstruction, &AccountMap, &ReplayInstructionResult);
+pub type InstructionCallback = fn(
+    &Slot,
+    &Transaction,
+    &String,
+    &DecodedWhirlpoolInstruction,
+    &AccountMap,
+    &ReplayInstructionResult,
+);
 
 pub struct WhirlpoolReplayer {
     replay_engine: ReplayEngine,
@@ -34,26 +41,15 @@ impl WhirlpoolReplayer {
         base_path: &String,
         yyyymmdd: &String,
     ) -> WhirlpoolReplayer {
-        let yyyymmdd_date = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
-        let previous_yyyymmdd_date = yyyymmdd_date.pred_opt().unwrap();
+        let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
+        let previous = current.pred_opt().unwrap();
 
         // snapshot of the previous day
-        let state_file_path = format!(
-            "{}/{}/{}/whirlpool-state-{}.json.gz",
-            base_path,
-            previous_yyyymmdd_date.format("%Y"),
-            previous_yyyymmdd_date.format("%m%d"),
-            previous_yyyymmdd_date.format("%Y%m%d"),
-        );
-
+        let state_file_relative_path = get_state_file_relative_path(&previous);
+        let state_file_path = format!("{}/{}", base_path, state_file_relative_path);
         // transactions of the day
-        let transaction_file_path = format!(
-            "{}/{}/{}/whirlpool-transaction-{}.jsonl.gz",
-            base_path,
-            yyyymmdd_date.format("%Y"),
-            yyyymmdd_date.format("%m%d"),
-            yyyymmdd_date.format("%Y%m%d"),
-        );
+        let transaction_file_relative_path = get_transaction_file_relative_path(&current);
+        let transaction_file_path = format!("{}/{}", base_path, transaction_file_relative_path);
 
         let state = file_io::load_from_whirlpool_state_file(&state_file_path);
         let transaction_iter =
@@ -85,7 +81,12 @@ impl WhirlpoolReplayer {
         return self.replay_engine.get_accounts();
     }
 
-    pub fn replay(&mut self, cond: ReplayUntil, slot_callback: Option<SlotCallback>, instruction_callback: Option<InstructionCallback>) {
+    pub fn replay(
+        &mut self,
+        cond: ReplayUntil,
+        slot_callback: Option<SlotCallback>,
+        instruction_callback: Option<InstructionCallback>,
+    ) {
         let mut next_whirlpool_transaction = self.transaction_iter.next();
         while next_whirlpool_transaction.is_some() {
             let whirlpool_transaction = next_whirlpool_transaction.unwrap();
@@ -115,7 +116,8 @@ impl WhirlpoolReplayer {
                 }
             }
 
-            self.replay_engine.update_slot(slot.slot, slot.block_height, slot.block_time);
+            self.replay_engine
+                .update_slot(slot.slot, slot.block_height, slot.block_time);
 
             if let Some(callback) = slot_callback {
                 callback(&slot);
@@ -128,11 +130,19 @@ impl WhirlpoolReplayer {
                     let decoded = decoded_instructions::from_json(&name, &payload).unwrap();
 
                     match decoded {
-                        decoded_instructions::DecodedInstruction::ProgramDeployInstruction(deploy_instruction) => {
-                            self.replay_engine.update_program_data(deploy_instruction.program_data);
+                        decoded_instructions::DecodedInstruction::ProgramDeployInstruction(
+                            deploy_instruction,
+                        ) => {
+                            self.replay_engine
+                                .update_program_data(deploy_instruction.program_data);
                         }
-                        decoded_instructions::DecodedInstruction::WhirlpoolInstruction(whirlpool_instruction) => {
-                            let result = self.replay_engine.replay_instruction(&whirlpool_instruction).unwrap();
+                        decoded_instructions::DecodedInstruction::WhirlpoolInstruction(
+                            whirlpool_instruction,
+                        ) => {
+                            let result = self
+                                .replay_engine
+                                .replay_instruction(&whirlpool_instruction)
+                                .unwrap();
 
                             if let Some(callback) = instruction_callback {
                                 callback(
@@ -152,4 +162,22 @@ impl WhirlpoolReplayer {
             next_whirlpool_transaction = self.transaction_iter.next();
         }
     }
+}
+
+fn get_state_file_relative_path(date: &chrono::NaiveDate) -> String {
+    format!(
+        "{}/{}/whirlpool-state-{}.json.gz",
+        date.format("%Y"),
+        date.format("%m%d"),
+        date.format("%Y%m%d"),
+    )
+}
+
+fn get_transaction_file_relative_path(date: &chrono::NaiveDate) -> String {
+    format!(
+        "{}/{}/whirlpool-transaction-{}.jsonl.gz",
+        date.format("%Y"),
+        date.format("%m%d"),
+        date.format("%Y%m%d"),
+    )
 }
