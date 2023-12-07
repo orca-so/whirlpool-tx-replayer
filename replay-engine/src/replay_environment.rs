@@ -34,9 +34,10 @@ use solana_sdk::{
     transaction::VersionedTransaction,
 };
 use solana_transaction_status::{
-    ConfirmedTransactionWithStatusMeta, EncodedConfirmedTransactionWithStatusMeta,
-    InnerInstructions, TransactionStatusMeta, TransactionWithStatusMeta, UiTransactionEncoding,
+    ConfirmedTransactionWithStatusMeta,
+    InnerInstructions, TransactionStatusMeta, TransactionWithStatusMeta,
     VersionedTransactionWithStatusMeta,
+    //EncodedConfirmedTransactionWithStatusMeta, UiTransactionEncoding,
 };
 
 pub use bincode;
@@ -76,7 +77,7 @@ impl ReplayEnvironment {
 
     // https://github.com/neodyme-labs/solana-poc-framework/blob/c08d95c209f580b8e828860d73284a22e596277c/src/lib.rs#L443
     // TODO: think removing unnecessary processing
-    pub fn execute_transaction<T>(&mut self, tx: T) -> EncodedConfirmedTransactionWithStatusMeta
+    pub fn execute_transaction<T>(&mut self, tx: T) -> ConfirmedTransactionWithStatusMeta
     where
         VersionedTransaction: From<T>,
     {
@@ -208,6 +209,7 @@ impl ReplayEnvironment {
             compute_units_consumed,
         };
 
+        // https://docs.rs/solana-transaction-status/latest/solana_transaction_status/
         ConfirmedTransactionWithStatusMeta {
             slot,
             tx_with_meta: TransactionWithStatusMeta::Complete(VersionedTransactionWithStatusMeta {
@@ -223,8 +225,13 @@ impl ReplayEnvironment {
                     .unwrap(),
             ),
         }
+        // Based on profiler analysis, .encode is too slow.
+        // So we return ConfirmedTransactionWithStatusMeta instead of EncodedConfirmedTransactionWithStatusMeta.
+        // Caller can encode it if needed.
+        /*
         .encode(UiTransactionEncoding::Binary, Some(0))
         .expect("Failed to encode transaction")
+        */
     }
 
     pub fn get_latest_blockhash(&self) -> Hash {

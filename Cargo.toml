@@ -2,6 +2,6 @@
 members = [
   "replay-engine",
   "replayer",
-  "replayer_day",
+  "whirlpool-replay",
 ]
 

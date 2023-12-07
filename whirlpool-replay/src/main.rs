@@ -3,6 +3,7 @@ use replay_engine::decoded_instructions;
 mod file_io;
 mod util;
 use replay_engine::replay_engine::ReplayEngine;
+use solana_transaction_status::UiTransactionEncoding;
 use util::PrintableTransaction;
 use std::env;
 
@@ -13,6 +14,12 @@ fn main() {
     println!("base_path = {}", base_path);
     let yyyymmdd = args[2].to_string();
     println!("yyyymmdd = {}", yyyymmdd);
+
+    let until_slot = if args.len() > 3 {
+        Some(args[3].parse::<u64>().unwrap())
+    } else {
+        None
+    };
 
     let yyyymmdd_date = chrono::NaiveDate::parse_from_str(&yyyymmdd, "%Y%m%d").unwrap();
     let previous_yyyymmdd_date = yyyymmdd_date.pred();
@@ -50,6 +57,12 @@ fn main() {
     );
 
     for tx in transaction_iter {
+        if let Some(until_slot) = until_slot {
+            if tx.slot > until_slot {
+                break;
+            }
+        }
+
         // print progress
         let now = Local::now();
         println!("[{}] processing slot = {:?} ...", now.format("%H:%M:%S"), tx.slot);
@@ -72,11 +85,15 @@ fn main() {
                         let result = replay_engine.replay_instruction(ix);
                         match result {
                             Ok(result) => {
-                                if let Some(meta) = result.transaction_status.transaction.clone().meta {
-                                    if meta.err.is_some() {
-                                        result.transaction_status.print_named("instruction");
-                                        panic!("🔥REPLAY TRANSACTION FAILED!!");
-                                    }
+                                // TODO: refactor, use util ?
+                                let meta = result.transaction_status.tx_with_meta.get_status_meta().unwrap();
+                                if meta.status.is_err() {
+                                    let encoded = result.transaction_status
+                                        .encode(UiTransactionEncoding::Binary, Some(0))
+                                        .expect("Failed to encode transaction");
+                            
+                                    encoded.print_named("instruction");
+                                    panic!("🔥REPLAY TRANSACTION FAILED!!");
                                 }
                             },
                             Err(err) => {

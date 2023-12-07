@@ -9,8 +9,9 @@ mod util_file_io;
 mod util;
 use replay_engine::programs;
 use replay_engine::replay_engine::ReplayEngine;
-use util::PrintableTransaction;
 
+use solana_transaction_status::UiTransactionEncoding;
+use util::PrintableTransaction;
 
 fn main() {
     let start_snapshot_slot = 226394687u64;
@@ -78,11 +79,15 @@ fn main() {
                         let result = replay_engine.replay_instruction(ix);
                         match result {
                             Ok(result) => {
-                                if let Some(meta) = result.transaction_status.transaction.clone().meta {
-                                    if meta.err.is_some() {
-                                        result.transaction_status.print_named("instruction");
-                                        panic!("🔥REPLAY TRANSACTION FAILED!!");
-                                    }
+                                // TODO: refactor, use util ?
+                                let meta = result.transaction_status.tx_with_meta.get_status_meta().unwrap();
+                                if meta.status.is_err() {
+                                    let encoded = result.transaction_status
+                                        .encode(UiTransactionEncoding::Binary, Some(0))
+                                        .expect("Failed to encode transaction");
+                            
+                                    encoded.print_named("instruction");
+                                    panic!("🔥REPLAY TRANSACTION FAILED!!");
                                 }
                             },
                             Err(err) => {

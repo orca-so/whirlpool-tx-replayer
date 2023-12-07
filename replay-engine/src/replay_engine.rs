@@ -113,19 +113,18 @@ impl ReplayEngine {
 
     match result {
       Ok(result) => {
-        if let Some(meta) = result.transaction_status.transaction.clone().meta {
-          if meta.err.is_some() {
-            // rethink improvement (Ok response is appropriate ?)
-            return Ok(result);
-          }
-        }
+        // unwrap is safe because it is TransactionWithStatusMeta::Complete.
+        // https://docs.rs/solana-transaction-status/latest/src/solana_transaction_status/lib.rs.html#812-817
+        let meta = result.transaction_status.tx_with_meta.get_status_meta().unwrap();
 
-        // write back
-        util::update_account_map(
-          &mut self.accounts,
-          result.snapshot.pre_snapshot.clone(),
-          result.snapshot.post_snapshot.clone()
-        );
+        if meta.status.is_ok() {
+          // write back
+          util::update_account_map(
+            &mut self.accounts,
+            result.snapshot.pre_snapshot.clone(),
+            result.snapshot.post_snapshot.clone()
+          );
+        }
 
         return Ok(result);
       },

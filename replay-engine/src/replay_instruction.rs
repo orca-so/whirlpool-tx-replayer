@@ -1,4 +1,4 @@
-use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
+use solana_transaction_status::ConfirmedTransactionWithStatusMeta;
 
 use std::str::FromStr;
 
@@ -19,7 +19,7 @@ pub struct WritableAccountSnapshot {
 }
 
 pub struct ReplayInstructionResult {
-  pub transaction_status: EncodedConfirmedTransactionWithStatusMeta,
+  pub transaction_status: ConfirmedTransactionWithStatusMeta,
   pub snapshot: WritableAccountSnapshot,
 }
 
