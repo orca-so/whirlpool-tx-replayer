@@ -96,7 +96,7 @@ impl ReplayEngine {
     self.replay_execution_counter = 0u64;
   }
 
-  pub fn replay_instruction(&mut self, ix: DecodedWhirlpoolInstruction) -> Result<ReplayInstructionResult, ErrorCode> {
+  pub fn replay_instruction(&mut self, ix: &DecodedWhirlpoolInstruction) -> Result<ReplayInstructionResult, ErrorCode> {
     // rebuild periodically to avoid processing too many transactions in a single environment
     // TODO: threshold tuning if needed
     if self.replay_execution_counter > 20000 {
@@ -107,7 +107,7 @@ impl ReplayEngine {
     self.replay_execution_counter += 1;
     let result = replay_whirlpool_instruction(
       &mut self.environment,
-      ix,
+      &ix,
       &self.accounts,
     );
 

@@ -39,5 +39,6 @@ spl-token = "3.3.0"
 
 # internal
 replay-engine = { path = "../replay-engine" }
+replayer = { path = "../replayer" }
 
 [patch.crates-io]

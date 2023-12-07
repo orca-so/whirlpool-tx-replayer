@@ -39,7 +39,7 @@ const ORCA_WHIRLPOOL_PROGRAM_ID: Pubkey = solana_program::pubkey!("whirLbMiicVdi
 
 pub fn replay_whirlpool_instruction(
   replayer: &mut replay_environment::ReplayEnvironment,
-  instruction: DecodedWhirlpoolInstruction,
+  instruction: &DecodedWhirlpoolInstruction,
   account_map: &AccountMap, // readonly
 ) -> Result<ReplayInstructionResult, ErrorCode> {
   match instruction {
