@@ -1,34 +1,21 @@
-use solana_cli_output::display::println_transaction;
-use solana_transaction_status::EncodedConfirmedTransactionWithStatusMeta;
+use crate::schema::*;
+use replay_engine::types::AccountMap;
 
-
-pub trait PrintableTransaction {
-  /// Pretty print the transaction results, tagged with the given name for distinguishability.
-  fn print_named(&self, name: &str);
-
-  /// Pretty print the transaction results.
-  fn print(&self) {
-      self.print_named("");
+pub fn convert_accounts_to_account_map(accounts: &Vec<WhirlpoolStateAccount>) -> AccountMap {
+  let mut account_map = AccountMap::new();
+  for account in accounts {
+      account_map.insert(account.pubkey.clone(), account.data.clone());
   }
-
-  /// Panic and print the transaction if it did not execute successfully
-  fn assert_success(&self);
+  return account_map;
 }
 
-impl PrintableTransaction for EncodedConfirmedTransactionWithStatusMeta {
-  fn print_named(&self, name: &str) {
-      let tx = self.transaction.transaction.decode().unwrap();
-      println!("EXECUTE {} (slot {})", name, self.slot);
-      println_transaction(&tx, self.transaction.meta.as_ref(), "  ", None, None);
+pub fn convert_account_map_to_accounts(account_map: &AccountMap) -> Vec<WhirlpoolStateAccount> {
+  let mut accounts = Vec::<WhirlpoolStateAccount>::new();
+  for (pubkey, data) in account_map {
+      accounts.push(WhirlpoolStateAccount {
+          pubkey: pubkey.clone(),
+          data: data.clone(),
+      });
   }
-
-  fn assert_success(&self) {
-      match &self.transaction.meta {
-          Some(meta) if meta.err.is_some() => {
-              self.print();
-              panic!("tx failed!")
-          }
-          _ => (),
-      }
-  }
+  return accounts;
 }

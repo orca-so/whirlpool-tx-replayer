@@ -1,12 +1,15 @@
 use replay_engine::decoded_instructions;
 use replay_engine::decoded_instructions::DecodedWhirlpoolInstruction;
 use replay_engine::replay_engine::ReplayEngine;
-use replay_engine::replay_instruction::ReplayInstructionResult;
-use replay_engine::types::{AccountMap, Slot};
 
-pub mod file_io;
-use file_io::{Transaction, WhirlpoolTransaction};
-mod util;
+pub use replay_engine::replay_instruction::ReplayInstructionResult;
+pub use replay_engine::types::{AccountMap, Slot};
+
+pub mod io;
+pub mod schema;
+pub mod util;
+
+use schema::{Transaction, WhirlpoolTransaction};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ReplayUntil {
@@ -33,8 +36,6 @@ pub struct WhirlpoolReplayer {
 }
 
 impl WhirlpoolReplayer {
-    // build_with_local_file_storage
-    // build_with_remote_file_storage
     // TODO: build_with_mysql_database
 
     pub fn build_with_local_file_storage(
@@ -45,22 +46,23 @@ impl WhirlpoolReplayer {
         let previous = current.pred_opt().unwrap();
 
         // snapshot of the previous day
-        let state_file_relative_path = get_state_file_relative_path(&previous);
+        let state_file_relative_path = io::get_whirlpool_state_file_relative_path(&previous);
         let state_file_path = format!("{}/{}", base_path, state_file_relative_path);
         // transactions of the day
-        let transaction_file_relative_path = get_transaction_file_relative_path(&current);
+        let transaction_file_relative_path =
+            io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_path = format!("{}/{}", base_path, transaction_file_relative_path);
 
-        let state = file_io::load_from_local_whirlpool_state_file(&state_file_path);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path);
         let transaction_iter =
-            file_io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
+            io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 
         let replay_engine = ReplayEngine::new(
             state.slot,
             state.block_height,
             state.block_time,
             state.program_data,
-            file_io::convert_accounts_to_account_map(&state.accounts),
+            util::convert_accounts_to_account_map(&state.accounts),
         );
 
         return WhirlpoolReplayer {
@@ -70,81 +72,83 @@ impl WhirlpoolReplayer {
     }
 
     pub fn build_with_remote_file_storage(
-      base_url: &String,
-      yyyymmdd: &String,
-        ) -> WhirlpoolReplayer {
-      let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
-      let previous = current.pred_opt().unwrap();
+        base_url: &String,
+        yyyymmdd: &String,
+    ) -> WhirlpoolReplayer {
+        let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
+        let previous = current.pred_opt().unwrap();
 
-      // snapshot of the previous day
-      let state_file_relative_path = get_state_file_relative_path(&previous);
-      let state_file_url = format!("{}/{}", base_url, state_file_relative_path);
-      // transactions of the day
-      let transaction_file_relative_path = get_transaction_file_relative_path(&current);
-      let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
+        // snapshot of the previous day
+        let state_file_relative_path = io::get_whirlpool_state_file_relative_path(&previous);
+        let state_file_url = format!("{}/{}", base_url, state_file_relative_path);
+        // transactions of the day
+        let transaction_file_relative_path =
+            io::get_whirlpool_transaction_file_relative_path(&current);
+        let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
 
-      let state = file_io::load_from_remote_whirlpool_state_file(&state_file_url);
-      let transaction_iter =
-          file_io::load_from_remote_whirlpool_transaction_file(&transaction_file_url);
+        let state = io::load_from_remote_whirlpool_state_file(&state_file_url);
+        let transaction_iter =
+            io::load_from_remote_whirlpool_transaction_file(&transaction_file_url);
 
-      let replay_engine = ReplayEngine::new(
-          state.slot,
-          state.block_height,
-          state.block_time,
-          state.program_data,
-          file_io::convert_accounts_to_account_map(&state.accounts),
-      );
+        let replay_engine = ReplayEngine::new(
+            state.slot,
+            state.block_height,
+            state.block_time,
+            state.program_data,
+            util::convert_accounts_to_account_map(&state.accounts),
+        );
 
-      return WhirlpoolReplayer {
-          replay_engine,
-          transaction_iter: Box::new(transaction_iter),
-      };
-  }
-
-  pub fn build_with_remote_file_storage_with_local_cache(
-    base_url: &String,
-    yyyymmdd: &String,
-    cache_dir_path: &String,
-    refresh: bool,
-) -> WhirlpoolReplayer {
-    let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
-    let previous = current.pred_opt().unwrap();
-
-    // snapshot of the previous day
-    let state_file_relative_path = get_state_file_relative_path(&previous);
-    let state_file_url = format!("{}/{}", base_url, state_file_relative_path);
-    // transactions of the day
-    let transaction_file_relative_path = get_transaction_file_relative_path(&current);
-    let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
-
-    let state_file_path = format!("{}/{}", cache_dir_path, state_file_relative_path);
-    if refresh || !std::path::Path::new(&state_file_path).exists() {
-      file_io::download_from_remote_storage(&state_file_url, &state_file_path);
+        return WhirlpoolReplayer {
+            replay_engine,
+            transaction_iter: Box::new(transaction_iter),
+        };
     }
 
-    let transaction_file_path = format!("{}/{}", cache_dir_path, transaction_file_relative_path);
-    if refresh || !std::path::Path::new(&transaction_file_path).exists() {
-      file_io::download_from_remote_storage(&transaction_file_url, &transaction_file_path);
+    pub fn build_with_remote_file_storage_with_local_cache(
+        base_url: &String,
+        yyyymmdd: &String,
+        cache_dir_path: &String,
+        refresh: bool,
+    ) -> WhirlpoolReplayer {
+        let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
+        let previous = current.pred_opt().unwrap();
+
+        // snapshot of the previous day
+        let state_file_relative_path = io::get_whirlpool_state_file_relative_path(&previous);
+        let state_file_url = format!("{}/{}", base_url, state_file_relative_path);
+        // transactions of the day
+        let transaction_file_relative_path =
+            io::get_whirlpool_transaction_file_relative_path(&current);
+        let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
+
+        let state_file_path = format!("{}/{}", cache_dir_path, state_file_relative_path);
+        if refresh || !std::path::Path::new(&state_file_path).exists() {
+            io::download_from_remote_storage(&state_file_url, &state_file_path);
+        }
+
+        let transaction_file_path =
+            format!("{}/{}", cache_dir_path, transaction_file_relative_path);
+        if refresh || !std::path::Path::new(&transaction_file_path).exists() {
+            io::download_from_remote_storage(&transaction_file_url, &transaction_file_path);
+        }
+
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path);
+        let transaction_iter =
+            io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
+
+        let replay_engine = ReplayEngine::new(
+            state.slot,
+            state.block_height,
+            state.block_time,
+            state.program_data,
+            util::convert_accounts_to_account_map(&state.accounts),
+        );
+
+        return WhirlpoolReplayer {
+            replay_engine,
+            transaction_iter: Box::new(transaction_iter),
+        };
     }
-
-    let state = file_io::load_from_local_whirlpool_state_file(&state_file_path);
-    let transaction_iter =
-        file_io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
-
-    let replay_engine = ReplayEngine::new(
-        state.slot,
-        state.block_height,
-        state.block_time,
-        state.program_data,
-        file_io::convert_accounts_to_account_map(&state.accounts),
-    );
-
-    return WhirlpoolReplayer {
-        replay_engine,
-        transaction_iter: Box::new(transaction_iter),
-    };
-}
-
 
     pub fn get_slot(&self) -> Slot {
         return self.replay_engine.get_slot();
@@ -239,22 +243,4 @@ impl WhirlpoolReplayer {
             next_whirlpool_transaction = self.transaction_iter.next();
         }
     }
-}
-
-fn get_state_file_relative_path(date: &chrono::NaiveDate) -> String {
-    format!(
-        "{}/{}/whirlpool-state-{}.json.gz",
-        date.format("%Y"),
-        date.format("%m%d"),
-        date.format("%Y%m%d"),
-    )
-}
-
-fn get_transaction_file_relative_path(date: &chrono::NaiveDate) -> String {
-    format!(
-        "{}/{}/whirlpool-transaction-{}.jsonl.gz",
-        date.format("%Y"),
-        date.format("%m%d"),
-        date.format("%Y%m%d"),
-    )
 }

@@ -1,5 +1,5 @@
 use clap::Parser;
-use replayer::{file_io, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
+use replayer::{io, util, schema, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -76,10 +76,10 @@ fn main() {
 
         let latest_slot = replayer.get_slot();
         let latest_program_data = replayer.get_program_data().clone();
-        let latest_accounts = file_io::convert_account_map_to_accounts(replayer.get_accounts());
-        file_io::save_to_whirlpool_state_file(
+        let latest_accounts = util::convert_account_map_to_accounts(replayer.get_accounts());
+        io::save_to_whirlpool_state_file(
             &state_file.to_string(),
-            &file_io::WhirlpoolState {
+            &schema::WhirlpoolState {
                 slot: latest_slot.slot,
                 block_height: latest_slot.block_height,
                 block_time: latest_slot.block_time,
