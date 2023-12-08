@@ -2,7 +2,7 @@
 members = [
   "replay-engine",
   "replayer",
-  "whirlpool-replay",
+  "whirlpool-replay-command",
 ]
 
 resolver = "2"

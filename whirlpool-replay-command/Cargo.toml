@@ -1,0 +1,13 @@
+[package]
+name = "whirlpool-replay"
+version = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+clap = { workspace = true }
+
+anchor-lang = { workspace = true }
+whirlpool_base = { workspace = true }
+
+# internal
+whirlpool-replayer = { path = "../replayer" }

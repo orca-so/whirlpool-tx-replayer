@@ -1,5 +1,5 @@
 [package]
-name = "replayer"
+name = "whirlpool-replayer"
 version = { workspace = true }
 edition = { workspace = true }
 
