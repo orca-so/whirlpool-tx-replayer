@@ -72,16 +72,18 @@ fn main() {
 
     // save state
     if args.save_as.is_some() {
-        let latest_slot = replayer.get_slot();
-        let latest_accounts = file_io::convert_account_map_to_accounts(replayer.get_accounts());
         let state_file = args.save_as.unwrap();
+
+        let latest_slot = replayer.get_slot();
+        let latest_program_data = replayer.get_program_data().clone();
+        let latest_accounts = file_io::convert_account_map_to_accounts(replayer.get_accounts());
         file_io::save_to_whirlpool_state_file(
             &state_file.to_string(),
             &file_io::WhirlpoolState {
                 slot: latest_slot.slot,
                 block_height: latest_slot.block_height,
                 block_time: latest_slot.block_time,
-                program_data: replayer.get_program_data().clone(),
+                program_data: latest_program_data,
                 accounts: latest_accounts,
             },
         );
