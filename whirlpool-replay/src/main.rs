@@ -41,7 +41,6 @@ fn main() {
         ReplayUntil::End
     };
 
-    //let mut replayer = WhirlpoolReplayer::build_with_local_file_storage(&base_path, &yyyymmdd);
     let mut replayer = if base_path_or_url.starts_with("https://") {
         if args.cache_dir.is_some() {
             let cache_dir = args.cache_dir.unwrap();
