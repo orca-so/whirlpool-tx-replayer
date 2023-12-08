@@ -1,6 +1,5 @@
-use std::env;
-use replayer::{file_io, WhirlpoolReplayer, ReplayUntil, SlotCallback, InstructionCallback};
 use clap::Parser;
+use replayer::{file_io, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -46,7 +45,12 @@ fn main() {
     let mut replayer = if base_path_or_url.starts_with("https://") {
         if args.cache_dir.is_some() {
             let cache_dir = args.cache_dir.unwrap();
-            WhirlpoolReplayer::build_with_remote_file_storage_with_local_cache(&base_path_or_url, &yyyymmdd, &cache_dir, false)
+            WhirlpoolReplayer::build_with_remote_file_storage_with_local_cache(
+                &base_path_or_url,
+                &yyyymmdd,
+                &cache_dir,
+                false,
+            )
         } else {
             WhirlpoolReplayer::build_with_remote_file_storage(&base_path_or_url, &yyyymmdd)
         }
@@ -58,17 +62,19 @@ fn main() {
         println!("processing slot: {} ({}) ...", slot.slot, slot.block_height);
     });
 
-    let instruction_callback: Option<InstructionCallback> = Some(|_slot, _transaction, name, _instruction, _accounts, _result| {
-        println!("  replayed instruction: {}", name);
-    });
+    let instruction_callback: Option<InstructionCallback> = Some(
+        |_slot, _transaction, name, _instruction, _accounts, _result| {
+            println!("  replayed instruction: {}", name);
+        },
+    );
 
     replayer.replay(until_condition, slot_callback, instruction_callback);
 
     // save state
     if args.save_as.is_some() {
-    let latest_slot = replayer.get_slot();
-    let latest_accounts = file_io::convert_account_map_to_accounts(replayer.get_accounts());
-    let state_file = args.save_as.unwrap();
+        let latest_slot = replayer.get_slot();
+        let latest_accounts = file_io::convert_account_map_to_accounts(replayer.get_accounts());
+        let state_file = args.save_as.unwrap();
         file_io::save_to_whirlpool_state_file(
             &state_file.to_string(),
             &file_io::WhirlpoolState {
@@ -77,7 +83,7 @@ fn main() {
                 block_time: latest_slot.block_time,
                 program_data: replayer.get_program_data().clone(),
                 accounts: latest_accounts,
-            }
+            },
         );
     }
 }
