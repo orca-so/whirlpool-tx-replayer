@@ -1,13 +1,34 @@
 # whirlpool-replayer
 
-## Concept
+## Motivation & Core Concept
 Replaying the entire Solana would require a lot of resources, but for Whirlpool state alone, replay is possible with a snapshot of the account and all successful transactions associated with Whirlpool program.
 
 Replay would allow for easy reproduction of the state at all points in time in the past.
 
 ``whirlpool-replayer`` library does not require a large amount of resources and is intended to be able to run even on a simple laptop. This library will give developers free access to Whirlpool history since its genesis.
 
-<img width="765" alt="screenshot 2023-10-18 15 22 30" src="https://github.com/orca-so/whirlpool-tx-replayer/assets/109891005/ff52f804-132c-40ae-bf4b-0e89dc24dff9">
+![key_concept](https://github.com/orca-so/whirlpool-tx-replayer/assets/109891005/4eaf6b2b-e40b-4d74-8a0c-500348ae13e9)
+
+## Implementation Architecture
+- ``replay-engine``
+  - manage slot state (slot, blockHeight, blockTime)
+  - manage account state
+  - manage program data state
+  - execute instruction with bank
+- ``whirlpool-replayer``
+  - fetch required state and transaction from data storage
+  - initialize replay-engine
+  - execute replaying with callback
+
+![architecture](https://github.com/orca-so/whirlpool-tx-replayer/assets/109891005/528286f0-82d5-43c3-9e13-d1a51152e63f)
+
+### Data storage
+- Data is clearly divided into states and transactions.
+- Data is treated as one unit for one day based on blockTime.
+- Whirlpool Program data is also included in the states to handle program upgrade.
+- The relation between states and transactions is as follows:
+
+![key_formula](https://github.com/orca-so/whirlpool-tx-replayer/assets/109891005/60a98f7d-36ab-427e-95c8-35f82e3caeed)
 
 ## Requirements
 ### Software
