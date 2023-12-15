@@ -1,3 +1,7 @@
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+
 use replay_engine::decoded_instructions;
 use replay_engine::decoded_instructions::DecodedWhirlpoolInstruction;
 use replay_engine::replay_engine::ReplayEngine;
@@ -10,6 +14,7 @@ pub mod schema;
 pub mod util;
 
 use schema::{Transaction, WhirlpoolTransaction};
+use tokio::sync::Mutex;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ReplayUntil {
@@ -30,9 +35,21 @@ pub type InstructionCallback = fn(
     &ReplayInstructionResult,
 );
 
+pub type AsyncSlotCallback = Box<dyn Fn(&Slot) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
+pub type AsyncInstructionCallback = Box<
+    dyn Fn(
+        &Slot,
+        &Transaction,
+        &String,
+        &DecodedWhirlpoolInstruction,
+        &AccountMap,
+        &ReplayInstructionResult
+    ) -> Pin<Box<dyn 'static + Future<Output = ()> + Send>> + Send
+>;
+
 pub struct WhirlpoolReplayer {
     replay_engine: ReplayEngine,
-    transaction_iter: Box<dyn Iterator<Item = WhirlpoolTransaction>>,
+    transaction_iter: Box<dyn Iterator<Item = WhirlpoolTransaction> + Send>,
 }
 
 impl WhirlpoolReplayer {
@@ -178,23 +195,8 @@ impl WhirlpoolReplayer {
                 block_time: whirlpool_transaction.block_time,
             };
 
-            match cond {
-                ReplayUntil::End => {}
-                ReplayUntil::Slot(until_slot) => {
-                    if slot.slot > until_slot {
-                        break;
-                    }
-                }
-                ReplayUntil::BlockHeight(until_block_height) => {
-                    if slot.block_height > until_block_height {
-                        break;
-                    }
-                }
-                ReplayUntil::BlockTime(until_block_time) => {
-                    if slot.block_time > until_block_time {
-                        break;
-                    }
-                }
+            if has_reached_until_condition(&cond, slot) {
+                break;
             }
 
             self.replay_engine
@@ -242,5 +244,87 @@ impl WhirlpoolReplayer {
 
             next_whirlpool_transaction = self.transaction_iter.next();
         }
+    }
+
+    pub async fn replay_async(
+        &mut self,
+        cond: ReplayUntil,
+        slot_callback: Option<Arc<Mutex<AsyncSlotCallback>>>,
+        instruction_callback: Option<Arc<Mutex<AsyncInstructionCallback>>>,
+    ) {
+        let mut next_whirlpool_transaction = self.transaction_iter.next();
+        while next_whirlpool_transaction.is_some() {
+            let whirlpool_transaction = next_whirlpool_transaction.unwrap();
+
+            let slot = Slot {
+                slot: whirlpool_transaction.slot,
+                block_height: whirlpool_transaction.block_height,
+                block_time: whirlpool_transaction.block_time,
+            };
+
+            if has_reached_until_condition(&cond, slot) {
+                break;
+            }
+
+            self.replay_engine
+                .update_slot(slot.slot, slot.block_height, slot.block_time);
+
+            if let Some(callback) = slot_callback.as_ref() {
+                let slot_c = callback.lock().await;
+                let d = slot_c.as_ref()(&slot);
+                d.await;
+            }
+
+            for transaction in whirlpool_transaction.transactions {
+                for instruction in transaction.clone().instructions {
+                    let name = instruction.name.clone();
+                    let payload = instruction.payload.to_string().clone();
+                    let decoded = decoded_instructions::from_json(&name, &payload).unwrap();
+
+                    match decoded {
+                        decoded_instructions::DecodedInstruction::ProgramDeployInstruction(
+                            deploy_instruction,
+                        ) => {
+                            self.replay_engine
+                                .update_program_data(deploy_instruction.program_data);
+                        }
+                        decoded_instructions::DecodedInstruction::WhirlpoolInstruction(
+                            whirlpool_instruction,
+                        ) => {
+                            let result = self
+                                .replay_engine
+                                .replay_instruction(&whirlpool_instruction)
+                                .unwrap();
+
+                            let accounts = self.replay_engine.get_accounts();
+
+                            if let Some(ix_guard) = instruction_callback.as_ref() {
+                                let ix_c = ix_guard.lock().await;
+                                let c = ix_c.as_ref()(
+                                    &slot,
+                                    &transaction,
+                                    &name,
+                                    &whirlpool_instruction,
+                                    &accounts,
+                                    &result);
+                                c.await;
+                            }
+                        }
+                    }
+                }
+            }
+
+            next_whirlpool_transaction = self.transaction_iter.next();
+        }
+    }
+
+}
+
+fn has_reached_until_condition(cond: &ReplayUntil, slot: Slot) -> bool {
+    match cond {
+        ReplayUntil::End => false,
+        ReplayUntil::Slot(until_slot) => slot.slot > *until_slot,
+        ReplayUntil::BlockHeight(until_block_height) => slot.block_height > *until_block_height,
+        ReplayUntil::BlockTime(until_block_time) => slot.block_time > *until_block_time,
     }
 }
