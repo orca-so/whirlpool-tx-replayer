@@ -88,6 +88,29 @@ If you know the remote storage endpoint, the following will work well, too.
 $ cargo run --release -p whirlpool-replay <REMOTE STORAGE ENDPOINT> <YYYYMMDD>
 ```
 
+## Public Remote Storage Endpoint
+
+- https://whirlpool-replay.pleiades.dev/alpha
+
+### Manual download of state and transaction files
+
+If you will use ``whirlpool-replayer`` heavily, to avoid duplicated data download, please download files and put them locally.
+
+*Path*
+- state: ``<REMOTE STORAGE ENDPOINT>``/``<YYYY>``/``<MMDD>``/whirlpool-state-``<YYYYMMDD>``.json.gz
+- transaction: ``<REMOTE STORAGE ENDPOINT>``/``<YYYY>``/``<MMDD>``/whirlpool-transaction-``<YYYYMMDD>``.jsonl.gz
+
+*Range*
+- From: The genesis of Whirlpool Program (20220309)
+- To: Yesterday (TODAY is not covered)
+
+*Example*
+```
+curl -OL https://whirlpool-replay.pleiades.dev/alpha/2023/1130/whirlpool-state-20231130.json.gz
+```
+```
+curl -OL https://whirlpool-replay.pleiades.dev/alpha/2023/1130/whirlpool-transaction-20231130.jsonl.gz
+```
 
 ## TODO
 ### ~~Performance tuning~~
