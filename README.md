@@ -3,9 +3,11 @@
 ## Concept
 Replaying the entire Solana would require a lot of resources, but for Whirlpool state alone, replay is possible with a snapshot of the account and all successful transactions associated with Whirlpool program.
 
-Replay would allow for easy reproduction of the state at all points in time in the past.
+Replay realize easy reproduction of the state at all points in time in the past.
 
-``whirlpool-replayer`` library does not require a large amount of resources and is intended to be able to run even on a simple laptop. This library will give developers free access to Whirlpool history since its genesis.
+``whirlpool-replayer`` library does not require a large amount of resources and is intended to be able to run even on a simple laptop.
+
+This library will give developers free access to Whirlpool history since its genesis until yesterday.
 
 <img width="765" alt="screenshot 2023-10-18 15 22 30" src="https://github.com/orca-so/whirlpool-tx-replayer/assets/109891005/ff52f804-132c-40ae-bf4b-0e89dc24dff9">
 
