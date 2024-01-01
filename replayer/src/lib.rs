@@ -1,15 +1,20 @@
 use replay_engine::decoded_instructions;
-use replay_engine::decoded_instructions::DecodedWhirlpoolInstruction;
 use replay_engine::replay_engine::ReplayEngine;
 
-pub use replay_engine::replay_instruction::ReplayInstructionResult;
-pub use replay_engine::types::{AccountMap, Slot};
 
 pub mod io;
 pub mod schema;
 pub mod util;
 
-use schema::{Transaction, WhirlpoolTransaction};
+use schema::WhirlpoolTransaction;
+
+// re-export
+pub use schema::Transaction;
+pub use replay_engine::{
+    decoded_instructions::DecodedWhirlpoolInstruction,
+    replay_instruction::ReplayInstructionResult,
+    types::{AccountMap, Slot}
+};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ReplayUntil {
@@ -18,17 +23,6 @@ pub enum ReplayUntil {
     BlockHeight(u64),
     BlockTime(i64),
 }
-
-pub type SlotCallback = fn(&Slot);
-
-pub type InstructionCallback = fn(
-    &Slot,
-    &Transaction,
-    &String,
-    &DecodedWhirlpoolInstruction,
-    &AccountMap,
-    &ReplayInstructionResult,
-);
 
 pub struct WhirlpoolReplayer {
     replay_engine: ReplayEngine,
@@ -162,12 +156,23 @@ impl WhirlpoolReplayer {
         return self.replay_engine.get_accounts();
     }
 
-    pub fn replay(
+
+    pub fn replay<SF, IF>(
         &mut self,
         cond: ReplayUntil,
-        slot_callback: Option<SlotCallback>,
-        instruction_callback: Option<InstructionCallback>,
-    ) {
+        slot_callback: &mut SF,
+        instruction_callback: &mut IF,
+    ) where
+        SF: FnMut(&Slot, &AccountMap),
+        IF: FnMut(
+            &Slot,
+            &Transaction,
+            &String,
+            &DecodedWhirlpoolInstruction,
+            &AccountMap,
+            &ReplayInstructionResult,
+        ),
+    {
         let mut next_whirlpool_transaction = self.transaction_iter.next();
         while next_whirlpool_transaction.is_some() {
             let whirlpool_transaction = next_whirlpool_transaction.unwrap();
@@ -200,9 +205,8 @@ impl WhirlpoolReplayer {
             self.replay_engine
                 .update_slot(slot.slot, slot.block_height, slot.block_time);
 
-            if let Some(callback) = slot_callback {
-                callback(&slot);
-            }
+            
+            slot_callback(&slot, self.replay_engine.get_accounts());
 
             for transaction in whirlpool_transaction.transactions {
                 for instruction in transaction.clone().instructions {
@@ -224,17 +228,15 @@ impl WhirlpoolReplayer {
                                 .replay_engine
                                 .replay_instruction(&whirlpool_instruction)
                                 .unwrap();
-
-                            if let Some(callback) = instruction_callback {
-                                callback(
-                                    &slot,
-                                    &transaction,
-                                    &name,
-                                    &whirlpool_instruction,
-                                    self.replay_engine.get_accounts(),
-                                    &result,
-                                );
-                            }
+                            
+                            instruction_callback(
+                                &slot,
+                                &transaction,
+                                &name,
+                                &whirlpool_instruction,
+                                self.replay_engine.get_accounts(),
+                                &result,
+                            );
                         }
                     }
                 }

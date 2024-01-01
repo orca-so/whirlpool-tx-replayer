@@ -1,5 +1,5 @@
 use clap::Parser;
-use whirlpool_replayer::{io, util, schema, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
+use whirlpool_replayer::{io, schema, util, ReplayUntil, WhirlpoolReplayer, Slot, AccountMap, Transaction, DecodedWhirlpoolInstruction, ReplayInstructionResult};
 
 use anchor_lang::prelude::*;
 use whirlpool_base::state::Whirlpool;
@@ -60,19 +60,24 @@ fn main() {
         WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd)
     };
 
-    let slot_callback: Option<SlotCallback> = Some(|slot| {
+    let mut slot_callback = |slot: &Slot, _accounts: &AccountMap| {
         println!("processing slot: {} (block_height={} block_time={}) ...", slot.slot, slot.block_height, slot.block_time);
-    });
+    };
 
-    let instruction_callback: Option<InstructionCallback> = Some(
-        |_slot, transaction, name, instruction, accounts, result| {
+    let mut swap_counter = 0u32;
+    let mut two_hop_swap_counter = 0u32;
+    let mut tx_signature_sample_containing_two_hop_swap = Vec::<String>::new();
+    let mut instruction_callback =
+        |_slot: &Slot, transaction: &Transaction, name: &String, instruction: &DecodedWhirlpoolInstruction, accounts: &AccountMap, result: &ReplayInstructionResult| {
             println!("  replayed instruction: {}", name);
 
             // callback will receive various data to implement various data processing!
-            // For example, print the details of swap instruction with pre/post account state info.
+            // For example, print the details of Swap and TwoHopSwap instruction with pre/post account state info.
             match instruction 
             {
-                schema::DecodedWhirlpoolInstruction::Swap(params) => {
+                DecodedWhirlpoolInstruction::Swap(params) => {
+                    swap_counter = swap_counter + 1;
+
                     // accounts provides "post" state
                     // note: accounts contains all whirlpool accounts at the end of the instruction
                     let post_data = accounts.get(&params.key_whirlpool).unwrap();
@@ -89,12 +94,43 @@ fn main() {
                     println!("      in/out: in={} out={}", params.transfer_amount_0, params.transfer_amount_1);
                     println!("      sqrt_price: pre={} post={}", pre_whirlpool.sqrt_price, post_whirlpool.sqrt_price);
                 },
+                DecodedWhirlpoolInstruction::TwoHopSwap(params) => {
+                    two_hop_swap_counter = two_hop_swap_counter + 1;
+                    if tx_signature_sample_containing_two_hop_swap.len() < 10 {
+                        tx_signature_sample_containing_two_hop_swap.push(transaction.signature.clone());
+                    }
+
+                    println!("    tx signature: {}", transaction.signature);
+
+                    let post_data_one = accounts.get(&params.key_whirlpool_one).unwrap();
+                    let post_whirlpool_one = Whirlpool::try_deserialize(&mut post_data_one.as_slice()).unwrap();
+                    let pre_data_one = result.snapshot.pre_snapshot.get(&params.key_whirlpool_one).unwrap();
+                    let pre_whirlpool_one = Whirlpool::try_deserialize(&mut pre_data_one.as_slice()).unwrap();
+
+                    println!("    pool: {} (ts={}, fee_rate={})", params.key_whirlpool_one, pre_whirlpool_one.tick_spacing, pre_whirlpool_one.fee_rate);
+                    println!("      direction: {}", if params.data_a_to_b_one { "A to B"} else { "B to A"});
+                    println!("      in/out: in={} out={}", params.transfer_amount_0, params.transfer_amount_1);
+                    println!("      sqrt_price: pre={} post={}", pre_whirlpool_one.sqrt_price, post_whirlpool_one.sqrt_price);
+
+                    let post_data_two = accounts.get(&params.key_whirlpool_two).unwrap();
+                    let post_whirlpool_two = Whirlpool::try_deserialize(&mut post_data_two.as_slice()).unwrap();
+                    let pre_data_two = result.snapshot.pre_snapshot.get(&params.key_whirlpool_two).unwrap();
+                    let pre_whirlpool_two = Whirlpool::try_deserialize(&mut pre_data_two.as_slice()).unwrap();
+
+                    println!("    pool: {} (ts={}, fee_rate={})", params.key_whirlpool_two, pre_whirlpool_two.tick_spacing, pre_whirlpool_two.fee_rate);
+                    println!("      direction: {}", if params.data_a_to_b_two { "A to B"} else { "B to A"});
+                    println!("      in/out: in={} out={}", params.transfer_amount_2, params.transfer_amount_3);
+                    println!("      sqrt_price: pre={} post={}", pre_whirlpool_two.sqrt_price, post_whirlpool_two.sqrt_price);
+                },
                 _ => {},
             }
-        },
-    );
+        };
 
-    replayer.replay(until_condition, slot_callback, instruction_callback);
+    replayer.replay(until_condition, &mut slot_callback, &mut instruction_callback);
+
+    println!("swap_counter: {}", swap_counter);
+    println!("two_hop_swap_counter: {}", two_hop_swap_counter);
+    println!("tx_signatures_containing_two_hop_swap: {:?}", tx_signature_sample_containing_two_hop_swap);
 
     // save state
     if args.save_as.is_some() {
