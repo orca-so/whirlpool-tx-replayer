@@ -15,11 +15,13 @@ use crate::replay_environment::ReplayEnvironment;
 
 use crate::pubkeys;
 
+#[derive(Clone)]
 pub struct WritableAccountSnapshot {
   pub pre_snapshot: AccountMap,
   pub post_snapshot: AccountMap,
 }
 
+#[derive(Clone)]
 pub struct ReplayInstructionResult {
   pub transaction_status: ConfirmedTransactionWithStatusMeta,
   pub snapshot: WritableAccountSnapshot,
