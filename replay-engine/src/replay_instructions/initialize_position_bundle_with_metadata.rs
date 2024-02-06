@@ -25,7 +25,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   // metadata_program
 
   let tx = replayer.build_whirlpool_replay_transaction(
-    whirlpool_ix_args::InitializePositionBundle {
+    whirlpool_ix_args::InitializePositionBundleWithMetadata {
     },
     whirlpool_ix_accounts::InitializePositionBundleWithMetadata {
       position_bundle: pubkey(&ix.key_position_bundle),
