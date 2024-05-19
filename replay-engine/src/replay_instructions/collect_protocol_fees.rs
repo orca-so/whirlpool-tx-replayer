@@ -9,9 +9,9 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectProtocolFees>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
-  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, account_map);
+  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, accounts);
   let mint_a = whirlpool_data.token_mint_a;
   let mint_b = whirlpool_data.token_mint_b;
 
@@ -19,9 +19,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectP
   let amount_b = ix.transfer_amount_1;
 
   // whirlpools_config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // collect_protocol_fees_authority
   // token_vault_a
   replayer.set_token_account(

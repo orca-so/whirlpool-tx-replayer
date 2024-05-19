@@ -8,7 +8,7 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePositionBundle>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let _account_map = req.account_map;
+  let _accounts = req.accounts;
 
   // position_bundle
   // position_bundle_mint

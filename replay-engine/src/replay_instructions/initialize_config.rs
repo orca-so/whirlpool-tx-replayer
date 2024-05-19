@@ -8,7 +8,7 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializeConfig>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let _account_map = req.account_map;
+  let _accounts = req.accounts;
 
   // config
   // funder

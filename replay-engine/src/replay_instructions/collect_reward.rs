@@ -9,21 +9,21 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectReward>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
-  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, account_map);
+  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, accounts);
   let mint_reward = whirlpool_data.reward_infos[ix.data_reward_index as usize].mint;
 
-  let position_data = util::get_position_data(&ix.key_position, account_map);
+  let position_data = util::get_position_data(&ix.key_position, accounts);
   let position_mint = position_data.position_mint;
 
   let amount_reward = ix.transfer_amount_0;
 
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // position_authority
   // position
-  replayer.set_whirlpool_account(&ix.key_position, account_map);
+  replayer.set_whirlpool_account(&ix.key_position, accounts);
   // position_token_amount
   replayer.set_token_account(
     pubkey(&ix.key_position_token_account),

@@ -1,21 +1,23 @@
 use anchor_lang::AccountDeserialize;
+use anyhow::Result;
 use solana_sdk::pubkey::Pubkey;
 
 use std::str::FromStr;
 use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
 
+use crate::account_data_store::AccountDataStore;
 use crate::pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID;
-use crate::types::AccountMap;
+use crate::replay_instruction::WritableAccountSnapshot;
 
-pub fn get_whirlpool_data(pubkey_string: &String, account_map: &AccountMap) -> Whirlpool {
-    let data = account_map.get(pubkey_string).unwrap();
+pub fn get_whirlpool_data(pubkey_string: &String, accounts: &AccountDataStore) -> Whirlpool {
+    let data = accounts.get(pubkey_string).unwrap().unwrap();
     let whirlpool_data =
         whirlpool_base::state::Whirlpool::try_deserialize(&mut data.as_slice()).unwrap();
     return whirlpool_data;
 }
 
-pub fn get_position_data(pubkey_string: &String, account_map: &AccountMap) -> Position {
-    let data = account_map.get(pubkey_string).unwrap();
+pub fn get_position_data(pubkey_string: &String, accounts: &AccountDataStore) -> Position {
+    let data = accounts.get(pubkey_string).unwrap().unwrap();
     let position_data =
         whirlpool_base::state::Position::try_deserialize(&mut data.as_slice()).unwrap();
     return position_data;
@@ -23,9 +25,9 @@ pub fn get_position_data(pubkey_string: &String, account_map: &AccountMap) -> Po
 
 pub fn get_position_bundle_data(
     pubkey_string: &String,
-    account_map: &AccountMap,
+    accounts: &AccountDataStore,
 ) -> PositionBundle {
-    let data = account_map.get(pubkey_string).unwrap();
+    let data = accounts.get(pubkey_string).unwrap().unwrap();
     let position_bundle_data =
         whirlpool_base::state::PositionBundle::try_deserialize(&mut data.as_slice()).unwrap();
     return position_bundle_data;
@@ -62,22 +64,28 @@ pub fn derive_whirlpool_bump(
     return bump;
 }
 
-pub fn update_account_map(
-    account_map: &mut AccountMap,
-    pre_snapshot: AccountMap,
-    post_snapshot: AccountMap,
-) {
+pub fn update_accounts(
+    accounts: &mut AccountDataStore,
+    snapshot: &WritableAccountSnapshot,
+) -> Result<()> {
+    let pre_snapshot = &snapshot.pre_snapshot;
+    let post_snapshot = &snapshot.post_snapshot;
+
     let closed_account_pubkeys: Vec<String> = pre_snapshot
         .keys()
         .filter(|k| !post_snapshot.contains_key(*k))
         .map(|k| k.clone())
         .collect();
 
-    // add created & update accounts
-    account_map.extend(post_snapshot);
-
-    // remove closed accounts
-    for pubkey_string in closed_account_pubkeys {
-        account_map.remove(&pubkey_string);
+    // insert created & update accounts
+    for (pubkey, data) in post_snapshot {
+        accounts.upsert(pubkey, data)?;
     }
+
+    // delete closed accounts
+    for pubkey in closed_account_pubkeys {
+        accounts.delete(&pubkey)?;
+    }
+
+    Ok(())
 }

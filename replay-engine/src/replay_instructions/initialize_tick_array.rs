@@ -8,10 +8,10 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializeTickArray>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // funder
   replayer.set_funder_account(&ix.key_funder);
   // tick_array

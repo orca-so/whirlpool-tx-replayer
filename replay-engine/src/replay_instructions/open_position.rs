@@ -10,7 +10,7 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPosition>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // funder
   replayer.set_funder_account(&ix.key_funder);
@@ -19,7 +19,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPosi
   // position_mint
   // position_token_account
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // token_program
   // system_program
   // rent

@@ -8,16 +8,16 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedUpdateFeesAndRewards>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // position
-  replayer.set_whirlpool_account(&ix.key_position, account_map);
+  replayer.set_whirlpool_account(&ix.key_position, accounts);
   // tick_array_lower
-  replayer.set_whirlpool_account(&ix.key_tick_array_lower, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_lower, accounts);
   // tick_array_upper
-  replayer.set_whirlpool_account(&ix.key_tick_array_upper, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_upper, accounts);
 
   let tx = replayer.build_whirlpool_replay_transaction(
     whirlpool_ix_args::UpdateFeesAndRewards {

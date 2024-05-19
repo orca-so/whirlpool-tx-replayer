@@ -9,13 +9,13 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetRewardEmissions>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
-  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, account_map);
+  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, accounts);
   let mint_reward = whirlpool_data.reward_infos[ix.data_reward_index as usize].mint;
 
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // reward_authority
   // reward_vault
   replayer.set_token_account(

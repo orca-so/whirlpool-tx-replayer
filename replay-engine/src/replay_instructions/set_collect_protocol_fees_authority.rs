@@ -8,10 +8,10 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetCollectProtocolFeesAuthority>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpools_config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // collect_protocol_fees_authority
   // new_collect_protocol_fees_authority
 

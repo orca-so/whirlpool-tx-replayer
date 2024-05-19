@@ -9,10 +9,10 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSwap>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
-  let whirlpool_one_data = util::get_whirlpool_data(&ix.key_whirlpool_one, account_map);
-  let whirlpool_two_data = util::get_whirlpool_data(&ix.key_whirlpool_two, account_map);
+  let whirlpool_one_data = util::get_whirlpool_data(&ix.key_whirlpool_one, accounts);
+  let whirlpool_two_data = util::get_whirlpool_data(&ix.key_whirlpool_two, accounts);
   let mint_one_a = whirlpool_one_data.token_mint_a;
   let mint_one_b = whirlpool_one_data.token_mint_b;
   let mint_two_a = whirlpool_two_data.token_mint_a;
@@ -30,9 +30,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   // token_program
   // token_authority
   // whirlpool_one
-  replayer.set_whirlpool_account(&ix.key_whirlpool_one, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool_one, accounts);
   // whirlpool_two
-  replayer.set_whirlpool_account(&ix.key_whirlpool_two, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool_two, accounts);
   // token_owner_account_one_a
   replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_one_a),
@@ -90,17 +90,17 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     if mint_two_b == output_mint { output_amount } else { 0u64 }
   );
   // tick_array_one_0
-  replayer.set_whirlpool_account(&ix.key_tick_array_one_0, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_one_0, accounts);
   // tick_array_one_1
-  replayer.set_whirlpool_account(&ix.key_tick_array_one_1, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_one_1, accounts);
   // tick_array_one_2
-  replayer.set_whirlpool_account(&ix.key_tick_array_one_2, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_one_2, accounts);
   // tick_array_two_0
-  replayer.set_whirlpool_account(&ix.key_tick_array_two_0, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_two_0, accounts);
   // tick_array_two_1
-  replayer.set_whirlpool_account(&ix.key_tick_array_two_1, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_two_1, accounts);
   // tick_array_two_2
-  replayer.set_whirlpool_account(&ix.key_tick_array_two_2, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_two_2, accounts);
   // oracle_one
   // oracle_two
 

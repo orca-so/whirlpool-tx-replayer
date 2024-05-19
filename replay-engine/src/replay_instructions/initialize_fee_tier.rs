@@ -8,10 +8,10 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializeFeeTier>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // fee_tier
   // funder
   replayer.set_funder_account(&ix.key_funder);

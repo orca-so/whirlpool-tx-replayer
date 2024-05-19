@@ -167,6 +167,24 @@ By performing the following verification before and after each instruction is ex
 ### think: direct use from Node.js (Typescript) similar to Bankrun
 https://kevinheavey.github.io/solana-bankrun/
 
+### Replace GZip by ZStandard
+
+### Using disk to hold state (reduce memory usage)
+
+### Fnmut callback, async callback
+
+### More callback
+- slot_begin_callback
+- slot_end_callback
+- transaction_begin_callback
+- transaction_end_callback
+- instruction_callback
+
+### Error handling
+- eliminate `unwrap` (panic)
+- eliminate `anyhow`
+
+### Support V2 instructions
 
 ## Related works
 ### solana-snapshot-gpa

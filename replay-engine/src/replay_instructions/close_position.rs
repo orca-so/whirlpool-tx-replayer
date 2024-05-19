@@ -9,15 +9,15 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePosition>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
-  let position_data = util::get_position_data(&ix.key_position, account_map);
+  let position_data = util::get_position_data(&ix.key_position, accounts);
   let position_mint = position_data.position_mint;
 
   // position_authority
   // receiver
   // position
-  replayer.set_whirlpool_account(&ix.key_position, account_map);
+  replayer.set_whirlpool_account(&ix.key_position, accounts);
   // position_mint
   //builder.add_token_mint(
   replayer.set_token_mint(

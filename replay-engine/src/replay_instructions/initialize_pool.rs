@@ -9,10 +9,10 @@ use crate::util::pubkey; // abbr
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePool>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpools_config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // token_mint_a
   replayer.set_token_mint(
     pubkey(&ix.key_token_mint_a),
@@ -35,7 +35,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   // token_vault_a
   // token_vault_b
   // fee_tier
-  replayer.set_whirlpool_account(&ix.key_fee_tier, account_map);
+  replayer.set_whirlpool_account(&ix.key_fee_tier, accounts);
   // token_program
   // system_program
   // rent

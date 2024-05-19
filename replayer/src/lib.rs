@@ -2,12 +2,14 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 
+use replay_engine::account_data_store::AccountDataStore;
 use replay_engine::decoded_instructions;
 use replay_engine::decoded_instructions::DecodedWhirlpoolInstruction;
 use replay_engine::replay_engine::ReplayEngine;
 
 pub use replay_engine::replay_instruction::ReplayInstructionResult;
-pub use replay_engine::types::{AccountMap, Slot};
+use replay_engine::types::ProgramData;
+pub use replay_engine::types::{AccountSnapshot, Slot};
 
 pub mod io;
 pub mod schema;
@@ -31,7 +33,7 @@ pub type InstructionCallback = fn(
     &Transaction,
     &String,
     &DecodedWhirlpoolInstruction,
-    &AccountMap,
+    &AccountDataStore,
     &ReplayInstructionResult,
 );
 
@@ -42,7 +44,7 @@ pub type AsyncInstructionCallback = Box<
         &Transaction,
         &String,
         &DecodedWhirlpoolInstruction,
-        &AccountMap,
+        &AccountDataStore,
         &ReplayInstructionResult
     ) -> Pin<Box<dyn 'static + Future<Output = ()> + Send>> + Send
 >;
@@ -58,6 +60,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_local_file_storage(
         base_path: &String,
         yyyymmdd: &String,
+        on_memory: bool,
     ) -> WhirlpoolReplayer {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -70,16 +73,14 @@ impl WhirlpoolReplayer {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_path = format!("{}/{}", base_path, transaction_file_relative_path);
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path, on_memory);
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 
         let replay_engine = ReplayEngine::new(
-            state.slot,
-            state.block_height,
-            state.block_time,
+            Slot::new(state.slot, state.block_height, state.block_time),
             state.program_data,
-            util::convert_accounts_to_account_map(&state.accounts),
+            state.accounts,
         );
 
         return WhirlpoolReplayer {
@@ -91,6 +92,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_remote_file_storage(
         base_url: &String,
         yyyymmdd: &String,
+        on_memory: bool,
     ) -> WhirlpoolReplayer {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -103,16 +105,14 @@ impl WhirlpoolReplayer {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
 
-        let state = io::load_from_remote_whirlpool_state_file(&state_file_url);
+        let state = io::load_from_remote_whirlpool_state_file(&state_file_url, on_memory);
         let transaction_iter =
             io::load_from_remote_whirlpool_transaction_file(&transaction_file_url);
 
         let replay_engine = ReplayEngine::new(
-            state.slot,
-            state.block_height,
-            state.block_time,
+            Slot::new(state.slot, state.block_height, state.block_time),
             state.program_data,
-            util::convert_accounts_to_account_map(&state.accounts),
+            state.accounts,
         );
 
         return WhirlpoolReplayer {
@@ -124,6 +124,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_remote_file_storage_with_local_cache(
         base_url: &String,
         yyyymmdd: &String,
+        on_memory: bool,
         cache_dir_path: &String,
         refresh: bool,
     ) -> WhirlpoolReplayer {
@@ -149,16 +150,14 @@ impl WhirlpoolReplayer {
             io::download_from_remote_storage(&transaction_file_url, &transaction_file_path);
         }
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path, on_memory);
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 
         let replay_engine = ReplayEngine::new(
-            state.slot,
-            state.block_height,
-            state.block_time,
+            Slot::new(state.slot, state.block_height, state.block_time),
             state.program_data,
-            util::convert_accounts_to_account_map(&state.accounts),
+            state.accounts,
         );
 
         return WhirlpoolReplayer {
@@ -167,15 +166,15 @@ impl WhirlpoolReplayer {
         };
     }
 
-    pub fn get_slot(&self) -> Slot {
+    pub fn get_slot(&self) -> &Slot {
         return self.replay_engine.get_slot();
     }
 
-    pub fn get_program_data(&self) -> &Vec<u8> {
+    pub fn get_program_data(&self) -> &ProgramData {
         return self.replay_engine.get_program_data();
     }
 
-    pub fn get_accounts(&self) -> &AccountMap {
+    pub fn get_accounts(&self) -> &AccountDataStore {
         return self.replay_engine.get_accounts();
     }
 

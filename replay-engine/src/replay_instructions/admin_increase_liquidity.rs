@@ -33,12 +33,12 @@ impl ToAccountMetas for AdminIncreaseLiquidityInstructionAccounts {
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedAdminIncreaseLiquidity>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpools_config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // authority
     
   let tx = replayer.build_whirlpool_replay_transaction(

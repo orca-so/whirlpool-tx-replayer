@@ -1,31 +1,32 @@
 use crate::decoded_instructions::DecodedWhirlpoolInstruction;
 use crate::replay_environment::ReplayEnvironment;
 use crate::replay_instruction::{replay_whirlpool_instruction, ReplayInstructionResult};
-use crate::types::Slot;
-use crate::types::AccountMap;
+use crate::types::{ProgramData, Slot};
 use crate::programs;
 use crate::errors::ErrorCode;
 use crate::util;
 use crate::pubkeys;
+use crate::account_data_store::AccountDataStore;
+
+const MAX_EXECUTION_ON_REPLAY_ENVIRONMENT: u64 = 20_000;
 
 pub struct ReplayEngine {
+  // state
   slot: Slot,
-  program_data: Vec<u8>,
-  accounts: AccountMap,
+  program_data: ProgramData,
+  accounts: AccountDataStore,
+  // environment
   environment: ReplayEnvironment,
   replay_execution_counter: u64,
 }
 
 impl ReplayEngine {
   pub fn new(
-    slot: u64,
-    block_height: u64,
-    block_time: i64,
-    program_data: Vec<u8>,
-    accounts: AccountMap,
+    slot: Slot,
+    program_data: ProgramData,
+    accounts: AccountDataStore,
   ) -> ReplayEngine {
-    let slot = Slot { slot, block_height, block_time };
-    let environment = ReplayEngine::build_environment(block_time, &program_data);
+    let environment = ReplayEngine::build_environment(slot.block_time, &program_data);
     let replay_execution_counter = 0u64;
     return ReplayEngine {
       slot,
@@ -36,7 +37,7 @@ impl ReplayEngine {
     };
   }
 
-  fn build_environment(block_time: i64, program_data: &Vec<u8>) -> ReplayEnvironment {
+  fn build_environment(block_time: i64, program_data: &ProgramData) -> ReplayEnvironment {
     // The environment should be rebuilt periodically to avoid processing too many transactions in a single environment.
     // Since Solana is capable of handling 50,000 TPS, it should theoretically be able to safely handle 20,000 txs per bank, haha.
     let mut builder = ReplayEnvironment::builder();
@@ -66,15 +67,15 @@ impl ReplayEngine {
     return builder.build();
   }
 
-  pub fn get_slot(&self) -> Slot {
-    return self.slot;
+  pub fn get_slot(&self) -> &Slot {
+    return &self.slot;
   }
 
-  pub fn get_program_data(&self) -> &Vec<u8> {
+  pub fn get_program_data(&self) -> &ProgramData {
     return &self.program_data;
   }
 
-  pub fn get_accounts(&self) -> &AccountMap {
+  pub fn get_accounts(&self) -> &AccountDataStore {
     return &self.accounts;
   }
 
@@ -91,8 +92,7 @@ impl ReplayEngine {
 
   pub fn replay_instruction(&mut self, ix: &DecodedWhirlpoolInstruction) -> Result<ReplayInstructionResult, ErrorCode> {
     // rebuild periodically to avoid processing too many transactions in a single environment
-    // TODO: threshold tuning if needed
-    if self.replay_execution_counter > 20000 {
+    if self.replay_execution_counter >= MAX_EXECUTION_ON_REPLAY_ENVIRONMENT {
       self.environment = ReplayEngine::build_environment(self.slot.block_time, &self.program_data);
       self.replay_execution_counter = 0u64;
     }
@@ -112,11 +112,10 @@ impl ReplayEngine {
 
         if meta.status.is_ok() {
           // write back
-          util::update_account_map(
+          util::update_accounts(
             &mut self.accounts,
-            result.snapshot.pre_snapshot.clone(),
-            result.snapshot.post_snapshot.clone()
-          );
+            &result.snapshot,
+          ).unwrap();
         }
 
         return Ok(result);

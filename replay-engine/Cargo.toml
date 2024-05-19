@@ -13,11 +13,16 @@ base64 = { workspace = true }
 thiserror = { workspace = true }
 itertools = { workspace = true }
 tokio = { workspace = true }
+anyhow = { workspace = true }
+tempfile = { workspace = true }
 
 # anchor & whirlpool
 anchor-lang = { workspace = true }
 anchor-client = { workspace = true }
 whirlpool_base = { workspace = true }
+
+# RocksDB
+rocksdb = { workspace = true }
 
 # borsh
 borsh = { workspace = true }
