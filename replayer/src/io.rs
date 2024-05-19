@@ -8,6 +8,7 @@ use std::{
 };
 
 use crate::schema::*;
+use crate::serde::*;
 
 pub fn get_whirlpool_state_file_relative_path(date: &chrono::NaiveDate) -> String {
     format!(

@@ -13,7 +13,7 @@ pub use replay_engine::types::{AccountSnapshot, Slot};
 
 pub mod io;
 pub mod schema;
-pub mod util;
+pub mod serde;
 
 use schema::{Transaction, WhirlpoolTransaction};
 use tokio::sync::Mutex;

@@ -5,6 +5,44 @@ use serde::{
     ser::SerializeSeq,
 };
 use std::fmt;
+use serde_derive::{Deserialize, Serialize};
+use replay_engine::decoded_instructions::{deserialize_base64, serialize_base64};
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WhirlpoolStateOnMemoryDeserializer {
+  pub slot: u64,
+  pub block_height: u64,
+  pub block_time: i64,
+  #[serde(deserialize_with = "deserialize_account_data_store_on_memory")]
+  pub accounts: AccountDataStore,
+  #[serde(deserialize_with = "deserialize_base64")]
+  pub program_data: Vec<u8>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WhirlpoolStateOnDiskDeserializer {
+  pub slot: u64,
+  pub block_height: u64,
+  pub block_time: i64,
+  #[serde(deserialize_with = "deserialize_account_data_store_on_disk")]
+  pub accounts: AccountDataStore,
+  #[serde(deserialize_with = "deserialize_base64")]
+  pub program_data: Vec<u8>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WhirlpoolStateSerializer<'a> {
+  pub slot: u64,
+  pub block_height: u64,
+  pub block_time: i64,
+  #[serde(serialize_with = "serialize_account_data_store")]
+  pub accounts: &'a AccountDataStore,
+  #[serde(serialize_with = "serialize_base64")]
+  pub program_data: &'a Vec<u8>,
+}
 
 pub fn deserialize_account_data_store_on_memory<'de, D>(
     deserializer: D,

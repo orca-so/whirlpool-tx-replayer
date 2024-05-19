@@ -169,7 +169,10 @@ https://kevinheavey.github.io/solana-bankrun/
 
 ### Replace GZip by ZStandard
 
-### Using disk to hold state (reduce memory usage)
+### ~~Using disk to hold state (reduce memory usage)~~
+- introduce AccountDataStore
+- AccountDataStore on memory
+- AccountDataStore on disk (RocksDB)
 
 ### Fnmut callback, async callback
 
