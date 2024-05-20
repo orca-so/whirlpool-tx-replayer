@@ -27,9 +27,9 @@ impl AccountDataStore {
     }
   }
 
-  pub fn new_on_disk() -> Self {
+  pub fn new_on_disk<P: AsRef<std::path::Path>>(dir: Option<P>) -> Self {
     Self {
-      inner: AccountDataStoreInner::RocksDB(rocksdb::RocksDBAccountDataStore::new())
+      inner: AccountDataStoreInner::RocksDB(rocksdb::RocksDBAccountDataStore::new(dir))
     }
   }
 

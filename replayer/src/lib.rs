@@ -16,6 +16,7 @@ pub mod schema;
 pub mod serde;
 
 use schema::{Transaction, WhirlpoolTransaction};
+use serde::AccountDataStoreConfig;
 use tokio::sync::Mutex;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -60,7 +61,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_local_file_storage(
         base_path: &String,
         yyyymmdd: &String,
-        on_memory: bool,
+        account_data_store_config: &AccountDataStoreConfig,
     ) -> WhirlpoolReplayer {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -73,7 +74,7 @@ impl WhirlpoolReplayer {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_path = format!("{}/{}", base_path, transaction_file_relative_path);
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path, on_memory);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path, account_data_store_config);
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 
@@ -92,7 +93,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_remote_file_storage(
         base_url: &String,
         yyyymmdd: &String,
-        on_memory: bool,
+        account_data_store_config: &AccountDataStoreConfig,
     ) -> WhirlpoolReplayer {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -105,7 +106,7 @@ impl WhirlpoolReplayer {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
 
-        let state = io::load_from_remote_whirlpool_state_file(&state_file_url, on_memory);
+        let state = io::load_from_remote_whirlpool_state_file(&state_file_url, account_data_store_config);
         let transaction_iter =
             io::load_from_remote_whirlpool_transaction_file(&transaction_file_url);
 
@@ -124,7 +125,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_remote_file_storage_with_local_cache(
         base_url: &String,
         yyyymmdd: &String,
-        on_memory: bool,
+        account_data_store_config: &AccountDataStoreConfig,
         cache_dir_path: &String,
         refresh: bool,
     ) -> WhirlpoolReplayer {
@@ -150,7 +151,7 @@ impl WhirlpoolReplayer {
             io::download_from_remote_storage(&transaction_file_url, &transaction_file_path);
         }
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path, on_memory);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path, account_data_store_config);
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 

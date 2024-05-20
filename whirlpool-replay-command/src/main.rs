@@ -1,5 +1,5 @@
 use clap::Parser;
-use whirlpool_replayer::{io, schema, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
+use whirlpool_replayer::{io, schema, serde, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
 
 use anchor_lang::prelude::*;
 use whirlpool_base::state::Whirlpool;
@@ -34,10 +34,17 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let on_memory = args.memory;
-
     let base_path_or_url: String = args.storage;
     let yyyymmdd: String = args.yyyymmdd;
+
+    let account_data_store_config = if args.memory {
+        // account data will be stored on memory
+        serde::AccountDataStoreConfig::OnMemory
+    } else {
+        // account data will be stored on RocksDB in system default temporary directory (e.g. /tmp)
+        // very small memory footprint, but (10% ~ 20%) slower than on-memory
+        serde::AccountDataStoreConfig::OnDisk(None)
+    };
 
     let until_condition = if args.stop_slot.is_some() {
         ReplayUntil::Slot(args.stop_slot.unwrap())
@@ -55,15 +62,15 @@ fn main() {
             WhirlpoolReplayer::build_with_remote_file_storage_with_local_cache(
                 &base_path_or_url,
                 &yyyymmdd,
-                on_memory,
+                &account_data_store_config,
                 &cache_dir,
                 false,
             )
         } else {
-            WhirlpoolReplayer::build_with_remote_file_storage(&base_path_or_url, &yyyymmdd, on_memory)
+            WhirlpoolReplayer::build_with_remote_file_storage(&base_path_or_url, &yyyymmdd, &account_data_store_config)
         }
     } else {
-        WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd, on_memory)
+        WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd, &account_data_store_config)
     };
 
     let slot_callback: Option<SlotCallback> = Some(|slot| {

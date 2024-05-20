@@ -28,54 +28,18 @@ pub fn get_whirlpool_transaction_file_relative_path(date: &chrono::NaiveDate) ->
     )
 }
 
-pub fn load_from_local_whirlpool_state_file(file_path: &String, on_memory: bool) -> WhirlpoolState {
+pub fn load_from_local_whirlpool_state_file(file_path: &String, account_data_store_config: &AccountDataStoreConfig) -> WhirlpoolState {
     let file = File::open(file_path).unwrap();
     let decoder = GzDecoder::new(file);
     let reader = BufReader::new(decoder);
-    if on_memory {
-        let deserialized: WhirlpoolStateOnMemoryDeserializer = serde_json::from_reader(reader).unwrap();
-        WhirlpoolState {
-            slot: deserialized.slot,
-            block_height: deserialized.block_height,
-            block_time: deserialized.block_time,
-            program_data: deserialized.program_data,
-            accounts: deserialized.accounts,
-        }
-    } else {
-        let deserialized: WhirlpoolStateOnDiskDeserializer = serde_json::from_reader(reader).unwrap();
-        WhirlpoolState {
-            slot: deserialized.slot,
-            block_height: deserialized.block_height,
-            block_time: deserialized.block_time,
-            program_data: deserialized.program_data,
-            accounts: deserialized.accounts,
-        }
-    }
+    deserialize_whirlpool_state_from_reader(reader, account_data_store_config.clone())
 }
 
-pub fn load_from_remote_whirlpool_state_file(url: &String, on_memory: bool) -> WhirlpoolState {
+pub fn load_from_remote_whirlpool_state_file(url: &String, account_data_store_config: &AccountDataStoreConfig) -> WhirlpoolState {
     let response = reqwest::blocking::get(url).unwrap();
     let decoder = GzDecoder::new(response);
     let reader = BufReader::new(decoder);
-    if on_memory {
-        let deserialized: WhirlpoolStateOnMemoryDeserializer = serde_json::from_reader(reader).unwrap();
-        WhirlpoolState {
-            slot: deserialized.slot,
-            block_height: deserialized.block_height,
-            block_time: deserialized.block_time,
-            program_data: deserialized.program_data,
-            accounts: deserialized.accounts,
-        }
-    } else {
-        let deserialized: WhirlpoolStateOnDiskDeserializer = serde_json::from_reader(reader).unwrap();
-        WhirlpoolState {
-            slot: deserialized.slot,
-            block_height: deserialized.block_height,
-            block_time: deserialized.block_time,
-            program_data: deserialized.program_data,
-            accounts: deserialized.accounts,
-        }
-    }
+    deserialize_whirlpool_state_from_reader(reader, account_data_store_config.clone())
 }
 
 pub fn save_to_whirlpool_state_file(

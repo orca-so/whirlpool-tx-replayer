@@ -10,8 +10,12 @@ pub struct RocksDBAccountDataStore {
 }
 
 impl RocksDBAccountDataStore {
-    pub fn new() -> Self {
-        let rocksdb_temp_dir = tempfile::tempdir().unwrap();
+    pub fn new<P: AsRef<std::path::Path>>(dir: Option<P>) -> Self {
+        let rocksdb_temp_dir = if let Some(dir) = dir {
+            tempfile::tempdir_in(dir).unwrap()
+        } else {
+            tempfile::tempdir().unwrap()
+        };
         let path = rocksdb_temp_dir.path().to_str().unwrap();
         let db = rocksdb::DB::open_default(path).unwrap();
         Self {
