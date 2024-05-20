@@ -7,7 +7,7 @@ use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
 
 use crate::account_data_store::AccountDataStore;
 use crate::pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID;
-use crate::replay_instruction::WritableAccountSnapshot;
+use crate::types::WritableAccountSnapshot;
 
 pub fn get_whirlpool_data(pubkey_string: &String, accounts: &AccountDataStore) -> Whirlpool {
     let data = accounts.get(pubkey_string).unwrap().unwrap();
@@ -74,7 +74,7 @@ pub fn update_accounts(
     let closed_account_pubkeys: Vec<String> = pre_snapshot
         .keys()
         .filter(|k| !post_snapshot.contains_key(*k))
-        .map(|k| k.clone())
+        .cloned()
         .collect();
 
     // insert created & update accounts

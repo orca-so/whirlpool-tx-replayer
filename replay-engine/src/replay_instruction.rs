@@ -5,6 +5,7 @@ use std::str::FromStr;
 
 use crate::account_data_store::AccountDataStore;
 use crate::errors::ErrorCode;
+use crate::types::WritableAccountSnapshot;
 use crate::{decoded_instructions::DecodedWhirlpoolInstruction, types::AccountSnapshot};
 use solana_sdk::{pubkey::Pubkey, transaction::Transaction, instruction::{Instruction, AccountMeta}, message::Message};
 use solana_sdk::signer::Signer;
@@ -16,12 +17,6 @@ use crate::replay_environment;
 use crate::replay_environment::ReplayEnvironment;
 
 use crate::pubkeys;
-
-#[derive(Clone)]
-pub struct WritableAccountSnapshot {
-  pub pre_snapshot: AccountSnapshot,
-  pub post_snapshot: AccountSnapshot,
-}
 
 #[derive(Clone)]
 pub struct ReplayInstructionResult {
@@ -83,7 +78,21 @@ pub fn replay_whirlpool_instruction(
   }
 }
 
-
+impl ReplayInstructionResult {
+  pub fn new(
+    transaction_status: ConfirmedTransactionWithStatusMeta,
+    pre_snapshot: AccountSnapshot,
+    post_snapshot: AccountSnapshot,
+  ) -> Self {
+    Self {
+      transaction_status,
+      snapshot: WritableAccountSnapshot {
+        pre_snapshot,
+        post_snapshot,
+      },
+    }
+  }
+}
 
 impl ReplayEnvironment {
   pub fn set_whirlpool_account(&mut self, pubkey: &String, accounts: &AccountDataStore) {

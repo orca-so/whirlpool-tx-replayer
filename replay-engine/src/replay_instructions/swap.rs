@@ -2,7 +2,7 @@ use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
-use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
 use crate::util;
 use crate::util::pubkey; // abbr
 
@@ -90,7 +90,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     &ix.key_tick_array_2,
   ]);
   
-  let replay_result = replayer.execute_transaction(tx);
+  let transaction_status = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
@@ -99,13 +99,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     &ix.key_tick_array_2,
   ]);
 
-  return ReplayInstructionResult {
-    transaction_status: replay_result,
-    snapshot: WritableAccountSnapshot {
-      pre_snapshot,
-      post_snapshot,
-    }
-  }
+  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
 }
 
 
