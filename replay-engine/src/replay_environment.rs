@@ -16,10 +16,13 @@ use solana_program::{
     system_program,
     sysvar,
 };
-use solana_runtime::{
+use solana_accounts_db::{
     accounts_db::AccountShrinkThreshold,
     accounts_index::AccountSecondaryIndexes,
-    bank::{Bank, TransactionBalancesSet, TransactionExecutionResult, TransactionResults},
+    transaction_results::{TransactionExecutionResult, TransactionResults},
+};
+use solana_runtime::{
+    bank::{Bank, TransactionBalancesSet},
     genesis_utils,
     runtime_config::RuntimeConfig,
 };
@@ -604,12 +607,12 @@ impl ReplayEnvironmentBuilder {
         };
         */
         let mut accounts_index_config =
-            solana_runtime::accounts_index::ACCOUNTS_INDEX_CONFIG_FOR_TESTING;
+            solana_accounts_db::accounts_index::ACCOUNTS_INDEX_CONFIG_FOR_TESTING;
         accounts_index_config.index_limit_mb =
-            solana_runtime::accounts_index::IndexLimitMb::InMemOnly;
+            solana_accounts_db::accounts_index::IndexLimitMb::InMemOnly;
         //accounts_index_config.flush_threads = Some(5);
 
-        let mut accounts_db_config = solana_runtime::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
+        let mut accounts_db_config = solana_accounts_db::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
         accounts_db_config.index = Some(accounts_index_config);
 
         // set compute budget to max
@@ -630,7 +633,7 @@ impl ReplayEnvironmentBuilder {
             false,
             Some(accounts_db_config), //None,
             None,
-            &exit,
+            exit,
         );
         /*
         let bank = Bank::new_with_paths_for_tests(
@@ -649,8 +652,8 @@ impl ReplayEnvironmentBuilder {
         // - slot0: genesis (always slot 0)
         // - slot1: slot for program deployment
         // - slot2: slot for transaction processing
-        let bank_slot1 = Bank::new_from_parent(&Arc::new(bank_slot0), &Pubkey::default(), 1u64);
-        let bank_slot2: Bank = Bank::new_from_parent(&Arc::new(bank_slot1), &Pubkey::default(), 2u64);
+        let bank_slot1 = Bank::new_from_parent(Arc::new(bank_slot0), &Pubkey::default(), 1u64);
+        let bank_slot2: Bank = Bank::new_from_parent(Arc::new(bank_slot1), &Pubkey::default(), 2u64);
 
         let env = ReplayEnvironment {
             bank: bank_slot2,

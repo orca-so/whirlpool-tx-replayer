@@ -31,6 +31,7 @@ borsh = { workspace = true }
 solana-sdk = { workspace = true }
 solana-program = { workspace = true }
 solana-program-runtime = { workspace = true }
+solana-accounts-db = { workspace = true }
 solana-transaction-status = { workspace = true }
 solana-client = { workspace = true }
 solana-runtime = { workspace = true }

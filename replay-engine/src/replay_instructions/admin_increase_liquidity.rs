@@ -2,11 +2,10 @@ use crate::decoded_instructions;
 use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
 use crate::util::pubkey; // abbr
 
-use anchor_lang::{InstructionData, ToAccountMetas, Discriminator};
+use anchor_lang::{InstructionData, ToAccountMetas, Discriminator, AnchorSerialize};
 use anchor_lang::solana_program::pubkey::Pubkey;
-use borsh::BorshSerialize;
 
-#[derive(BorshSerialize)]
+#[derive(AnchorSerialize)]
 struct AdminIncreaseLiquidityInstructionArgs {
   pub liquidity: u128,
 }
