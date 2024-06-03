@@ -172,7 +172,7 @@ impl ReplayEnvironment {
             pub decimals: u8, // 1
             pub is_initialized: bool, // 1
             pub coption_freeze_authority: u32, // 4
-            pub freeze_authority: Pubkey, // 4 + 32
+            pub freeze_authority: Pubkey, // 32
     
             // 83 for padding
             pub padding1: [u8; 32],
