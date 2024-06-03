@@ -38,4 +38,5 @@ solana-runtime = { workspace = true }
 solana-cli-output = { workspace = true }
 solana-ledger = { workspace = true }
 spl-token = { workspace = true }
+spl-token-2022 = { workspace = true }
 

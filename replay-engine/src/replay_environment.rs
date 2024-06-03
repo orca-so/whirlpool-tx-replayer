@@ -10,7 +10,7 @@ use itertools::izip;
 use solana_program::{
     bpf_loader, bpf_loader_upgradeable,
     hash::Hash,
-    program_option::COption,
+//    program_option::COption,
     program_pack::Pack,
     pubkey::Pubkey,
     system_program,
@@ -316,7 +316,7 @@ impl ReplayEnvironment {
         };
         self.set_account_with_data(pubkey, owner, &data, false)
     }
-
+/* 
     pub fn set_token_mint(
         &mut self,
         pubkey: Pubkey,
@@ -361,7 +361,7 @@ impl ReplayEnvironment {
             },
         )
     }
-    
+   */ 
     /// Advance the bank to the next blockhash.
     pub fn advance_blockhash(&self) -> Hash {
         let parent_distance = if self.bank.slot() == 0 {

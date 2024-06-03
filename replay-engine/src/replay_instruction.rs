@@ -1,6 +1,6 @@
 use anyhow::Result;
 use solana_transaction_status::ConfirmedTransactionWithStatusMeta;
-
+use solana_program::program_option::COption;
 use std::str::FromStr;
 
 use crate::account_data_store::AccountDataStore;
@@ -10,7 +10,7 @@ use crate::{decoded_instructions::DecodedWhirlpoolInstruction, types::AccountSna
 use solana_sdk::{pubkey::Pubkey, transaction::Transaction, instruction::{Instruction, AccountMeta}, message::Message};
 use solana_sdk::signer::Signer;
 
-use anchor_lang::{InstructionData, ToAccountMetas};
+use anchor_lang::{InstructionData, ToAccountMetas, AnchorSerialize};
 
 use crate::replay_instructions;
 use crate::replay_environment;
@@ -70,6 +70,22 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetRewardAuthority(decoded) => Ok(replay_instructions::set_reward_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetRewardAuthorityBySuperAuthority(decoded) => Ok(replay_instructions::set_reward_authority_by_super_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetRewardEmissionsSuperAuthority(decoded) => Ok(replay_instructions::set_reward_emissions_super_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // v2 instructions
+    DecodedWhirlpoolInstruction::CollectFeesV2(decoded) => Ok(replay_instructions::collect_fees_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::CollectProtocolFeesV2(decoded) => Ok(replay_instructions::collect_protocol_fees_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::CollectRewardV2(decoded) => Ok(replay_instructions::collect_reward_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::DecreaseLiquidityV2(decoded) => Ok(replay_instructions::decrease_liquidity_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::IncreaseLiquidityV2(decoded) => Ok(replay_instructions::increase_liquidity_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SwapV2(decoded) => Ok(replay_instructions::swap_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::TwoHopSwapV2(decoded) => Ok(replay_instructions::two_hop_swap_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::InitializePoolV2(decoded) => Ok(replay_instructions::initialize_pool_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::InitializeRewardV2(decoded) => Ok(replay_instructions::initialize_reward_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetRewardEmissionsV2(decoded) => Ok(replay_instructions::set_reward_emissions_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::InitializeConfigExtension(decoded) => Ok(replay_instructions::initialize_config_extension::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::InitializeTokenBadge(decoded) => Ok(replay_instructions::initialize_token_badge::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::DeleteTokenBadge(decoded) => Ok(replay_instructions::delete_token_badge::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetConfigExtensionAuthority(decoded) => Ok(replay_instructions::set_config_extension_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetTokenBadgeAuthority(decoded) => Ok(replay_instructions::set_token_badge_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {
@@ -94,7 +110,240 @@ impl ReplayInstructionResult {
   }
 }
 
+pub enum TokenTrait {
+  Token,
+  TokenExtensions,
+  TokenExtensionsWithTransferFee(u16, u64), // bps, max
+}
+
 impl ReplayEnvironment {
+  pub fn set_token_mint(
+    &mut self,
+    pubkey: Pubkey,
+    mint_authority: Option<Pubkey>,
+    supply: u64,
+    decimals: u8,
+    freeze_authority: Option<Pubkey>,
+  ) -> &mut Self {
+      self.set_account_with_packable(
+          pubkey,
+          spl_token::ID,
+          spl_token::state::Mint {
+              mint_authority: COption::from(mint_authority.map(|c| c.clone())),
+              supply,
+              decimals,
+              is_initialized: true,
+              freeze_authority: COption::from(freeze_authority.map(|c| c.clone())),
+          },
+      )
+  }
+
+  pub fn set_token_mint_with_trait(
+    &mut self,
+    token_trait: TokenTrait,
+    pubkey: Pubkey,
+    mint_authority: Option<Pubkey>,
+    supply: u64,
+    decimals: u8,
+    freeze_authority: Option<Pubkey>,
+  ) -> &mut Self {
+    match token_trait {
+      TokenTrait::Token => { self.set_token_mint(pubkey, mint_authority, supply, decimals, freeze_authority) }
+      TokenTrait::TokenExtensions => {
+        self.set_account_with_packable(
+          pubkey,
+          spl_token_2022::ID,
+          spl_token_2022::state::Mint {
+              mint_authority: COption::from(mint_authority.map(|c| c.clone())),
+              supply,
+              decimals,
+              is_initialized: true,
+              freeze_authority: COption::from(freeze_authority.map(|c| c.clone())),
+          },
+        )
+      }
+      TokenTrait::TokenExtensionsWithTransferFee(transfer_fee_basis_point, maximum_fee) => {
+        #[derive(Default, AnchorSerialize)]
+        struct MintWithTransferFeeConfigLayout {
+            // 82 for Mint
+            pub coption_mint_authority: u32, // 4
+            pub mint_authority: Pubkey, // 32
+            pub supply: u64, // 8
+            pub decimals: u8, // 1
+            pub is_initialized: bool, // 1
+            pub coption_freeze_authority: u32, // 4
+            pub freeze_authority: Pubkey, // 4 + 32
+    
+            // 83 for padding
+            pub padding1: [u8; 32],
+            pub padding2: [u8; 32],
+            pub padding3: [u8; 19],
+    
+            pub account_type: u8, // 1
+    
+            pub extension_type: u16, // 2
+            pub extension_length: u16, // 2
+            // 108 for TransferFeeConfig data
+            pub transfer_fee_config_authority: Pubkey, // 32
+            pub withdraw_withheld_authority: Pubkey, // 32
+            pub withheld_amount: u64, // 8
+            pub older_epoch: u64, // 8
+            pub older_maximum_fee: u64, // 8
+            pub older_transfer_fee_basis_point: u16, // 2
+            pub newer_epoch: u64, // 8
+            pub newer_maximum_fee: u64, // 8
+            pub newer_transfer_fee_basis_point: u16, // 2
+        }
+        impl MintWithTransferFeeConfigLayout {
+            pub const LEN: usize = 82 + 83 + 1 + 2 + 2 + 108; // 278
+        }
+
+        let (coption_mint_authority, mint_authority) = if let Some(authority) = mint_authority {
+          (1u32, authority)
+        } else {
+          (0u32, Pubkey::default())
+        };
+        let (coption_freeze_authority, freeze_authority) = if let Some(authority) = freeze_authority {
+          (1u32, authority)
+        } else {
+          (0u32, Pubkey::default())
+        };
+
+        let data = MintWithTransferFeeConfigLayout {
+          coption_mint_authority,
+          mint_authority,
+          supply,
+          decimals,
+          is_initialized: true,
+          coption_freeze_authority,
+          freeze_authority,
+          // extension part
+          account_type: 1, // Mint
+          extension_type: 1, // TransferFeeConfig
+          extension_length: 108,
+          older_epoch: 0,
+          older_maximum_fee: maximum_fee,
+          older_transfer_fee_basis_point: transfer_fee_basis_point,
+          newer_epoch: 0,
+          newer_maximum_fee: maximum_fee,
+          newer_transfer_fee_basis_point: transfer_fee_basis_point,
+          ..Default::default()
+        };
+
+        let mut packed = Vec::with_capacity(MintWithTransferFeeConfigLayout::LEN);
+        data.serialize(&mut packed).unwrap();
+        self.set_account_with_data(
+          pubkey,
+          spl_token_2022::ID,
+          &packed,
+          false
+        )
+      }
+    }
+  }
+
+  // Add a token-account into the environment.
+  pub fn set_token_account(
+      &mut self,
+      pubkey: Pubkey,
+      mint: Pubkey,
+      owner: Pubkey,
+      amount: u64,
+  ) -> &mut Self {
+      self.set_account_with_packable(
+          pubkey,
+          spl_token::ID,
+          spl_token::state::Account {
+              mint,
+              owner,
+              amount,
+              delegate: COption::None,
+              state: spl_token::state::AccountState::Initialized,
+              is_native: COption::None,
+              delegated_amount: 0,
+              close_authority: COption::None,
+          },
+      )
+  }
+
+  pub fn set_token_account_with_trait(
+    &mut self,
+    token_trait: TokenTrait,
+    pubkey: Pubkey,
+    mint: Pubkey,
+    owner: Pubkey,
+    amount: u64,
+  ) -> &mut Self {
+    match token_trait {
+      TokenTrait::Token => { self.set_token_account(pubkey, mint, owner, amount) }
+      TokenTrait::TokenExtensions => {
+        self.set_account_with_packable(
+          pubkey,
+          spl_token_2022::ID,
+          spl_token_2022::state::Account {
+              mint,
+              owner,
+              amount,
+              delegate: COption::None,
+              state: spl_token_2022::state::AccountState::Initialized,
+              is_native: COption::None,
+              delegated_amount: 0,
+              close_authority: COption::None,
+          },
+        )
+      }
+      TokenTrait::TokenExtensionsWithTransferFee(_transfer_fee_basis_point, _maximum_fee) => {
+        #[derive(Default, AnchorSerialize)]
+        struct AccountWithTransferFeeAmountLayout {
+            // 165 for Account
+            pub mint: Pubkey, // 32
+            pub owner: Pubkey, // 32
+            pub amount: u64, // 8
+            pub coption_delegate: u32, // 4
+            pub delegate: Pubkey, // 32
+            pub state: u8, // 1
+            pub coption_is_native: u32, // 4
+            pub is_native: u64, // 8
+            pub delegated_amount: u64, // 8
+            pub coption_close_authority: u32, // 4
+            pub close_authority: Pubkey, // 32
+    
+            pub account_type: u8, // 1
+    
+            pub extension_type: u16, // 2
+            pub extension_length: u16, // 2
+            // 8 for TransferFeeAmount data
+            pub withheld_amount: u64, // 8
+        }
+        impl AccountWithTransferFeeAmountLayout {
+            pub const LEN: usize = 165 + 1 + 2 + 2 + 8; // 178
+        }
+
+        let data = AccountWithTransferFeeAmountLayout {
+          mint,
+          owner,
+          amount,
+          state: 1, // Initialized
+          // extension part
+          account_type: 2, // Account
+          extension_type: 2, // TransferFeeAmount
+          extension_length: 8,
+          withheld_amount: 0,
+          ..Default::default()
+        };
+
+        let mut packed = Vec::with_capacity(AccountWithTransferFeeAmountLayout::LEN);
+        data.serialize(&mut packed).unwrap();
+        self.set_account_with_data(
+          pubkey,
+          spl_token_2022::ID,
+          &packed,
+          false
+        )
+      }
+    }
+  }
+
   pub fn set_whirlpool_account(&mut self, pubkey: &String, accounts: &AccountDataStore) {
     self.set_account_with_data(
       Pubkey::from_str(pubkey).unwrap(),

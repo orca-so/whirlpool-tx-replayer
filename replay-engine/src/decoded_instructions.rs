@@ -917,6 +917,8 @@ pub type RemainingAccountsKeys = Vec<String>;
 pub struct TransferAmountWithTransferFeeConfig {
   #[serde(deserialize_with = "deserialize_u64")]
   pub amount: u64,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub transfer_fee_config_opt: bool,
   pub transfer_fee_config_bps: u16,
   #[serde(deserialize_with = "deserialize_u64")]
   pub transfer_fee_config_max: u64,
