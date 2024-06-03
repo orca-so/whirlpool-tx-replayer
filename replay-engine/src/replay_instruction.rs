@@ -110,6 +110,7 @@ impl ReplayInstructionResult {
   }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum TokenTrait {
   Token,
   TokenExtensions,

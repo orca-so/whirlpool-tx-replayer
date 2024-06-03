@@ -32,7 +32,15 @@ pub mod set_reward_emissions_super_authority;
 pub mod admin_increase_liquidity;
 
 pub mod collect_fees_v2;
-
+pub mod collect_protocol_fees_v2;
+pub mod collect_reward_v2;
+pub mod decrease_liquidity_v2;
+pub mod increase_liquidity_v2;
+pub mod swap_v2;
+pub mod two_hop_swap_v2;
+pub mod initialize_pool_v2;
+pub mod initialize_reward_v2;
+pub mod set_reward_emissions_v2;
 /* 
 pub use swap::*;
 pub use two_hop_swap::*;

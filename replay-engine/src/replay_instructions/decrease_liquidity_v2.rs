@@ -6,7 +6,7 @@ use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult
 use crate::util;
 use crate::util::pubkey; // abbr
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectFeesV2>) -> ReplayInstructionResult {
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDecreaseLiquidity>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let accounts = req.accounts;
@@ -18,14 +18,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   let position_data = util::get_position_data(&ix.key_position, accounts);
   let position_mint = position_data.position_mint;
 
-  let amount_a = ix.transfer_0.amount;
-  let amount_b = ix.transfer_1.amount;
-
-  let token_trait_a = util::determine_token_trait(&ix.key_token_program_a, &ix.transfer_0);
-  let token_trait_b = util::determine_token_trait(&ix.key_token_program_b, &ix.transfer_1);
+  let amount_a = ix.transfer_amount_0;
+  let amount_b = ix.transfer_amount_1;
 
   // whirlpool
   replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
+  // token_program
   // position_authority
   // position
   replayer.set_whirlpool_account(&ix.key_position, accounts);
@@ -36,85 +34,65 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
     pubkey(&ix.key_position_authority),
     1u64
   );
-  // token_mint_a
-  replayer.set_token_mint_with_trait(
-    token_trait_a,
-    pubkey(&ix.key_token_mint_a),
-    None,
-    u64::MAX, // dummy
-    6, // dummy
-    None
-  );
-  // token_mint_b
-  replayer.set_token_mint_with_trait(
-    token_trait_b,
-    pubkey(&ix.key_token_mint_b),
-    None,
-    u64::MAX, // dummy
-    6, // dummy
-    None
-  );
   // token_owner_account_a
-  replayer.set_token_account_with_trait(
-    token_trait_a,
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_a),
     mint_a,
     pubkey(&ix.key_position_authority),
     0u64
   );
-  // token_vault_a
-  replayer.set_token_account_with_trait(
-    token_trait_a,
-    pubkey(&ix.key_token_vault_a),
-    mint_a,
-    pubkey(&ix.key_whirlpool),
-    amount_a
-  );
   // token_owner_account_b
-  replayer.set_token_account_with_trait(
-    token_trait_b,
+  replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_b),
     mint_b,
     pubkey(&ix.key_position_authority),
     0u64
   );
+  // token_vault_a
+  replayer.set_token_account(
+    pubkey(&ix.key_token_vault_a),
+    mint_a,
+    pubkey(&ix.key_whirlpool),
+    amount_a
+  );
   // token_vault_b
-  replayer.set_token_account_with_trait(
-    token_trait_b,
+  replayer.set_token_account(
     pubkey(&ix.key_token_vault_b),
     mint_b,
     pubkey(&ix.key_whirlpool),
     amount_b
   );
-  // token_program_a
-  // token_program_b
-  // memo_program
+  // tick_array_lower
+  replayer.set_whirlpool_account(&ix.key_tick_array_lower, accounts);
+  // tick_array_upper
+  replayer.set_whirlpool_account(&ix.key_tick_array_upper, accounts);
 
   let tx = replayer.build_whirlpool_replay_transaction(
-    whirlpool_ix_args::CollectFeesV2 {
-      // don't replay transfer hook
-      remaining_accounts_info: None,
+    whirlpool_ix_args::DecreaseLiquidity {
+      liquidity_amount: ix.data_liquidity_amount,
+      token_min_a: ix.data_token_amount_min_a,
+      token_min_b: ix.data_token_amount_min_b,
     },
-    whirlpool_ix_accounts::CollectFeesV2 {
+    whirlpool_ix_accounts::ModifyLiquidity {
       whirlpool: pubkey(&ix.key_whirlpool),
+      token_program: pubkey(&ix.key_token_program),
       position_authority: pubkey(&ix.key_position_authority),
       position: pubkey(&ix.key_position),
       position_token_account: pubkey(&ix.key_position_token_account),
-      token_mint_a: pubkey(&ix.key_token_mint_a),
-      token_mint_b: pubkey(&ix.key_token_mint_b),
       token_owner_account_a: pubkey(&ix.key_token_owner_account_a),
-      token_vault_a: pubkey(&ix.key_token_vault_a),
       token_owner_account_b: pubkey(&ix.key_token_owner_account_b),
+      token_vault_a: pubkey(&ix.key_token_vault_a),
       token_vault_b: pubkey(&ix.key_token_vault_b),
-      token_program_a: pubkey(&ix.key_token_program_a),
-      token_program_b: pubkey(&ix.key_token_program_b),
-      memo_program: pubkey(&ix.key_memo_program),
+      tick_array_lower: pubkey(&ix.key_tick_array_lower),
+      tick_array_upper: pubkey(&ix.key_tick_array_upper),
     },
   );
 
   let pre_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
+    &ix.key_tick_array_lower,
+    &ix.key_tick_array_upper,
   ]);
   
   let transaction_status = replayer.execute_transaction(tx);
@@ -122,6 +100,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
+    &ix.key_tick_array_lower,
+    &ix.key_tick_array_upper,
   ]);
 
   ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)

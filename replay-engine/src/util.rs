@@ -6,7 +6,9 @@ use std::str::FromStr;
 use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
 
 use crate::account_data_store::AccountDataStore;
-use crate::pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID;
+use crate::decoded_instructions::TransferAmountWithTransferFeeConfig;
+use crate::pubkeys::{ORCA_WHIRLPOOL_PROGRAM_ID, SPL_TOKEN_PROGRAM_ID};
+use crate::replay_instruction::TokenTrait;
 use crate::types::WritableAccountSnapshot;
 
 pub fn get_whirlpool_data(pubkey_string: &String, accounts: &AccountDataStore) -> Whirlpool {
@@ -62,6 +64,24 @@ pub fn derive_whirlpool_bump(
         &ORCA_WHIRLPOOL_PROGRAM_ID,
     );
     return bump;
+}
+
+pub fn determine_token_trait(
+    token_program_pubkey_string: &String,
+    transfer: &TransferAmountWithTransferFeeConfig,
+) -> TokenTrait {
+    if SPL_TOKEN_PROGRAM_ID.eq(&pubkey(token_program_pubkey_string)) {
+        TokenTrait::Token
+    } else {
+        if transfer.transfer_fee_config_opt {
+            TokenTrait::TokenExtensionsWithTransferFee(
+                transfer.transfer_fee_config_bps,
+                transfer.transfer_fee_config_max
+            )
+        } else {
+            TokenTrait::TokenExtensions
+        }
+    }
 }
 
 pub fn update_accounts(

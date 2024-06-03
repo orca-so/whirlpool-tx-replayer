@@ -47,6 +47,7 @@ impl ReplayEngine {
 
     // deploy programs
     builder.add_upgradable_program(pubkeys::SPL_TOKEN_PROGRAM_ID, programs::SPL_TOKEN);
+    builder.add_upgradable_program(pubkeys::SPL_TOKEN_2022_PROGRAM_ID, programs::SPL_TOKEN_2022);
     builder.add_upgradable_program(pubkeys::SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, programs::SPL_ASSOCIATED_TOKEN_ACCOUNT);
     builder.add_upgradable_program(pubkeys::SPL_MEMO_PROGRAM_ID, programs::SPL_MEMO);
 
