@@ -35,16 +35,16 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   );
   // reward_owner_account
   replayer.set_token_account_with_trait(
-    reward_token_trait,
     pubkey(&ix.key_reward_owner_account),
+    reward_token_trait,
     mint_reward,
     pubkey(&ix.key_position_authority),
     0u64
   );
   // reward_mint
   replayer.set_token_mint_with_trait(
-    reward_token_trait,
     pubkey(&ix.key_reward_mint),
+    reward_token_trait,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -52,8 +52,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   );
   // reward_vault
   replayer.set_token_account_with_trait(
-    reward_token_trait,
     pubkey(&ix.key_reward_vault),
+    reward_token_trait,
     mint_reward,
     pubkey(&ix.key_whirlpool),
     amount_reward

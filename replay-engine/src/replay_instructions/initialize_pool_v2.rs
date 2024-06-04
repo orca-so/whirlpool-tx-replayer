@@ -18,8 +18,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // token_mint_a
   replayer.set_token_mint_with_trait(
-    token_trait_a,
     pubkey(&ix.key_token_mint_a),
+    token_trait_a,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -27,8 +27,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   );
   // token_mint_b
   replayer.set_token_mint_with_trait(
-    token_trait_b,
     pubkey(&ix.key_token_mint_b),
+    token_trait_b,
     None,
     u64::MAX, // dummy
     6, // dummy

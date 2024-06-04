@@ -38,8 +38,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_mint_a
   replayer.set_token_mint_with_trait(
-    token_trait_a,
     pubkey(&ix.key_token_mint_a),
+    token_trait_a,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -47,8 +47,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_mint_b
   replayer.set_token_mint_with_trait(
-    token_trait_b,
     pubkey(&ix.key_token_mint_b),
+    token_trait_b,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -56,32 +56,32 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
   );
   // token_owner_account_a
   replayer.set_token_account_with_trait(
-    token_trait_a,
     pubkey(&ix.key_token_owner_account_a),
+    token_trait_a,
     mint_a,
     pubkey(&ix.key_position_authority),
     0u64
   );
   // token_vault_a
   replayer.set_token_account_with_trait(
-    token_trait_a,
     pubkey(&ix.key_token_vault_a),
+    token_trait_a,
     mint_a,
     pubkey(&ix.key_whirlpool),
     amount_a
   );
   // token_owner_account_b
   replayer.set_token_account_with_trait(
-    token_trait_b,
     pubkey(&ix.key_token_owner_account_b),
+    token_trait_b,
     mint_b,
     pubkey(&ix.key_position_authority),
     0u64
   );
   // token_vault_b
   replayer.set_token_account_with_trait(
-    token_trait_b,
     pubkey(&ix.key_token_vault_b),
+    token_trait_b,
     mint_b,
     pubkey(&ix.key_whirlpool),
     amount_b

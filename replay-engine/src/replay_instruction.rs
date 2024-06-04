@@ -141,8 +141,8 @@ impl ReplayEnvironment {
 
   pub fn set_token_mint_with_trait(
     &mut self,
-    token_trait: TokenTrait,
     pubkey: Pubkey,
+    token_trait: TokenTrait,
     mint_authority: Option<Pubkey>,
     supply: u64,
     decimals: u8,
@@ -269,8 +269,8 @@ impl ReplayEnvironment {
 
   pub fn set_token_account_with_trait(
     &mut self,
-    token_trait: TokenTrait,
     pubkey: Pubkey,
+    token_trait: TokenTrait,
     mint: Pubkey,
     owner: Pubkey,
     amount: u64,

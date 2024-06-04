@@ -30,8 +30,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
   // whirlpool
   // token_mint_a
   replayer.set_token_mint_with_trait(
-    token_trait_a,
     pubkey(&ix.key_token_mint_a),
+    token_trait_a,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -39,8 +39,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
   );
   // token_mint_b
   replayer.set_token_mint_with_trait(
-    token_trait_b,
     pubkey(&ix.key_token_mint_b),
+    token_trait_b,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -49,32 +49,32 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
   replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // token_owner_account_a
   replayer.set_token_account_with_trait(
-    token_trait_a,
     pubkey(&ix.key_token_owner_account_a),
+    token_trait_a,
     mint_a,
     pubkey(&ix.key_token_authority),
     if mint_a_is_input { input_amount } else { 0u64 }
   );
   // vault_a
   replayer.set_token_account_with_trait(
-    token_trait_a,
     pubkey(&ix.key_vault_a),
+    token_trait_a,
     mint_a,
     pubkey(&ix.key_whirlpool),
     if mint_a_is_input { 0u64 } else { output_amount }
   );
   // token_owner_account_b
   replayer.set_token_account_with_trait(
-    token_trait_b,
     pubkey(&ix.key_token_owner_account_b),
+    token_trait_b,
     mint_b,
     pubkey(&ix.key_token_authority),
     if mint_b_is_input { input_amount } else { 0u64 }
   );
   // vault_b
   replayer.set_token_account_with_trait(
-    token_trait_b,
     pubkey(&ix.key_vault_b),
+    token_trait_b,
     mint_b,
     pubkey(&ix.key_whirlpool),
     if mint_b_is_input { 0u64 } else { output_amount }

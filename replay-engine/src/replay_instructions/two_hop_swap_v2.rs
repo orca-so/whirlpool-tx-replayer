@@ -36,8 +36,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   replayer.set_whirlpool_account(&ix.key_whirlpool_two, accounts);
   // token_mint_input
   replayer.set_token_mint_with_trait(
-    input_token_trait,
     input_mint,
+    input_token_trait,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -45,8 +45,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // token_mint_intermediate
   replayer.set_token_mint_with_trait(
-    intermediate_token_trait,
     intermediate_mint,
+    intermediate_token_trait,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -54,8 +54,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   );
   // token_mint_output
   replayer.set_token_mint_with_trait(
-    output_token_trait,
     output_mint,
+    output_token_trait,
     None,
     u64::MAX, // dummy
     6, // dummy
@@ -66,48 +66,48 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   // token_program_output
   // token_owner_account_input
   replayer.set_token_account_with_trait(
-    input_token_trait,
     pubkey(&ix.key_token_owner_account_input),
+    input_token_trait,
     input_mint,
     pubkey(&ix.key_token_authority),
     input_amount,
   );
   // token_vault_one_input
   replayer.set_token_account_with_trait(
-    input_token_trait,
     pubkey(&ix.key_vault_one_input),
+    input_token_trait,
     input_mint,
     pubkey(&ix.key_whirlpool_one),
     0u64,
   );
   // token_vault_one_intermediate
   replayer.set_token_account_with_trait(
-    intermediate_token_trait,
     pubkey(&ix.key_vault_one_intermediate),
+    intermediate_token_trait,
     intermediate_mint,
     pubkey(&ix.key_whirlpool_one),
     intermediate_amount,
   );
   // token_vault_two_intermediate
   replayer.set_token_account_with_trait(
-    intermediate_token_trait,
     pubkey(&ix.key_vault_two_intermediate),
+    intermediate_token_trait,
     intermediate_mint,
     pubkey(&ix.key_whirlpool_two),
     0u64,
   );
   // token_vault_two_output
   replayer.set_token_account_with_trait(
-    output_token_trait,
     pubkey(&ix.key_vault_two_output),
+    output_token_trait,
     output_mint,
     pubkey(&ix.key_whirlpool_two),
     output_amount,
   );
   // token_owner_account_output
   replayer.set_token_account_with_trait(
-    output_token_trait,
     pubkey(&ix.key_token_owner_account_output),
+    output_token_trait,
     output_mint,
     pubkey(&ix.key_token_authority),
     0u64,

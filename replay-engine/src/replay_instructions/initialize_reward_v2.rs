@@ -20,8 +20,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // reward_mint
   replayer.set_token_mint_with_trait(
-    reward_token_trait,
     pubkey(&ix.key_reward_mint),
+    reward_token_trait,
     None,
     u64::MAX, // dummy
     6, // dummy

@@ -316,52 +316,7 @@ impl ReplayEnvironment {
         };
         self.set_account_with_data(pubkey, owner, &data, false)
     }
-/* 
-    pub fn set_token_mint(
-        &mut self,
-        pubkey: Pubkey,
-        mint_authority: Option<Pubkey>,
-        supply: u64,
-        decimals: u8,
-        freeze_authority: Option<Pubkey>,
-    ) -> &mut Self {
-        self.set_account_with_packable(
-            pubkey,
-            spl_token::ID,
-            spl_token::state::Mint {
-                mint_authority: COption::from(mint_authority.map(|c| c.clone())),
-                supply,
-                decimals,
-                is_initialized: true,
-                freeze_authority: COption::from(freeze_authority.map(|c| c.clone())),
-            },
-        )
-    }
 
-    // Add a token-account into the environment.
-    pub fn set_token_account(
-        &mut self,
-        pubkey: Pubkey,
-        mint: Pubkey,
-        owner: Pubkey,
-        amount: u64,
-    ) -> &mut Self {
-        self.set_account_with_packable(
-            pubkey,
-            spl_token::ID,
-            spl_token::state::Account {
-                mint,
-                owner,
-                amount,
-                delegate: COption::None,
-                state: spl_token::state::AccountState::Initialized,
-                is_native: COption::None,
-                delegated_amount: 0,
-                close_authority: COption::None,
-            },
-        )
-    }
-   */ 
     /// Advance the bank to the next blockhash.
     pub fn advance_blockhash(&self) -> Hash {
         let parent_distance = if self.bank.slot() == 0 {
