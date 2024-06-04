@@ -6,7 +6,7 @@ use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult
 use crate::util;
 use crate::util::pubkey; // abbr
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectReward>) -> ReplayInstructionResult {
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectRewardV2>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let accounts = req.accounts;
@@ -17,7 +17,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   let position_data = util::get_position_data(&ix.key_position, accounts);
   let position_mint = position_data.position_mint;
 
-  let amount_reward = ix.transfer_amount_0;
+  let amount_reward = ix.transfer_0.amount;
+
+  let reward_token_trait = util::determine_token_trait(&ix.key_reward_token_program, &ix.transfer_0);
 
   // whirlpool
   replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
@@ -32,33 +34,49 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
     1u64
   );
   // reward_owner_account
-  replayer.set_token_account(
+  replayer.set_token_account_with_trait(
+    reward_token_trait,
     pubkey(&ix.key_reward_owner_account),
     mint_reward,
     pubkey(&ix.key_position_authority),
     0u64
   );
+  // reward_mint
+  replayer.set_token_mint_with_trait(
+    reward_token_trait,
+    pubkey(&ix.key_reward_mint),
+    None,
+    u64::MAX, // dummy
+    6, // dummy
+    None
+  );
   // reward_vault
-  replayer.set_token_account(
+  replayer.set_token_account_with_trait(
+    reward_token_trait,
     pubkey(&ix.key_reward_vault),
     mint_reward,
     pubkey(&ix.key_whirlpool),
     amount_reward
   );
-  // token_program
+  // reward_token_program
+  // memo_program
 
   let tx = replayer.build_whirlpool_replay_transaction(
-    whirlpool_ix_args::CollectReward {
+    whirlpool_ix_args::CollectRewardV2 {
       reward_index: ix.data_reward_index,
+      // don't replay transfer hook
+      remaining_accounts_info: None,
     },
-    whirlpool_ix_accounts::CollectReward {
+    whirlpool_ix_accounts::CollectRewardV2 {
       whirlpool: pubkey(&ix.key_whirlpool),
       position_authority: pubkey(&ix.key_position_authority),
       position: pubkey(&ix.key_position),
       position_token_account: pubkey(&ix.key_position_token_account),
       reward_owner_account: pubkey(&ix.key_reward_owner_account),
+      reward_mint: pubkey(&ix.key_reward_mint),
       reward_vault: pubkey(&ix.key_reward_vault),
-      token_program: pubkey(&ix.key_token_program),
+      reward_token_program: pubkey(&ix.key_reward_token_program),
+      memo_program:   pubkey(&ix.key_memo_program),
     },
   );
 

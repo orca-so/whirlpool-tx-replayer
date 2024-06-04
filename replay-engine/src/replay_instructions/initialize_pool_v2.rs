@@ -2,19 +2,23 @@ use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
-use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
-use crate::util::derive_whirlpool_bump;
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, TokenTrait};
+use crate::util;
 use crate::util::pubkey; // abbr
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePool>) -> ReplayInstructionResult {
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePoolV2>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let accounts = req.accounts;
 
+  let token_trait_a = if util::is_token_2022_program(&ix.key_token_program_a) { TokenTrait::TokenExtensions } else { TokenTrait::Token };
+  let token_trait_b = if util::is_token_2022_program(&ix.key_token_program_b) { TokenTrait::TokenExtensions } else { TokenTrait::Token };
+
   // whirlpools_config
   replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // token_mint_a
-  replayer.set_token_mint(
+  replayer.set_token_mint_with_trait(
+    token_trait_a,
     pubkey(&ix.key_token_mint_a),
     None,
     u64::MAX, // dummy
@@ -22,13 +26,16 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
     None
   );
   // token_mint_b
-  replayer.set_token_mint(
+  replayer.set_token_mint_with_trait(
+    token_trait_b,
     pubkey(&ix.key_token_mint_b),
     None,
     u64::MAX, // dummy
     6, // dummy
     None
   );
+  // token_badge_a (no need to set because token_mint_a has no extensions and freeze authority in replay)
+  // token_badge_b (no need to set because token_mint_b has no extensions and freeze authority in replay)
   // funder
   replayer.set_funder_account(&ix.key_funder);
   // whirlpool
@@ -36,34 +43,29 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   // token_vault_b
   // fee_tier
   replayer.set_whirlpool_account(&ix.key_fee_tier, accounts);
-  // token_program
+  // token_program_a
+  // token_program_b
   // system_program
   // rent
 
   let tx = replayer.build_whirlpool_replay_transaction(
-    whirlpool_ix_args::InitializePool {
-      bumps: whirlpool_base::state::WhirlpoolBumps {
-        // whirlpool_bump: after slot 189278833 this can be a dummy value, but older slots need to derive the bump
-        whirlpool_bump: derive_whirlpool_bump(
-          &pubkey(&ix.key_whirlpools_config),
-          &pubkey(&ix.key_token_mint_a),
-          &pubkey(&ix.key_token_mint_b),
-          ix.data_tick_spacing,
-        ),
-      },
+    whirlpool_ix_args::InitializePoolV2 {
       initial_sqrt_price: ix.data_initial_sqrt_price,
       tick_spacing: ix.data_tick_spacing,
     },
-    whirlpool_ix_accounts::InitializePool {
+    whirlpool_ix_accounts::InitializePoolV2 {
       whirlpools_config: pubkey(&ix.key_whirlpools_config),
       token_mint_a: pubkey(&ix.key_token_mint_a),
       token_mint_b: pubkey(&ix.key_token_mint_b),
+      token_badge_a: pubkey(&ix.key_token_badge_a),
+      token_badge_b: pubkey(&ix.key_token_badge_b),
       funder: pubkey(&ix.key_funder),
       whirlpool: pubkey(&ix.key_whirlpool),
       token_vault_a: pubkey(&ix.key_token_vault_a),
       token_vault_b: pubkey(&ix.key_token_vault_b),
       fee_tier: pubkey(&ix.key_fee_tier),
-      token_program: pubkey(&ix.key_token_program),
+      token_program_a: pubkey(&ix.key_token_program_a),
+      token_program_b: pubkey(&ix.key_token_program_b),
       system_program: pubkey(&ix.key_system_program),
       rent: pubkey(&ix.key_rent),
     },

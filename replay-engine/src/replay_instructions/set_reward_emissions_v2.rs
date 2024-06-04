@@ -6,7 +6,7 @@ use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult
 use crate::util;
 use crate::util::pubkey; // abbr
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetRewardEmissions>) -> ReplayInstructionResult {
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetRewardEmissionsV2>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let accounts = req.accounts;
@@ -17,7 +17,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetRewar
   // whirlpool
   replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // reward_authority
-  // reward_vault
+  // reward_vault (no need to determine Token or TokenExtensions)
   replayer.set_token_account(
     pubkey(&ix.key_reward_vault),
     mint_reward,
@@ -26,11 +26,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetRewar
   );
     
   let tx = replayer.build_whirlpool_replay_transaction(
-    whirlpool_ix_args::SetRewardEmissions {
+    whirlpool_ix_args::SetRewardEmissionsV2 {
       reward_index: ix.data_reward_index,
       emissions_per_second_x64: ix.data_emissions_per_second_x64,
     },
-    whirlpool_ix_accounts::SetRewardEmissions {
+    whirlpool_ix_accounts::SetRewardEmissionsV2 {
       whirlpool: pubkey(&ix.key_whirlpool),
       reward_authority: pubkey(&ix.key_reward_authority),
       reward_vault: pubkey(&ix.key_reward_vault),

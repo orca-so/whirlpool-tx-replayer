@@ -7,7 +7,7 @@ use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
 
 use crate::account_data_store::AccountDataStore;
 use crate::decoded_instructions::TransferAmountWithTransferFeeConfig;
-use crate::pubkeys::{ORCA_WHIRLPOOL_PROGRAM_ID, SPL_TOKEN_PROGRAM_ID};
+use crate::pubkeys::{ORCA_WHIRLPOOL_PROGRAM_ID, SPL_TOKEN_PROGRAM_ID, SPL_TOKEN_2022_PROGRAM_ID};
 use crate::replay_instruction::TokenTrait;
 use crate::types::WritableAccountSnapshot;
 
@@ -70,7 +70,7 @@ pub fn determine_token_trait(
     token_program_pubkey_string: &String,
     transfer: &TransferAmountWithTransferFeeConfig,
 ) -> TokenTrait {
-    if SPL_TOKEN_PROGRAM_ID.eq(&pubkey(token_program_pubkey_string)) {
+    if is_token_program(token_program_pubkey_string) {
         TokenTrait::Token
     } else {
         if transfer.transfer_fee_config_opt {
@@ -82,6 +82,14 @@ pub fn determine_token_trait(
             TokenTrait::TokenExtensions
         }
     }
+}
+
+pub fn is_token_program(pubkey_string: &String) -> bool {
+    SPL_TOKEN_PROGRAM_ID.eq(&pubkey(pubkey_string))
+}
+
+pub fn is_token_2022_program(pubkey_string: &String) -> bool {
+    SPL_TOKEN_2022_PROGRAM_ID.eq(&pubkey(pubkey_string))
 }
 
 pub fn update_accounts(
