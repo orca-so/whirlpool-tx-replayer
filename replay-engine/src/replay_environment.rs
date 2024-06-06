@@ -1,12 +1,12 @@
 use std::{
-    collections::{HashMap, HashSet},
-    convert::TryInto,
+    collections::{/*HashMap,*/ HashSet},
+    //convert::TryInto,
     path::Path,
     sync::{atomic::AtomicBool, Arc},
-    time::{SystemTime, UNIX_EPOCH},
+    //time::{SystemTime, UNIX_EPOCH},
 };
 
-use itertools::izip;
+//use itertools::izip;
 use solana_program::{
     bpf_loader, bpf_loader_upgradeable,
     hash::Hash,
@@ -21,8 +21,9 @@ use solana_accounts_db::{
     accounts_index::AccountSecondaryIndexes,
     transaction_results::{TransactionExecutionResult, TransactionResults},
 };
+use solana_program_runtime::timings::ExecuteTimings;
 use solana_runtime::{
-    bank::{Bank, TransactionBalancesSet},
+    bank::{Bank, /*TransactionBalancesSet*/},
     genesis_utils,
     runtime_config::RuntimeConfig,
 };
@@ -30,18 +31,20 @@ use solana_sdk::{
     account::{Account, AccountSharedData},
     feature_set,
     genesis_config::GenesisConfig,
-    packet,
+    //packet,
     clock::UnixTimestamp,
     signature::Keypair,
     signature::Signer,
     transaction::VersionedTransaction,
 };
+/* 
 use solana_transaction_status::{
     ConfirmedTransactionWithStatusMeta,
     InnerInstructions, TransactionStatusMeta, TransactionWithStatusMeta,
     VersionedTransactionWithStatusMeta,
     //EncodedConfirmedTransactionWithStatusMeta, UiTransactionEncoding,
 };
+*/
 
 pub use bincode;
 pub use serde;
@@ -80,6 +83,7 @@ impl ReplayEnvironment {
 
     // https://github.com/neodyme-labs/solana-poc-framework/blob/c08d95c209f580b8e828860d73284a22e596277c/src/lib.rs#L443
     // TODO: think removing unnecessary processing
+    /* 
     pub fn execute_transaction<T>(&mut self, tx: T) -> ConfirmedTransactionWithStatusMeta
     where
         VersionedTransaction: From<T>,
@@ -231,10 +235,37 @@ impl ReplayEnvironment {
         // Based on profiler analysis, .encode is too slow.
         // So we return ConfirmedTransactionWithStatusMeta instead of EncodedConfirmedTransactionWithStatusMeta.
         // Caller can encode it if needed.
-        /*
-        .encode(UiTransactionEncoding::Binary, Some(0))
-        .expect("Failed to encode transaction")
-        */
+        
+        //.encode(UiTransactionEncoding::Binary, Some(0))
+        //.expect("Failed to encode transaction")
+        
+    }
+    */
+
+    pub fn execute_transaction<T>(&mut self, tx: T) -> TransactionExecutionResult
+    where
+        VersionedTransaction: From<T>,
+    {
+        let txs = vec![tx.into()];
+        let batch = self.bank.prepare_entry_batch(txs.clone()).unwrap();
+        let (
+            TransactionResults {
+                mut execution_results,
+                ..
+            },
+            ..
+        ) = self.bank.load_execute_and_commit_transactions(
+            &batch,
+            16usize,
+            false, // collect_balances
+            false, // enable_cpi_recording
+            false, // enable_log_recording
+            false, // enable_return_data_recording
+            &mut ExecuteTimings::default(),
+            None,
+        );
+
+        execution_results.remove(0)
     }
 
     pub fn get_latest_blockhash(&self) -> Hash {

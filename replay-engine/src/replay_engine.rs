@@ -107,17 +107,15 @@ impl ReplayEngine {
 
     match result {
       Ok(result) => {
-        // unwrap is safe because it is TransactionWithStatusMeta::Complete.
-        // https://docs.rs/solana-transaction-status/latest/src/solana_transaction_status/lib.rs.html#812-817
-        let meta = result.transaction_status.tx_with_meta.get_status_meta().unwrap();
-
-        if meta.status.is_ok() {
-          // write back
-          util::update_accounts(
-            &mut self.accounts,
-            &result.snapshot,
-          ).unwrap();
+        if !result.transaction_status.was_executed_successfully() {
+          return Err(ErrorCode::InstructionReplayFailed);
         }
+
+        // write back
+        util::update_accounts(
+          &mut self.accounts,
+          &result.snapshot,
+        ).unwrap();
 
         return Ok(result);
       },
