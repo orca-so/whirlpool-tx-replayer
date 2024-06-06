@@ -388,10 +388,11 @@ impl ReplayEnvironment {
       accounts: vec![AccountMeta::new(payer.pubkey(), true)],
     };
 
-    // create transaction with only sign of payer
+    // create transaction with only sign of payer --> setting blockhash only
     let message = Message::new(&[whirlpool_instruction, memo_instruction], Some(&payer.pubkey()));
     let mut tx = Transaction::new_unsigned(message);
-    tx.partial_sign(&[&payer], recent_blockhash);
+    //tx.partial_sign(&[&payer], recent_blockhash);
+    tx.message.recent_blockhash = recent_blockhash;
 
     return tx;
   }
