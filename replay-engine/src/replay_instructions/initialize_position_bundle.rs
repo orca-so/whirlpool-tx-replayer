@@ -40,11 +40,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   let pre_snapshot = replayer.take_snapshot(&[
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_position_bundle, // created
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

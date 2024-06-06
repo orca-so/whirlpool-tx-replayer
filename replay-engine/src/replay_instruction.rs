@@ -1,6 +1,5 @@
 use anyhow::Result;
 use solana_accounts_db::transaction_results::TransactionExecutionResult;
-use solana_transaction_status::ConfirmedTransactionWithStatusMeta;
 use solana_program::program_option::COption;
 use std::str::FromStr;
 
@@ -21,7 +20,7 @@ use crate::pubkeys;
 
 #[derive(Clone)]
 pub struct ReplayInstructionResult {
-  pub transaction_status: TransactionExecutionResult,
+  pub execution_result: TransactionExecutionResult,
   pub snapshot: WritableAccountSnapshot,
 }
 
@@ -97,12 +96,12 @@ pub fn replay_whirlpool_instruction(
 
 impl ReplayInstructionResult {
   pub fn new(
-    transaction_status: TransactionExecutionResult,
+    execution_result: TransactionExecutionResult,
     pre_snapshot: AccountSnapshot,
     post_snapshot: AccountSnapshot,
   ) -> Self {
     Self {
-      transaction_status,
+      execution_result,
       snapshot: WritableAccountSnapshot {
         pre_snapshot,
         post_snapshot,

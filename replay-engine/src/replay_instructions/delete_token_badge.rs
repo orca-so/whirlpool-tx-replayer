@@ -46,7 +46,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDeleteTo
     &ix.key_token_badge,
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpools_config,
@@ -54,5 +54,5 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDeleteTo
     // closed
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

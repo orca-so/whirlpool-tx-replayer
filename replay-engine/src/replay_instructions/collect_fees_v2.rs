@@ -117,12 +117,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectF
     &ix.key_position,
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

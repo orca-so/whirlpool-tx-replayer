@@ -107,7 +107,7 @@ impl ReplayEngine {
 
     match result {
       Ok(result) => {
-        if !result.transaction_status.was_executed_successfully() {
+        if !result.execution_result.was_executed_successfully() {
           return Err(ErrorCode::InstructionReplayFailed);
         }
 

@@ -46,12 +46,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCloseBun
     &ix.key_position_bundle,
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     // closed
     &ix.key_position_bundle,
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

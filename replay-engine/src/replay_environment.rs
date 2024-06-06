@@ -272,7 +272,7 @@ impl ReplayEnvironment {
         self.bank.last_blockhash()
     }
 
-    pub fn get_rent_excemption(&self, data: usize) -> u64 {
+    pub fn get_rent_exemption(&self, data: usize) -> u64 {
         self.bank.get_minimum_balance_for_rent_exemption(data)
     }
 

@@ -52,12 +52,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenPosi
     &ix.key_whirlpool,
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position, // created
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

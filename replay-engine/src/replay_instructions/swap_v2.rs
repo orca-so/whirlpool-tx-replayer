@@ -124,7 +124,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
     &ix.key_tick_array_2,
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
@@ -133,7 +133,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
     &ix.key_tick_array_2,
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }
 
 

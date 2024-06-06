@@ -32,12 +32,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSetDefau
     &ix.key_fee_tier,
   ]);
   
-  let transaction_status = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpools_config,
     &ix.key_fee_tier,
   ]);
 
-  ReplayInstructionResult::new(transaction_status, pre_snapshot, post_snapshot)
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }
