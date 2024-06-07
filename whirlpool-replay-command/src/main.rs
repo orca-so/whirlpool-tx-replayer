@@ -1,8 +1,12 @@
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
 use clap::Parser;
-use whirlpool_replayer::{io, schema, serde, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
+use whirlpool_replayer::{io, schema, serde, SyncInstructionCallback, ReplayUntil, SyncSlotCallback, WhirlpoolReplayer};
 
 use anchor_lang::prelude::*;
 use whirlpool_base::state::Whirlpool;
+
+use itertools::Itertools;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -73,12 +77,16 @@ fn main() {
         WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd, &account_data_store_config)
     };
 
-    let slot_callback: Option<SlotCallback> = Some(|slot| {
+    let slot_pre_callback: SyncSlotCallback = Rc::new(|slot, _accounts| {
         println!("processing slot: {} (block_height={} block_time={}) ...", slot.slot, slot.block_height, slot.block_time);
     });
 
-    let instruction_callback: Option<InstructionCallback> = Some(
-        |_slot, transaction, name, instruction, accounts, result| {
+    // how to extract data from replayer
+    let instruction_counter = Rc::new(RefCell::new(HashMap::<String, u64>::new()));
+    let instruction_counter_clone = Rc::clone(&instruction_counter);
+
+    let instruction_callback: SyncInstructionCallback = Rc::new(
+        move |_slot, transaction, name, instruction, accounts, snapshot| {
             println!("  replayed instruction: {}", name);
 
             // callback will receive various data to implement various data processing!
@@ -93,7 +101,7 @@ fn main() {
 
                     // we can get "pre" state from result
                     // note: snapshot only contains whirlpool accounts mentioned in the instruction
-                    let pre_data = result.snapshot.pre_snapshot.get(&params.key_whirlpool).unwrap();
+                    let pre_data = snapshot.pre_snapshot.get(&params.key_whirlpool).unwrap();
                     let pre_whirlpool = Whirlpool::try_deserialize(&mut pre_data.as_slice()).unwrap();
 
                     println!("    tx signature: {}", transaction.signature);
@@ -104,10 +112,21 @@ fn main() {
                 },
                 _ => {},
             }
+
+            // update var (out of callback closure)
+            let mut counter = instruction_counter_clone.borrow_mut();
+            let count = counter.entry(name.clone()).or_insert(0u64);
+            *count += 1;
         },
     );
 
-    replayer.replay(until_condition, slot_callback, instruction_callback);
+    replayer.replay(until_condition, Some(instruction_callback), Some(slot_pre_callback), None);
+
+    // show instruction count
+    println!("\n\nReplayed instructions\n");
+    for (ix, count) in instruction_counter.borrow().iter().sorted() {
+        println!("  {:8} : {}", count, ix);
+    }
 
     // save state
     if args.save_as.is_some() {

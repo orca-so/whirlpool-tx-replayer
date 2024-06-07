@@ -1,8 +1,9 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
+use std::rc::Rc;
 
-use replay_engine::account_data_store::AccountDataStore;
+use replay_engine::{account_data_store::AccountDataStore, types::WritableAccountSnapshot};
 use replay_engine::decoded_instructions;
 use replay_engine::decoded_instructions::DecodedWhirlpoolInstruction;
 use replay_engine::replay_engine::ReplayEngine;
@@ -27,28 +28,39 @@ pub enum ReplayUntil {
     BlockTime(i64),
 }
 
-pub type SlotCallback = fn(&Slot);
-
-pub type InstructionCallback = fn(
-    &Slot,
-    &Transaction,
-    &String,
-    &DecodedWhirlpoolInstruction,
-    &AccountDataStore,
-    &ReplayInstructionResult,
-);
-
-pub type AsyncSlotCallback = Box<dyn Fn(&Slot) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
-pub type AsyncInstructionCallback = Box<
+pub type SyncSlotCallback = Rc<
+    dyn Fn(
+        &Slot,
+        &AccountDataStore
+    )
+>;
+pub type SyncInstructionCallback = Rc<
     dyn Fn(
         &Slot,
         &Transaction,
         &String,
         &DecodedWhirlpoolInstruction,
         &AccountDataStore,
-        &ReplayInstructionResult
-    ) -> Pin<Box<dyn 'static + Future<Output = ()> + Send>> + Send
+        &WritableAccountSnapshot,
+    )
 >;
+
+pub type AsyncSlotCallback = Arc<Mutex<
+    dyn Fn(
+        &Slot,
+        &AccountDataStore
+    ) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send
+>>;
+pub type AsyncInstructionCallback = Arc<Mutex<
+    dyn Fn(
+        &Slot,
+        &Transaction,
+        &String,
+        &DecodedWhirlpoolInstruction,
+        &AccountDataStore,
+        &WritableAccountSnapshot,
+    ) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send
+>>;
 
 pub struct WhirlpoolReplayer {
     replay_engine: ReplayEngine,
@@ -182,8 +194,9 @@ impl WhirlpoolReplayer {
     pub fn replay(
         &mut self,
         cond: ReplayUntil,
-        slot_callback: Option<SlotCallback>,
-        instruction_callback: Option<InstructionCallback>,
+        instruction_callback: Option<SyncInstructionCallback>,
+        slot_pre_callback: Option<SyncSlotCallback>,
+        slot_post_callback: Option<SyncSlotCallback>,
     ) {
         let mut next_whirlpool_transaction = self.transaction_iter.next();
         while next_whirlpool_transaction.is_some() {
@@ -202,8 +215,8 @@ impl WhirlpoolReplayer {
             self.replay_engine
                 .update_slot(slot.slot, slot.block_height, slot.block_time);
 
-            if let Some(callback) = slot_callback {
-                callback(&slot);
+            if let Some(callback) = slot_pre_callback.as_ref() {
+                callback(self.replay_engine.get_slot(), self.replay_engine.get_accounts());
             }
 
             for transaction in whirlpool_transaction.transactions {
@@ -227,19 +240,23 @@ impl WhirlpoolReplayer {
                                 .replay_instruction(&whirlpool_instruction)
                                 .unwrap();
 
-                            if let Some(callback) = instruction_callback {
+                            if let Some(callback) = instruction_callback.as_ref() {
                                 callback(
                                     &slot,
                                     &transaction,
                                     &name,
                                     &whirlpool_instruction,
                                     self.replay_engine.get_accounts(),
-                                    &result,
+                                    &result.snapshot,
                                 );
                             }
                         }
                     }
                 }
+            }
+
+            if let Some(callback) = slot_post_callback.as_ref() {
+                callback(self.replay_engine.get_slot(), self.replay_engine.get_accounts());
             }
 
             next_whirlpool_transaction = self.transaction_iter.next();
@@ -249,8 +266,9 @@ impl WhirlpoolReplayer {
     pub async fn replay_async(
         &mut self,
         cond: ReplayUntil,
-        slot_callback: Option<Arc<Mutex<AsyncSlotCallback>>>,
-        instruction_callback: Option<Arc<Mutex<AsyncInstructionCallback>>>,
+        instruction_callback: Option<AsyncInstructionCallback>,
+        slot_pre_callback: Option<AsyncSlotCallback>,
+        slot_post_callback: Option<AsyncSlotCallback>,
     ) {
         let mut next_whirlpool_transaction = self.transaction_iter.next();
         while next_whirlpool_transaction.is_some() {
@@ -269,10 +287,9 @@ impl WhirlpoolReplayer {
             self.replay_engine
                 .update_slot(slot.slot, slot.block_height, slot.block_time);
 
-            if let Some(callback) = slot_callback.as_ref() {
-                let slot_c = callback.lock().await;
-                let d = slot_c.as_ref()(&slot);
-                d.await;
+            if let Some(callback) = slot_pre_callback.as_ref() {
+                let callback_guard = callback.lock().await;
+                callback_guard(self.replay_engine.get_slot(), self.replay_engine.get_accounts()).await;
             }
 
             for transaction in whirlpool_transaction.transactions {
@@ -298,20 +315,25 @@ impl WhirlpoolReplayer {
 
                             let accounts = self.replay_engine.get_accounts();
 
-                            if let Some(ix_guard) = instruction_callback.as_ref() {
-                                let ix_c = ix_guard.lock().await;
-                                let c = ix_c.as_ref()(
+                            if let Some(callback) = instruction_callback.as_ref() {
+                                let callback_guard = callback.lock().await;
+                                callback_guard(
                                     &slot,
                                     &transaction,
                                     &name,
                                     &whirlpool_instruction,
                                     &accounts,
-                                    &result);
-                                c.await;
+                                    &result.snapshot,
+                                ).await;
                             }
                         }
                     }
                 }
+            }
+
+            if let Some(callback) = slot_post_callback.as_ref() {
+                let callback_guard = callback.lock().await;
+                callback_guard(self.replay_engine.get_slot(), self.replay_engine.get_accounts()).await;
             }
 
             next_whirlpool_transaction = self.transaction_iter.next();

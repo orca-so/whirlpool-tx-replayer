@@ -5,6 +5,7 @@ edition = { workspace = true }
 
 [dependencies]
 clap = { workspace = true }
+itertools = { workspace = true }
 
 anchor-lang = { workspace = true }
 whirlpool_base = { workspace = true }
