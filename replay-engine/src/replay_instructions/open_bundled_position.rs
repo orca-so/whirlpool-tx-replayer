@@ -52,15 +52,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedOpenBund
 
   let pre_snapshot = replayer.take_snapshot(&[
     &ix.key_position_bundle,
-    &ix.key_whirlpool,
   ]);
   
   let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_bundled_position, // created
     &ix.key_position_bundle,
-    &ix.key_whirlpool,
+    &ix.key_bundled_position, // created
   ]);
 
   ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)

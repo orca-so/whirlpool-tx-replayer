@@ -33,8 +33,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedUpdateFe
   let pre_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
-    &ix.key_tick_array_lower,
-    &ix.key_tick_array_upper,
   ]);
   
   let execution_result = replayer.execute_transaction(tx);
@@ -42,8 +40,6 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedUpdateFe
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
     &ix.key_position,
-    &ix.key_tick_array_lower,
-    &ix.key_tick_array_upper,
   ]);
 
   ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)

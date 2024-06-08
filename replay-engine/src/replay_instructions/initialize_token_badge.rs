@@ -43,15 +43,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   );
 
   let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
-    &ix.key_whirlpools_config_extension,
   ]);
   
   let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
-    &ix.key_whirlpools_config_extension,
     &ix.key_token_badge, // created
   ]);
 

@@ -81,14 +81,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedCollectR
   );
 
   let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpool,
     &ix.key_position,
   ]);
   
   let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpool,
     &ix.key_position,
   ]);
 
