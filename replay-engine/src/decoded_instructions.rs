@@ -914,6 +914,7 @@ pub type RemainingAccountsInfo = Vec<[u8; 2]>;
 pub type RemainingAccountsKeys = Vec<String>;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct TransferAmountWithTransferFeeConfig {
   #[serde(deserialize_with = "deserialize_u64")]
   pub amount: u64,
@@ -981,4 +982,16 @@ where
 {
     let base64: String = BASE64_STANDARD.encode(data);
     serializer.serialize_str(&base64)
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode_increase_liquidity_v2() {
+        let json_str = r#"{"dataLiquidityAmount": "3453450", "dataTokenAmountMaxA": "19337", "dataTokenAmountMaxB": "19341", "keyWhirlpool": "9tXiuRRw7kbejLhZXtxDxYs2REe43uH2e7k1kocgdM9B", "keyTokenProgramA": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keyTokenProgramB": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyMemoProgram": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "CR39mQe5b87s1Qf4XMSyo12P99buoUaqLprrgQ4ccady", "keyPositionTokenAccount": "ChfxQHG4fV9FZaABv8N3v4vf1wWUhgfFB1VLES3tZVqu", "keyTokenMintA": "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", "keyTokenMintB": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "keyTokenOwnerAccountA": "2A7Cc48jwWWoixM5CWquQKEqk9KNQvY2Xw3WJbBRc6Ei", "keyTokenOwnerAccountB": "FbQdXCQgGQYj3xcGeryVVFjKCTsAuu53vmCRtmjQEqM5", "keyTokenVaultA": "EeF6oBy6AQiBJoRx5xiRNxa6cmpQE3ayVagj28QFZuyg", "keyTokenVaultB": "MvB8poDgpDPbRgx8MXeb7EPEsawGuiBTqpkpM9exeLi", "keyTickArrayLower": "8hXTpuvJQRar4Pf6BZiEWquFgtAtSf2RFDM6EL2FCcf1", "keyTickArrayUpper": "B1jXbjDzenSy8kPNaGw3GSKAVQis5K5tRLeXuaskZTpS", "remainingAccountsInfo": [], "remainingAccountsKeys": [], "transfer0": {"amount": "10000", "transferFeeConfigOpt": 1, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}, "transfer1": {"amount": "9312", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}}"#;
+        let _ = from_json(&"increaseLiquidityV2".to_string(), &json_str.to_string()).unwrap();
+    }
 }
