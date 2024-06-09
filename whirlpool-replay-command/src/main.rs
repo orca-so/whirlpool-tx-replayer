@@ -1,5 +1,17 @@
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
 use clap::Parser;
-use whirlpool_replayer::{io, util, schema, InstructionCallback, ReplayUntil, SlotCallback, WhirlpoolReplayer};
+use itertools::Itertools;
+
+use whirlpool_replayer::{
+    io,
+    schema,
+    serde,
+    WhirlpoolReplayer,
+    ReplayUntil,
+    SyncInstructionCallback,
+    SyncSlotCallback
+};
 
 use anchor_lang::prelude::*;
 use whirlpool_base::state::Whirlpool;
@@ -21,6 +33,9 @@ struct Args {
     #[clap(long, id = "blockTime")]
     stop_block_time: Option<i64>,
 
+    #[clap(short, long, id = "memory")]
+    memory: bool,
+
     #[clap(id = "path|url")]
     storage: String,
 
@@ -34,6 +49,15 @@ fn main() {
     let base_path_or_url: String = args.storage;
     let yyyymmdd: String = args.yyyymmdd;
 
+    let account_data_store_config = if args.memory {
+        // account data will be stored on memory
+        serde::AccountDataStoreConfig::OnMemory
+    } else {
+        // account data will be stored on RocksDB in system default temporary directory (e.g. /tmp)
+        // very small memory footprint, but (10% ~ 20%) slower than on-memory
+        serde::AccountDataStoreConfig::OnDisk(None)
+    };
+
     let until_condition = if args.stop_slot.is_some() {
         ReplayUntil::Slot(args.stop_slot.unwrap())
     } else if args.stop_block_height.is_some() {
@@ -44,43 +68,52 @@ fn main() {
         ReplayUntil::End
     };
 
+    // build replayer
     let mut replayer = if base_path_or_url.starts_with("https://") {
         if args.cache_dir.is_some() {
             let cache_dir = args.cache_dir.unwrap();
             WhirlpoolReplayer::build_with_remote_file_storage_with_local_cache(
                 &base_path_or_url,
                 &yyyymmdd,
+                &account_data_store_config,
                 &cache_dir,
                 false,
             )
         } else {
-            WhirlpoolReplayer::build_with_remote_file_storage(&base_path_or_url, &yyyymmdd)
+            WhirlpoolReplayer::build_with_remote_file_storage(&base_path_or_url, &yyyymmdd, &account_data_store_config)
         }
     } else {
-        WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd)
+        WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd, &account_data_store_config)
     };
 
-    let slot_callback: Option<SlotCallback> = Some(|slot| {
+    // define callbacks
+    let slot_pre_callback: SyncSlotCallback = Rc::new(|slot, _accounts| {
         println!("processing slot: {} (block_height={} block_time={}) ...", slot.slot, slot.block_height, slot.block_time);
+
+        // We can use accounts to access all whirlpool accounts at the beginning of the slot
     });
 
-    let instruction_callback: Option<InstructionCallback> = Some(
-        |_slot, transaction, name, instruction, accounts, result| {
+    // how to extract data from replayer
+    let instruction_counter = Rc::new(RefCell::new(HashMap::<String, u64>::new()));
+    let instruction_counter_clone = Rc::clone(&instruction_counter);
+
+    let instruction_callback: SyncInstructionCallback = Rc::new(
+        move |_slot, transaction, name, instruction, accounts, snapshot| {
             println!("  replayed instruction: {}", name);
 
             // callback will receive various data to implement various data processing!
-            // For example, print the details of swap instruction with pre/post account state info.
+            // For example, print the details of swap instruction with pre/post writable account state info.
             match instruction 
             {
                 schema::DecodedWhirlpoolInstruction::Swap(params) => {
                     // accounts provides "post" state
                     // note: accounts contains all whirlpool accounts at the end of the instruction
-                    let post_data = accounts.get(&params.key_whirlpool).unwrap();
+                    let post_data = accounts.get(&params.key_whirlpool).unwrap().unwrap();
                     let post_whirlpool = Whirlpool::try_deserialize(&mut post_data.as_slice()).unwrap();
 
                     // we can get "pre" state from result
                     // note: snapshot only contains whirlpool accounts mentioned in the instruction
-                    let pre_data = result.snapshot.pre_snapshot.get(&params.key_whirlpool).unwrap();
+                    let pre_data = snapshot.pre_snapshot.get(&params.key_whirlpool).unwrap();
                     let pre_whirlpool = Whirlpool::try_deserialize(&mut pre_data.as_slice()).unwrap();
 
                     println!("    tx signature: {}", transaction.signature);
@@ -91,27 +124,39 @@ fn main() {
                 },
                 _ => {},
             }
+
+            // update var (out of callback closure)
+            let mut counter = instruction_counter_clone.borrow_mut();
+            let count = counter.entry(name.clone()).or_insert(0u64);
+            *count += 1;
         },
     );
 
-    replayer.replay(until_condition, slot_callback, instruction_callback);
+    replayer.replay(
+        until_condition,
+        Some(instruction_callback),
+        Some(slot_pre_callback),
+        None // no slot_post_callback
+    );
+
+    // show instruction count
+    println!("\n\nReplayed instructions\n");
+    for (ix, count) in instruction_counter.borrow().iter().sorted() {
+        println!("  {:8} : {}", count, ix);
+    }
 
     // save state
     if args.save_as.is_some() {
         let state_file = args.save_as.unwrap();
 
         let latest_slot = replayer.get_slot();
-        let latest_program_data = replayer.get_program_data().clone();
-        let latest_accounts = util::convert_account_map_to_accounts(replayer.get_accounts());
+        let latest_program_data = replayer.get_program_data();
+        let latest_accounts = replayer.get_accounts();
         io::save_to_whirlpool_state_file(
             &state_file.to_string(),
-            &schema::WhirlpoolState {
-                slot: latest_slot.slot,
-                block_height: latest_slot.block_height,
-                block_time: latest_slot.block_time,
-                program_data: latest_program_data,
-                accounts: latest_accounts,
-            },
+            latest_slot,
+            latest_program_data,
+            latest_accounts,
         );
     }
 }

@@ -1,5 +1,6 @@
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
+use replay_engine::{account_data_store::AccountDataStore, types::Slot};
 use reqwest;
 use std::{
     fs::File,
@@ -7,6 +8,7 @@ use std::{
 };
 
 use crate::schema::*;
+use crate::serde::*;
 
 pub fn get_whirlpool_state_file_relative_path(date: &chrono::NaiveDate) -> String {
     format!(
@@ -26,25 +28,37 @@ pub fn get_whirlpool_transaction_file_relative_path(date: &chrono::NaiveDate) ->
     )
 }
 
-pub fn load_from_local_whirlpool_state_file(file_path: &String) -> WhirlpoolState {
+pub fn load_from_local_whirlpool_state_file(file_path: &String, account_data_store_config: &AccountDataStoreConfig) -> WhirlpoolState {
     let file = File::open(file_path).unwrap();
     let decoder = GzDecoder::new(file);
     let reader = BufReader::new(decoder);
-    return serde_json::from_reader(reader).unwrap();
+    deserialize_whirlpool_state_from_reader(reader, account_data_store_config.clone())
 }
 
-pub fn save_to_whirlpool_state_file(file_path: &String, state: &WhirlpoolState) {
-    let file = File::create(file_path).unwrap();
-    let encoder = GzEncoder::new(file, flate2::Compression::default());
-    let writer = BufWriter::new(encoder);
-    serde_json::to_writer(writer, state).unwrap();
-}
-
-pub fn load_from_remote_whirlpool_state_file(url: &String) -> WhirlpoolState {
+pub fn load_from_remote_whirlpool_state_file(url: &String, account_data_store_config: &AccountDataStoreConfig) -> WhirlpoolState {
     let response = reqwest::blocking::get(url).unwrap();
     let decoder = GzDecoder::new(response);
     let reader = BufReader::new(decoder);
-    return serde_json::from_reader(reader).unwrap();
+    deserialize_whirlpool_state_from_reader(reader, account_data_store_config.clone())
+}
+
+pub fn save_to_whirlpool_state_file(
+    file_path: &String,
+    slot: &Slot,
+    program_data: &Vec<u8>,
+    accounts: &AccountDataStore,
+) {
+    let file = File::create(file_path).unwrap();
+    let encoder = GzEncoder::new(file, flate2::Compression::default());
+    let writer = BufWriter::new(encoder);
+    let serializer = WhirlpoolStateSerializer {
+        slot: slot.slot,
+        block_height: slot.block_height,
+        block_time: slot.block_time,
+        program_data,
+        accounts,
+    };
+    serde_json::to_writer(writer, &serializer).unwrap();
 }
 
 pub fn load_from_local_whirlpool_transaction_file(

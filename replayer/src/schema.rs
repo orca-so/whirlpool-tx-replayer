@@ -1,5 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
+use replay_engine::account_data_store::AccountDataStore;
 use replay_engine::decoded_instructions::{deserialize_u64, deserialize_base64, serialize_base64};
 
 pub use replay_engine::decoded_instructions::{DecodedInstruction, DecodedProgramDeployInstruction, DecodedWhirlpoolInstruction};
@@ -24,14 +25,11 @@ A whirlpool state file (whirlpool-state-yyyymmdd.json.gz) is GZIP compressed JSO
 
 */
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
 pub struct WhirlpoolState {
   pub slot: u64,
   pub block_height: u64,
   pub block_time: i64,
-  pub accounts: Vec<WhirlpoolStateAccount>,
-  #[serde(deserialize_with = "deserialize_base64", serialize_with = "serialize_base64")]
+  pub accounts: AccountDataStore,
   pub program_data: Vec<u8>,
 }
 

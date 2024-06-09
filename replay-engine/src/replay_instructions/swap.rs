@@ -2,16 +2,16 @@ use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
-use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
 use crate::util;
 use crate::util::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
-  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, account_map);
+  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, accounts);
   let mint_a = whirlpool_data.token_mint_a;
   let mint_b = whirlpool_data.token_mint_b;
 
@@ -23,7 +23,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
   // token_program
   // token_authority
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // token_owner_account_a
   replayer.set_token_account(
     pubkey(&ix.key_token_owner_account_a),
@@ -53,11 +53,11 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     if mint_b_is_input { 0u64 } else { output_amount }
   );
   // tick_array_0
-  replayer.set_whirlpool_account(&ix.key_tick_array_0, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_0, accounts);
   // tick_array_1
-  replayer.set_whirlpool_account(&ix.key_tick_array_1, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_1, accounts);
   // tick_array_2
-  replayer.set_whirlpool_account(&ix.key_tick_array_2, account_map);
+  replayer.set_whirlpool_account(&ix.key_tick_array_2, accounts);
   // oracle
 
   let tx = replayer.build_whirlpool_replay_transaction(
@@ -90,7 +90,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     &ix.key_tick_array_2,
   ]);
   
-  let replay_result = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
     &ix.key_whirlpool,
@@ -99,13 +99,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     &ix.key_tick_array_2,
   ]);
 
-  return ReplayInstructionResult {
-    transaction_status: replay_result,
-    snapshot: WritableAccountSnapshot {
-      pre_snapshot,
-      post_snapshot,
-    }
-  }
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }
 
 

@@ -1,12 +1,11 @@
 use crate::decoded_instructions;
-use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
 use crate::util::pubkey; // abbr
 
-use anchor_lang::{InstructionData, ToAccountMetas, Discriminator};
+use anchor_lang::{InstructionData, ToAccountMetas, Discriminator, AnchorSerialize};
 use anchor_lang::solana_program::pubkey::Pubkey;
-use borsh::BorshSerialize;
 
-#[derive(BorshSerialize)]
+#[derive(AnchorSerialize)]
 struct AdminIncreaseLiquidityInstructionArgs {
   pub liquidity: u128,
 }
@@ -33,12 +32,12 @@ impl ToAccountMetas for AdminIncreaseLiquidityInstructionAccounts {
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedAdminIncreaseLiquidity>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpools_config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // whirlpool
-  replayer.set_whirlpool_account(&ix.key_whirlpool, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
   // authority
     
   let tx = replayer.build_whirlpool_replay_transaction(
@@ -53,22 +52,14 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedAdminInc
   );
 
   let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
     &ix.key_whirlpool,
   ]);
   
-  let replay_result = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
     &ix.key_whirlpool,
   ]);
 
-  return ReplayInstructionResult {
-    transaction_status: replay_result,
-    snapshot: WritableAccountSnapshot {
-      pre_snapshot,
-      post_snapshot,
-    }
-  }
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

@@ -13,11 +13,16 @@ base64 = { workspace = true }
 thiserror = { workspace = true }
 itertools = { workspace = true }
 tokio = { workspace = true }
+anyhow = { workspace = true }
+tempfile = { workspace = true }
 
 # anchor & whirlpool
 anchor-lang = { workspace = true }
 anchor-client = { workspace = true }
 whirlpool_base = { workspace = true }
+
+# RocksDB
+rocksdb = { workspace = true }
 
 # borsh
 borsh = { workspace = true }
@@ -26,10 +31,12 @@ borsh = { workspace = true }
 solana-sdk = { workspace = true }
 solana-program = { workspace = true }
 solana-program-runtime = { workspace = true }
+solana-accounts-db = { workspace = true }
 solana-transaction-status = { workspace = true }
 solana-client = { workspace = true }
 solana-runtime = { workspace = true }
 solana-cli-output = { workspace = true }
 solana-ledger = { workspace = true }
 spl-token = { workspace = true }
+spl-token-2022 = { workspace = true }
 

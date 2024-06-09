@@ -1,19 +1,23 @@
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
+use std::rc::Rc;
 
+use replay_engine::{account_data_store::AccountDataStore, types::WritableAccountSnapshot};
 use replay_engine::decoded_instructions;
 use replay_engine::decoded_instructions::DecodedWhirlpoolInstruction;
 use replay_engine::replay_engine::ReplayEngine;
 
 pub use replay_engine::replay_instruction::ReplayInstructionResult;
-pub use replay_engine::types::{AccountMap, Slot};
+use replay_engine::types::ProgramData;
+pub use replay_engine::types::{AccountSnapshot, Slot};
 
 pub mod io;
 pub mod schema;
-pub mod util;
+pub mod serde;
 
 use schema::{Transaction, WhirlpoolTransaction};
+use serde::AccountDataStoreConfig;
 use tokio::sync::Mutex;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -24,28 +28,39 @@ pub enum ReplayUntil {
     BlockTime(i64),
 }
 
-pub type SlotCallback = fn(&Slot);
-
-pub type InstructionCallback = fn(
-    &Slot,
-    &Transaction,
-    &String,
-    &DecodedWhirlpoolInstruction,
-    &AccountMap,
-    &ReplayInstructionResult,
-);
-
-pub type AsyncSlotCallback = Box<dyn Fn(&Slot) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
-pub type AsyncInstructionCallback = Box<
+pub type SyncSlotCallback = Rc<
+    dyn Fn(
+        &Slot,
+        &AccountDataStore
+    )
+>;
+pub type SyncInstructionCallback = Rc<
     dyn Fn(
         &Slot,
         &Transaction,
         &String,
         &DecodedWhirlpoolInstruction,
-        &AccountMap,
-        &ReplayInstructionResult
-    ) -> Pin<Box<dyn 'static + Future<Output = ()> + Send>> + Send
+        &AccountDataStore,
+        &WritableAccountSnapshot,
+    )
 >;
+
+pub type AsyncSlotCallback = Arc<Mutex<
+    dyn Fn(
+        &Slot,
+        &AccountDataStore
+    ) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send
+>>;
+pub type AsyncInstructionCallback = Arc<Mutex<
+    dyn Fn(
+        &Slot,
+        &Transaction,
+        &String,
+        &DecodedWhirlpoolInstruction,
+        &AccountDataStore,
+        &WritableAccountSnapshot,
+    ) -> Pin<Box<dyn Future<Output = ()> + Send>> + Send
+>>;
 
 pub struct WhirlpoolReplayer {
     replay_engine: ReplayEngine,
@@ -58,6 +73,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_local_file_storage(
         base_path: &String,
         yyyymmdd: &String,
+        account_data_store_config: &AccountDataStoreConfig,
     ) -> WhirlpoolReplayer {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -70,16 +86,14 @@ impl WhirlpoolReplayer {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_path = format!("{}/{}", base_path, transaction_file_relative_path);
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path, account_data_store_config);
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 
         let replay_engine = ReplayEngine::new(
-            state.slot,
-            state.block_height,
-            state.block_time,
+            Slot::new(state.slot, state.block_height, state.block_time),
             state.program_data,
-            util::convert_accounts_to_account_map(&state.accounts),
+            state.accounts,
         );
 
         return WhirlpoolReplayer {
@@ -91,6 +105,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_remote_file_storage(
         base_url: &String,
         yyyymmdd: &String,
+        account_data_store_config: &AccountDataStoreConfig,
     ) -> WhirlpoolReplayer {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -103,16 +118,14 @@ impl WhirlpoolReplayer {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_url = format!("{}/{}", base_url, transaction_file_relative_path);
 
-        let state = io::load_from_remote_whirlpool_state_file(&state_file_url);
+        let state = io::load_from_remote_whirlpool_state_file(&state_file_url, account_data_store_config);
         let transaction_iter =
             io::load_from_remote_whirlpool_transaction_file(&transaction_file_url);
 
         let replay_engine = ReplayEngine::new(
-            state.slot,
-            state.block_height,
-            state.block_time,
+            Slot::new(state.slot, state.block_height, state.block_time),
             state.program_data,
-            util::convert_accounts_to_account_map(&state.accounts),
+            state.accounts,
         );
 
         return WhirlpoolReplayer {
@@ -124,6 +137,7 @@ impl WhirlpoolReplayer {
     pub fn build_with_remote_file_storage_with_local_cache(
         base_url: &String,
         yyyymmdd: &String,
+        account_data_store_config: &AccountDataStoreConfig,
         cache_dir_path: &String,
         refresh: bool,
     ) -> WhirlpoolReplayer {
@@ -149,16 +163,14 @@ impl WhirlpoolReplayer {
             io::download_from_remote_storage(&transaction_file_url, &transaction_file_path);
         }
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path);
+        let state = io::load_from_local_whirlpool_state_file(&state_file_path, account_data_store_config);
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 
         let replay_engine = ReplayEngine::new(
-            state.slot,
-            state.block_height,
-            state.block_time,
+            Slot::new(state.slot, state.block_height, state.block_time),
             state.program_data,
-            util::convert_accounts_to_account_map(&state.accounts),
+            state.accounts,
         );
 
         return WhirlpoolReplayer {
@@ -167,23 +179,24 @@ impl WhirlpoolReplayer {
         };
     }
 
-    pub fn get_slot(&self) -> Slot {
+    pub fn get_slot(&self) -> &Slot {
         return self.replay_engine.get_slot();
     }
 
-    pub fn get_program_data(&self) -> &Vec<u8> {
+    pub fn get_program_data(&self) -> &ProgramData {
         return self.replay_engine.get_program_data();
     }
 
-    pub fn get_accounts(&self) -> &AccountMap {
+    pub fn get_accounts(&self) -> &AccountDataStore {
         return self.replay_engine.get_accounts();
     }
 
     pub fn replay(
         &mut self,
         cond: ReplayUntil,
-        slot_callback: Option<SlotCallback>,
-        instruction_callback: Option<InstructionCallback>,
+        instruction_callback: Option<SyncInstructionCallback>,
+        slot_pre_callback: Option<SyncSlotCallback>,
+        slot_post_callback: Option<SyncSlotCallback>,
     ) {
         let mut next_whirlpool_transaction = self.transaction_iter.next();
         while next_whirlpool_transaction.is_some() {
@@ -202,8 +215,8 @@ impl WhirlpoolReplayer {
             self.replay_engine
                 .update_slot(slot.slot, slot.block_height, slot.block_time);
 
-            if let Some(callback) = slot_callback {
-                callback(&slot);
+            if let Some(callback) = slot_pre_callback.as_ref() {
+                callback(self.replay_engine.get_slot(), self.replay_engine.get_accounts());
             }
 
             for transaction in whirlpool_transaction.transactions {
@@ -227,19 +240,23 @@ impl WhirlpoolReplayer {
                                 .replay_instruction(&whirlpool_instruction)
                                 .unwrap();
 
-                            if let Some(callback) = instruction_callback {
+                            if let Some(callback) = instruction_callback.as_ref() {
                                 callback(
                                     &slot,
                                     &transaction,
                                     &name,
                                     &whirlpool_instruction,
                                     self.replay_engine.get_accounts(),
-                                    &result,
+                                    &result.snapshot,
                                 );
                             }
                         }
                     }
                 }
+            }
+
+            if let Some(callback) = slot_post_callback.as_ref() {
+                callback(self.replay_engine.get_slot(), self.replay_engine.get_accounts());
             }
 
             next_whirlpool_transaction = self.transaction_iter.next();
@@ -249,8 +266,9 @@ impl WhirlpoolReplayer {
     pub async fn replay_async(
         &mut self,
         cond: ReplayUntil,
-        slot_callback: Option<Arc<Mutex<AsyncSlotCallback>>>,
-        instruction_callback: Option<Arc<Mutex<AsyncInstructionCallback>>>,
+        instruction_callback: Option<AsyncInstructionCallback>,
+        slot_pre_callback: Option<AsyncSlotCallback>,
+        slot_post_callback: Option<AsyncSlotCallback>,
     ) {
         let mut next_whirlpool_transaction = self.transaction_iter.next();
         while next_whirlpool_transaction.is_some() {
@@ -269,10 +287,9 @@ impl WhirlpoolReplayer {
             self.replay_engine
                 .update_slot(slot.slot, slot.block_height, slot.block_time);
 
-            if let Some(callback) = slot_callback.as_ref() {
-                let slot_c = callback.lock().await;
-                let d = slot_c.as_ref()(&slot);
-                d.await;
+            if let Some(callback) = slot_pre_callback.as_ref() {
+                let callback_guard = callback.lock().await;
+                callback_guard(self.replay_engine.get_slot(), self.replay_engine.get_accounts()).await;
             }
 
             for transaction in whirlpool_transaction.transactions {
@@ -298,20 +315,25 @@ impl WhirlpoolReplayer {
 
                             let accounts = self.replay_engine.get_accounts();
 
-                            if let Some(ix_guard) = instruction_callback.as_ref() {
-                                let ix_c = ix_guard.lock().await;
-                                let c = ix_c.as_ref()(
+                            if let Some(callback) = instruction_callback.as_ref() {
+                                let callback_guard = callback.lock().await;
+                                callback_guard(
                                     &slot,
                                     &transaction,
                                     &name,
                                     &whirlpool_instruction,
                                     &accounts,
-                                    &result);
-                                c.await;
+                                    &result.snapshot,
+                                ).await;
                             }
                         }
                     }
                 }
+            }
+
+            if let Some(callback) = slot_post_callback.as_ref() {
+                let callback_guard = callback.lock().await;
+                callback_guard(self.replay_engine.get_slot(), self.replay_engine.get_accounts()).await;
             }
 
             next_whirlpool_transaction = self.transaction_iter.next();

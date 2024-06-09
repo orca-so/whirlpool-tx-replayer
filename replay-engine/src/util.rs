@@ -1,21 +1,25 @@
 use anchor_lang::AccountDeserialize;
+use anyhow::Result;
 use solana_sdk::pubkey::Pubkey;
 
 use std::str::FromStr;
 use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
 
-use crate::pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID;
-use crate::types::AccountMap;
+use crate::account_data_store::AccountDataStore;
+use crate::decoded_instructions::TransferAmountWithTransferFeeConfig;
+use crate::pubkeys::{ORCA_WHIRLPOOL_PROGRAM_ID, SPL_TOKEN_PROGRAM_ID, SPL_TOKEN_2022_PROGRAM_ID};
+use crate::replay_instruction::TokenTrait;
+use crate::types::WritableAccountSnapshot;
 
-pub fn get_whirlpool_data(pubkey_string: &String, account_map: &AccountMap) -> Whirlpool {
-    let data = account_map.get(pubkey_string).unwrap();
+pub fn get_whirlpool_data(pubkey_string: &String, accounts: &AccountDataStore) -> Whirlpool {
+    let data = accounts.get(pubkey_string).unwrap().unwrap();
     let whirlpool_data =
         whirlpool_base::state::Whirlpool::try_deserialize(&mut data.as_slice()).unwrap();
     return whirlpool_data;
 }
 
-pub fn get_position_data(pubkey_string: &String, account_map: &AccountMap) -> Position {
-    let data = account_map.get(pubkey_string).unwrap();
+pub fn get_position_data(pubkey_string: &String, accounts: &AccountDataStore) -> Position {
+    let data = accounts.get(pubkey_string).unwrap().unwrap();
     let position_data =
         whirlpool_base::state::Position::try_deserialize(&mut data.as_slice()).unwrap();
     return position_data;
@@ -23,9 +27,9 @@ pub fn get_position_data(pubkey_string: &String, account_map: &AccountMap) -> Po
 
 pub fn get_position_bundle_data(
     pubkey_string: &String,
-    account_map: &AccountMap,
+    accounts: &AccountDataStore,
 ) -> PositionBundle {
-    let data = account_map.get(pubkey_string).unwrap();
+    let data = accounts.get(pubkey_string).unwrap().unwrap();
     let position_bundle_data =
         whirlpool_base::state::PositionBundle::try_deserialize(&mut data.as_slice()).unwrap();
     return position_bundle_data;
@@ -62,22 +66,54 @@ pub fn derive_whirlpool_bump(
     return bump;
 }
 
-pub fn update_account_map(
-    account_map: &mut AccountMap,
-    pre_snapshot: AccountMap,
-    post_snapshot: AccountMap,
-) {
+pub fn determine_token_trait(
+    token_program_pubkey_string: &String,
+    transfer: &TransferAmountWithTransferFeeConfig,
+) -> TokenTrait {
+    if is_token_program(token_program_pubkey_string) {
+        TokenTrait::Token
+    } else {
+        if transfer.transfer_fee_config_opt {
+            TokenTrait::TokenExtensionsWithTransferFee(
+                transfer.transfer_fee_config_bps,
+                transfer.transfer_fee_config_max
+            )
+        } else {
+            TokenTrait::TokenExtensions
+        }
+    }
+}
+
+pub fn is_token_program(pubkey_string: &String) -> bool {
+    SPL_TOKEN_PROGRAM_ID.eq(&pubkey(pubkey_string))
+}
+
+pub fn is_token_2022_program(pubkey_string: &String) -> bool {
+    SPL_TOKEN_2022_PROGRAM_ID.eq(&pubkey(pubkey_string))
+}
+
+pub fn update_accounts(
+    accounts: &mut AccountDataStore,
+    snapshot: &WritableAccountSnapshot,
+) -> Result<()> {
+    let pre_snapshot = &snapshot.pre_snapshot;
+    let post_snapshot = &snapshot.post_snapshot;
+
     let closed_account_pubkeys: Vec<String> = pre_snapshot
         .keys()
         .filter(|k| !post_snapshot.contains_key(*k))
-        .map(|k| k.clone())
+        .cloned()
         .collect();
 
-    // add created & update accounts
-    account_map.extend(post_snapshot);
-
-    // remove closed accounts
-    for pubkey_string in closed_account_pubkeys {
-        account_map.remove(&pubkey_string);
+    // insert created & update accounts
+    for (pubkey, data) in post_snapshot {
+        accounts.upsert(pubkey, data)?;
     }
+
+    // delete closed accounts
+    for pubkey in closed_account_pubkeys {
+        accounts.delete(&pubkey)?;
+    }
+
+    Ok(())
 }

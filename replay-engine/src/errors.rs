@@ -8,4 +8,6 @@ pub enum ErrorCode {
   #[error("unknown whirlpool instruction detected: {0}")]
   UnknownWhirlpoolInstruction(String),
 
+  #[error("instruction replay failed")]
+  InstructionReplayFailed,
 }

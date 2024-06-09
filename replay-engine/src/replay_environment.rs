@@ -1,25 +1,29 @@
 use std::{
-    collections::{HashMap, HashSet},
-    convert::TryInto,
+    collections::{/*HashMap,*/ HashSet},
+    //convert::TryInto,
     path::Path,
     sync::{atomic::AtomicBool, Arc},
-    time::{SystemTime, UNIX_EPOCH},
+    //time::{SystemTime, UNIX_EPOCH},
 };
 
-use itertools::izip;
+//use itertools::izip;
 use solana_program::{
     bpf_loader, bpf_loader_upgradeable,
     hash::Hash,
-    program_option::COption,
+//    program_option::COption,
     program_pack::Pack,
     pubkey::Pubkey,
     system_program,
     sysvar,
 };
-use solana_runtime::{
+use solana_accounts_db::{
     accounts_db::AccountShrinkThreshold,
     accounts_index::AccountSecondaryIndexes,
-    bank::{Bank, TransactionBalancesSet, TransactionExecutionResult, TransactionResults},
+    transaction_results::{TransactionExecutionResult, TransactionResults},
+};
+use solana_program_runtime::timings::ExecuteTimings;
+use solana_runtime::{
+    bank::{Bank, /*TransactionBalancesSet*/},
     genesis_utils,
     runtime_config::RuntimeConfig,
 };
@@ -27,18 +31,20 @@ use solana_sdk::{
     account::{Account, AccountSharedData},
     feature_set,
     genesis_config::GenesisConfig,
-    packet,
+    //packet,
     clock::UnixTimestamp,
     signature::Keypair,
     signature::Signer,
     transaction::VersionedTransaction,
 };
+/* 
 use solana_transaction_status::{
     ConfirmedTransactionWithStatusMeta,
     InnerInstructions, TransactionStatusMeta, TransactionWithStatusMeta,
     VersionedTransactionWithStatusMeta,
     //EncodedConfirmedTransactionWithStatusMeta, UiTransactionEncoding,
 };
+*/
 
 pub use bincode;
 pub use serde;
@@ -77,6 +83,7 @@ impl ReplayEnvironment {
 
     // https://github.com/neodyme-labs/solana-poc-framework/blob/c08d95c209f580b8e828860d73284a22e596277c/src/lib.rs#L443
     // TODO: think removing unnecessary processing
+    /* 
     pub fn execute_transaction<T>(&mut self, tx: T) -> ConfirmedTransactionWithStatusMeta
     where
         VersionedTransaction: From<T>,
@@ -228,17 +235,44 @@ impl ReplayEnvironment {
         // Based on profiler analysis, .encode is too slow.
         // So we return ConfirmedTransactionWithStatusMeta instead of EncodedConfirmedTransactionWithStatusMeta.
         // Caller can encode it if needed.
-        /*
-        .encode(UiTransactionEncoding::Binary, Some(0))
-        .expect("Failed to encode transaction")
-        */
+        
+        //.encode(UiTransactionEncoding::Binary, Some(0))
+        //.expect("Failed to encode transaction")
+        
+    }
+    */
+
+    pub fn execute_transaction<T>(&mut self, tx: T) -> TransactionExecutionResult
+    where
+        VersionedTransaction: From<T>,
+    {
+        let txs = vec![tx.into()];
+        let batch = self.bank.prepare_entry_batch(txs.clone()).unwrap();
+        let (
+            TransactionResults {
+                mut execution_results,
+                ..
+            },
+            ..
+        ) = self.bank.load_execute_and_commit_transactions(
+            &batch,
+            16usize,
+            false, // collect_balances
+            false, // enable_cpi_recording
+            false, // enable_log_recording
+            false, // enable_return_data_recording
+            &mut ExecuteTimings::default(),
+            None,
+        );
+
+        execution_results.remove(0)
     }
 
     pub fn get_latest_blockhash(&self) -> Hash {
         self.bank.last_blockhash()
     }
 
-    pub fn get_rent_excemption(&self, data: usize) -> u64 {
+    pub fn get_rent_exemption(&self, data: usize) -> u64 {
         self.bank.get_minimum_balance_for_rent_exemption(data)
     }
 
@@ -314,51 +348,6 @@ impl ReplayEnvironment {
         self.set_account_with_data(pubkey, owner, &data, false)
     }
 
-    pub fn set_token_mint(
-        &mut self,
-        pubkey: Pubkey,
-        mint_authority: Option<Pubkey>,
-        supply: u64,
-        decimals: u8,
-        freeze_authority: Option<Pubkey>,
-    ) -> &mut Self {
-        self.set_account_with_packable(
-            pubkey,
-            spl_token::ID,
-            spl_token::state::Mint {
-                mint_authority: COption::from(mint_authority.map(|c| c.clone())),
-                supply,
-                decimals,
-                is_initialized: true,
-                freeze_authority: COption::from(freeze_authority.map(|c| c.clone())),
-            },
-        )
-    }
-
-    // Add a token-account into the environment.
-    pub fn set_token_account(
-        &mut self,
-        pubkey: Pubkey,
-        mint: Pubkey,
-        owner: Pubkey,
-        amount: u64,
-    ) -> &mut Self {
-        self.set_account_with_packable(
-            pubkey,
-            spl_token::ID,
-            spl_token::state::Account {
-                mint,
-                owner,
-                amount,
-                delegate: COption::None,
-                state: spl_token::state::AccountState::Initialized,
-                is_native: COption::None,
-                delegated_amount: 0,
-                close_authority: COption::None,
-            },
-        )
-    }
-    
     /// Advance the bank to the next blockhash.
     pub fn advance_blockhash(&self) -> Hash {
         let parent_distance = if self.bank.slot() == 0 {
@@ -604,12 +593,12 @@ impl ReplayEnvironmentBuilder {
         };
         */
         let mut accounts_index_config =
-            solana_runtime::accounts_index::ACCOUNTS_INDEX_CONFIG_FOR_TESTING;
+            solana_accounts_db::accounts_index::ACCOUNTS_INDEX_CONFIG_FOR_TESTING;
         accounts_index_config.index_limit_mb =
-            solana_runtime::accounts_index::IndexLimitMb::InMemOnly;
+            solana_accounts_db::accounts_index::IndexLimitMb::InMemOnly;
         //accounts_index_config.flush_threads = Some(5);
 
-        let mut accounts_db_config = solana_runtime::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
+        let mut accounts_db_config = solana_accounts_db::accounts_db::ACCOUNTS_DB_CONFIG_FOR_TESTING;
         accounts_db_config.index = Some(accounts_index_config);
 
         // set compute budget to max
@@ -630,7 +619,7 @@ impl ReplayEnvironmentBuilder {
             false,
             Some(accounts_db_config), //None,
             None,
-            &exit,
+            exit,
         );
         /*
         let bank = Bank::new_with_paths_for_tests(
@@ -649,8 +638,8 @@ impl ReplayEnvironmentBuilder {
         // - slot0: genesis (always slot 0)
         // - slot1: slot for program deployment
         // - slot2: slot for transaction processing
-        let bank_slot1 = Bank::new_from_parent(&Arc::new(bank_slot0), &Pubkey::default(), 1u64);
-        let bank_slot2: Bank = Bank::new_from_parent(&Arc::new(bank_slot1), &Pubkey::default(), 2u64);
+        let bank_slot1 = Bank::new_from_parent(Arc::new(bank_slot0), &Pubkey::default(), 1u64);
+        let bank_slot2: Bank = Bank::new_from_parent(Arc::new(bank_slot1), &Pubkey::default(), 2u64);
 
         let env = ReplayEnvironment {
             bank: bank_slot2,

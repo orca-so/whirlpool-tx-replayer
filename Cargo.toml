@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.0.2"
+version = "0.1.0"
 edition = "2021"
 
 [workspace.dependencies]
@@ -25,25 +25,32 @@ itertools = "0.10.1"
 tokio = { version = "1.14.1", features = ["full"] }
 reqwest = { version = "0.11.22", features = ["blocking"] }
 clap = { version = "4.4.11", features = ["derive"] }
+anyhow = "1.0.75"
+tempfile = "3.8.0"
 
 # DB
 mysql = "24.0.0"
 
+# RocksDB
+rocksdb = "0.21.0"
+
 # anchor & whirlpool
-anchor-lang = "0.26.0"
-anchor-client = "0.26.0"
-whirlpool_base = { git = "https://github.com/orca-so/whirlpools", package = "whirlpool" }
+anchor-lang = "0.29.0"
+anchor-client = "0.29.0"
+whirlpool_base = { git = "https://github.com/orca-so/whirlpools", package = "whirlpool", version = "0.3.0" }
 
 # borsh
-borsh = "0.9"
+borsh = "0.10.3"
 
-# use 1.16.18
-solana-sdk = "=1.16.18"
-solana-program = "=1.16.18"
-solana-program-runtime = "=1.16.18"
-solana-transaction-status = "=1.16.18"
-solana-client = "=1.16.18"
-solana-runtime = "=1.16.18"
-solana-cli-output = "=1.16.18"
-solana-ledger = "=1.16.18"
-spl-token = "3.3.0"
+# use 1.17.22
+solana-sdk = "=1.17.22"
+solana-program = "=1.17.22"
+solana-program-runtime = "=1.17.22"
+solana-accounts-db = "=1.17.22"
+solana-transaction-status = "=1.17.22"
+solana-client = "=1.17.22"
+solana-runtime = "=1.17.22"
+solana-cli-output = "=1.17.22"
+solana-ledger = "=1.17.22"
+spl-token = "=4.0.0"
+spl-token-2022 = "=1.0.0"

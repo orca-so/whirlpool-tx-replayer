@@ -2,17 +2,17 @@ use whirlpool_base::accounts as whirlpool_ix_accounts;
 use whirlpool_base::instruction as whirlpool_ix_args;
 
 use crate::decoded_instructions;
-use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult, WritableAccountSnapshot};
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
 use crate::util::derive_whirlpool_bump;
 use crate::util::pubkey; // abbr
 
 pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitializePool>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
-  let account_map = req.account_map;
+  let accounts = req.accounts;
 
   // whirlpools_config
-  replayer.set_whirlpool_account(&ix.key_whirlpools_config, account_map);
+  replayer.set_whirlpool_account(&ix.key_whirlpools_config, accounts);
   // token_mint_a
   replayer.set_token_mint(
     pubkey(&ix.key_token_mint_a),
@@ -35,7 +35,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   // token_vault_a
   // token_vault_b
   // fee_tier
-  replayer.set_whirlpool_account(&ix.key_fee_tier, account_map);
+  replayer.set_whirlpool_account(&ix.key_fee_tier, accounts);
   // token_program
   // system_program
   // rent
@@ -70,23 +70,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedInitiali
   );
 
   let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
-    &ix.key_fee_tier,
   ]);
   
-  let replay_result = replayer.execute_transaction(tx);
+  let execution_result = replayer.execute_transaction(tx);
 
   let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpools_config,
-    &ix.key_fee_tier,
     &ix.key_whirlpool, // created
   ]);
 
-  return ReplayInstructionResult {
-    transaction_status: replay_result,
-    snapshot: WritableAccountSnapshot {
-      pre_snapshot,
-      post_snapshot,
-    }
-  }
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }
