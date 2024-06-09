@@ -44,6 +44,7 @@ This library will give developers free access to Whirlpool history since its gen
 
 ### Memory
 - 1 ~ 2 GB depending on the number of accounts and daily transaction realated to Whirlpool program
+- When memory is scarce, using RocksDB to store accounts can limit memory usage to a few hundred megabytes.
 
 ## Use whirlpool-replayer
 You can use ``whirlpool-replayer`` library by importing it from GitHub repo directly.
@@ -58,8 +59,9 @@ This repository contains ``whirlpool-replay`` command implementation, and so you
 - The following command will just replay all whirlpool instruction at 2022/04/07.
 - It outputs all instruction replayed and the details of swap instruction.
 - ``data/sample_local_storage`` contains only data for 2022/04/07 and 2022/04/08.
+- With ``-m``, we store all accounts data in memory (faster).
 ```
-$ cargo run --release -p whirlpool-replay data/sample_local_storage 20220407
+$ cargo run --release -p whirlpool-replay -- -m data/sample_local_storage 20220407
 
 ...
 processing slot: 128703624 (block_height=116654348 block_time=1649375977) ...
@@ -113,6 +115,44 @@ curl -OL https://whirlpool-replay.pleiades.dev/alpha/2023/1130/whirlpool-transac
 ```
 
 ## TODO
+### Replace GZip by ZStandard
+- We can reduce >30% storage
+- It is so fast
+- works well even in streaming mode
+
+### Error handling
+- eliminate `unwrap` (panic)
+- eliminate `anyhow`
+
+### More performance tuning
+- ~~ConfirmedTransactionWithStatusMeta::encode in execute_transaction is the next hotspot~~
+- ~~Delete unused features such as token balance snapshots~~
+- 1.17.22 may be slower than 1.16.18
+- find next hot spot
+
+### Validation at instruction level
+By performing the following verification before and after each instruction is executed, abnormal situations may be detected at an early stage.
+
+- Accounts that should not exist do not exist
+- Accounts that should exist do exist
+- Token volume consistent with the transaction log has been transferred
+
+### More callback
+- ~~slot_begin_callback~~ (implemented as slot_pre_callback)
+- ~~slot_end_callback~~ (implemented as slot_post_callback)
+- transaction_begin_callback (no need for now)
+- transaction_end_callback (no need for now)
+
+### WASM build for client use / direct use from Node.js (Typescript) similar to Bankrun
+https://kevinheavey.github.io/solana-bankrun/
+
+For now, I think it is NOT needed to support other language.
+We should support them by providing data stream.
+
+### Handling new deployment release
+We know when whirlpool program have been updated in the past exactly.
+But we cannot know which slot and which tx index in the block the next version will be released.
+
 ### ~~Performance tuning~~
 ~~Now I believe that it can process 50 slots per seconds in average, and it is x20 faster than real validators.~~
 ~~But there is obvious hot spot and it is whirlpool program compilation everytime to execute transaction.~~
@@ -147,47 +187,15 @@ We need to switch whirlpool program in src/programs/whirlpool.
 
 ### ~~Separate core and use crate~~
 
-### WASM build for client use
-
-### Handling new deployment release
-We know when whirlpool program have been updated in the past exactly.
-But we cannot know which slot and which tx index in the block the next version will be released.
-
-### Validation at instruction level
-By performing the following verification before and after each instruction is executed, abnormal situations may be detected at an early stage.
-
-- Accounts that should not exist do not exist
-- Accounts that should exist do exist
-- Token volume consistent with the transaction log has been transferred
-
-### More performance tuning
-- ~~ConfirmedTransactionWithStatusMeta::encode in execute_transaction is the next hotspot~~
-- Delete unused features such as token balance snapshots
-
-### think: direct use from Node.js (Typescript) similar to Bankrun
-https://kevinheavey.github.io/solana-bankrun/
-
-### Replace GZip by ZStandard
-
 ### ~~Using disk to hold state (reduce memory usage)~~
 - introduce AccountDataStore
 - AccountDataStore on memory
 - AccountDataStore on disk (RocksDB)
 
-### Fnmut callback, async callback
+### ~~Fnmut callback, async callback~~
+Using Fn, but we can collect info via Rc & RefCell.
 
-### More callback
-- slot_begin_callback
-- slot_end_callback
-- transaction_begin_callback
-- transaction_end_callback
-- instruction_callback
-
-### Error handling
-- eliminate `unwrap` (panic)
-- eliminate `anyhow`
-
-### Support V2 instructions
+### ~~Support V2 instructions (TokenExtensions)~~
 
 ## Related works
 ### solana-snapshot-gpa

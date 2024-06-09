@@ -16,9 +16,6 @@ itertools = { workspace = true }
 tokio = { workspace = true }
 reqwest = { workspace = true }
 
-# DB
-mysql = { workspace = true }
-
 # solana
 solana-transaction-status = { workspace = true }
 solana-cli-output = { workspace = true }

@@ -1,12 +1,20 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use clap::Parser;
-use whirlpool_replayer::{io, schema, serde, SyncInstructionCallback, ReplayUntil, SyncSlotCallback, WhirlpoolReplayer};
+use itertools::Itertools;
+
+use whirlpool_replayer::{
+    io,
+    schema,
+    serde,
+    WhirlpoolReplayer,
+    ReplayUntil,
+    SyncInstructionCallback,
+    SyncSlotCallback
+};
 
 use anchor_lang::prelude::*;
 use whirlpool_base::state::Whirlpool;
-
-use itertools::Itertools;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -60,6 +68,7 @@ fn main() {
         ReplayUntil::End
     };
 
+    // build replayer
     let mut replayer = if base_path_or_url.starts_with("https://") {
         if args.cache_dir.is_some() {
             let cache_dir = args.cache_dir.unwrap();
@@ -77,8 +86,11 @@ fn main() {
         WhirlpoolReplayer::build_with_local_file_storage(&base_path_or_url, &yyyymmdd, &account_data_store_config)
     };
 
+    // define callbacks
     let slot_pre_callback: SyncSlotCallback = Rc::new(|slot, _accounts| {
         println!("processing slot: {} (block_height={} block_time={}) ...", slot.slot, slot.block_height, slot.block_time);
+
+        // We can use accounts to access all whirlpool accounts at the beginning of the slot
     });
 
     // how to extract data from replayer
@@ -90,7 +102,7 @@ fn main() {
             println!("  replayed instruction: {}", name);
 
             // callback will receive various data to implement various data processing!
-            // For example, print the details of swap instruction with pre/post account state info.
+            // For example, print the details of swap instruction with pre/post writable account state info.
             match instruction 
             {
                 schema::DecodedWhirlpoolInstruction::Swap(params) => {
@@ -120,7 +132,12 @@ fn main() {
         },
     );
 
-    replayer.replay(until_condition, Some(instruction_callback), Some(slot_pre_callback), None);
+    replayer.replay(
+        until_condition,
+        Some(instruction_callback),
+        Some(slot_pre_callback),
+        None // no slot_post_callback
+    );
 
     // show instruction count
     println!("\n\nReplayed instructions\n");
