@@ -28,6 +28,15 @@ pub fn get_whirlpool_transaction_file_relative_path(date: &chrono::NaiveDate) ->
     )
 }
 
+pub fn get_whirlpool_token_file_relative_path(date: &chrono::NaiveDate) -> String {
+    format!(
+        "{}/{}/whirlpool-token-{}.json.gz",
+        date.format("%Y"),
+        date.format("%m%d"),
+        date.format("%Y%m%d"),
+    )
+}
+
 pub fn load_from_local_whirlpool_state_file(file_path: &String, account_data_store_config: &AccountDataStoreConfig) -> WhirlpoolState {
     let file = File::open(file_path).unwrap();
     let decoder = GzDecoder::new(file);
@@ -93,6 +102,20 @@ pub fn load_from_remote_whirlpool_transaction_file(
     });
 
     return iter;
+}
+
+pub fn load_from_local_whirlpool_token_file(file_path: &String) -> WhirlpoolToken {
+    let file = File::open(file_path).unwrap();
+    let decoder = GzDecoder::new(file);
+    let reader = BufReader::new(decoder);
+    return serde_json::from_reader(reader).unwrap();
+}
+
+pub fn load_from_remote_whirlpool_token_file(url: &String) -> WhirlpoolToken {
+    let response = reqwest::blocking::get(url).unwrap();
+    let decoder = GzDecoder::new(response);
+    let reader = BufReader::new(decoder);
+    return serde_json::from_reader(reader).unwrap();
 }
 
 pub fn download_from_remote_storage(url: &String, file_path: &String) {
