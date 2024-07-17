@@ -322,6 +322,10 @@ pub struct DecodedInitializePool {
   pub key_token_program: String,
   pub key_system_program: String,
   pub key_rent: String,
+  #[cfg(feature = "decimals")]
+  pub decimals_token_mint_a: u8,
+  #[cfg(feature = "decimals")]
+  pub decimals_token_mint_b: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -367,6 +371,8 @@ pub struct DecodedInitializeReward {
   pub key_token_program: String,
   pub key_system_program: String,
   pub key_rent: String,
+  #[cfg(feature = "decimals")]
+  pub decimals_reward_mint: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -830,6 +836,10 @@ pub struct DecodedInitializePoolV2 {
   pub key_token_program_b: String,
   pub key_system_program: String,
   pub key_rent: String,
+  #[cfg(feature = "decimals")]
+  pub decimals_token_mint_a: u8,
+  #[cfg(feature = "decimals")]
+  pub decimals_token_mint_b: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -845,6 +855,8 @@ pub struct DecodedInitializeRewardV2 {
   pub key_reward_token_program: String,
   pub key_system_program: String,
   pub key_rent: String,
+  #[cfg(feature = "decimals")]
+  pub decimals_reward_mint: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
