@@ -3,6 +3,10 @@ name = "replay-engine"
 version = { workspace = true }
 edition = { workspace = true }
 
+[features]
+default = []
+decimals = []
+
 [dependencies]
 bincode = { workspace = true }
 serde = { workspace = true }
