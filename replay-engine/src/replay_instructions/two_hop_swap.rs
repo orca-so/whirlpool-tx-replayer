@@ -90,17 +90,17 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     if mint_two_b == output_mint { output_amount } else { 0u64 }
   );
   // tick_array_one_0
-  replayer.set_whirlpool_account(&ix.key_tick_array_one_0, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_0, accounts);
   // tick_array_one_1
-  replayer.set_whirlpool_account(&ix.key_tick_array_one_1, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_1, accounts);
   // tick_array_one_2
-  replayer.set_whirlpool_account(&ix.key_tick_array_one_2, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_2, accounts);
   // tick_array_two_0
-  replayer.set_whirlpool_account(&ix.key_tick_array_two_0, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_0, accounts);
   // tick_array_two_1
-  replayer.set_whirlpool_account(&ix.key_tick_array_two_1, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_1, accounts);
   // tick_array_two_2
-  replayer.set_whirlpool_account(&ix.key_tick_array_two_2, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_2, accounts);
   // oracle_one
   // oracle_two
 
