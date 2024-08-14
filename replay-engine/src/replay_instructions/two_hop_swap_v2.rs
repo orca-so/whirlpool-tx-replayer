@@ -129,6 +129,26 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   // oracle_two
   // memo_program
 
+  // remaining_accounts (SupplementalTickArraysOne)
+  let supplemental_tick_arrays_one = util::get_remaining_accounts(
+    &ix.remaining_accounts_info,
+    &ix.remaining_accounts_keys,
+    whirlpool_base::util::remaining_accounts_utils::AccountsType::SupplementalTickArraysOne,
+  );
+  for supplemental_tick_array in supplemental_tick_arrays_one {
+    replayer.set_whirlpool_account_if_exists(&supplemental_tick_array, accounts);
+  }
+  // remaining_accounts (SupplementalTickArraysTwo)
+  let supplemental_tick_arrays_two = util::get_remaining_accounts(
+    &ix.remaining_accounts_info,
+    &ix.remaining_accounts_keys,
+    whirlpool_base::util::remaining_accounts_utils::AccountsType::SupplementalTickArraysTwo,
+  );
+  for supplemental_tick_array in supplemental_tick_arrays_two {
+    replayer.set_whirlpool_account_if_exists(&supplemental_tick_array, accounts);
+  }
+
+
   let tx = replayer.build_whirlpool_replay_transaction(
     whirlpool_ix_args::TwoHopSwapV2 {
       amount: ix.data_amount,

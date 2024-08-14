@@ -6,7 +6,7 @@ use std::str::FromStr;
 use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
 
 use crate::account_data_store::AccountDataStore;
-use crate::decoded_instructions::TransferAmountWithTransferFeeConfig;
+use crate::decoded_instructions::{RemainingAccountsInfo, RemainingAccountsKeys, TransferAmountWithTransferFeeConfig};
 use crate::pubkeys::{ORCA_WHIRLPOOL_PROGRAM_ID, SPL_TOKEN_PROGRAM_ID, SPL_TOKEN_2022_PROGRAM_ID};
 use crate::replay_instruction::TokenTrait;
 use crate::types::WritableAccountSnapshot;
@@ -33,6 +33,30 @@ pub fn get_position_bundle_data(
     let position_bundle_data =
         whirlpool_base::state::PositionBundle::try_deserialize(&mut data.as_slice()).unwrap();
     return position_bundle_data;
+}
+
+pub fn get_remaining_accounts(
+    remaining_accounts_info: &RemainingAccountsInfo,
+    remaining_accounts_keys: &RemainingAccountsKeys,
+    accounts_type: whirlpool_base::util::remaining_accounts_utils::AccountsType,
+) -> Vec<String> {
+    let accounts_type_u8 = accounts_type as u8;
+
+    let mut offset = 0;
+    for i in 0..remaining_accounts_info.len() {
+        let slice = remaining_accounts_info[i];
+        let slice_accounts_type = slice[0];
+        let slice_length = slice[1];
+
+        if slice_accounts_type == accounts_type_u8 {
+            let slice_data = &remaining_accounts_keys[offset..offset + slice_length as usize];
+            return slice_data.iter().map(|k| k.to_string()).collect();
+        }
+
+        offset += slice_length as usize;
+    }
+
+    vec![]
 }
 
 pub fn pubkey(pubkey_string: &String) -> Pubkey {
@@ -116,4 +140,99 @@ pub fn update_accounts(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use whirlpool_base::util::remaining_accounts_utils::AccountsType;
+
+    #[test]
+    fn test_get_remaining_accounts_enum_u8_cast() {
+        assert_eq!(AccountsType::TransferHookA as u8, 0);
+        assert_eq!(AccountsType::TransferHookB as u8, 1);
+        assert_eq!(AccountsType::TransferHookReward as u8, 2);
+        assert_eq!(AccountsType::TransferHookInput as u8, 3);
+        assert_eq!(AccountsType::TransferHookIntermediate as u8, 4);
+        assert_eq!(AccountsType::TransferHookOutput as u8, 5);
+        assert_eq!(AccountsType::SupplementalTickArrays as u8, 6);
+        assert_eq!(AccountsType::SupplementalTickArraysOne as u8, 7);
+        assert_eq!(AccountsType::SupplementalTickArraysTwo as u8, 8);
+    }
+
+    #[test]
+    fn test_get_remaining_accounts_none() {
+        let result = super::get_remaining_accounts(
+            &vec![
+                [AccountsType::TransferHookA as u8, 3],
+                [AccountsType::TransferHookB as u8, 3],
+            ],
+            &vec![
+                "a".to_string(),
+                "b".to_string(),
+                "c".to_string(),
+                "d".to_string(),
+                "e".to_string(),
+                "f".to_string(),
+            ],
+            AccountsType::SupplementalTickArrays,
+        );
+
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_get_remaining_accounts_first() {
+        let result = super::get_remaining_accounts(
+            &vec![
+                [AccountsType::SupplementalTickArrays as u8, 3],
+                [AccountsType::TransferHookA as u8, 3],
+                [AccountsType::TransferHookB as u8, 3],
+            ],
+            &vec![
+                "a".to_string(),
+                "b".to_string(),
+                "c".to_string(),
+                "d".to_string(),
+                "e".to_string(),
+                "f".to_string(),
+                "g".to_string(),
+                "h".to_string(),
+                "i".to_string(),
+            ],
+            AccountsType::SupplementalTickArrays,
+        );
+
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0], "a");
+        assert_eq!(result[1], "b");
+        assert_eq!(result[2], "c");
+    }
+
+    #[test]
+    fn test_get_remaining_accounts_last() {
+        let result = super::get_remaining_accounts(
+            &vec![
+                [AccountsType::TransferHookA as u8, 3],
+                [AccountsType::TransferHookB as u8, 3],
+                [AccountsType::SupplementalTickArrays as u8, 3],
+            ],
+            &vec![
+                "a".to_string(),
+                "b".to_string(),
+                "c".to_string(),
+                "d".to_string(),
+                "e".to_string(),
+                "f".to_string(),
+                "g".to_string(),
+                "h".to_string(),
+                "i".to_string(),
+            ],
+            AccountsType::SupplementalTickArrays,
+        );
+
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0], "g");
+        assert_eq!(result[1], "h");
+        assert_eq!(result[2], "i");
+    }
 }
