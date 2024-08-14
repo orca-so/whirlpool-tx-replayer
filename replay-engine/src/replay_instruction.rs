@@ -354,15 +354,19 @@ impl ReplayEnvironment {
     );
   }
 
-  pub fn set_whirlpool_account_if_exists(&mut self, pubkey: &String, accounts: &AccountDataStore) {
+  pub fn set_whirlpool_account_if_exists(&mut self, pubkey: &String, accounts: &AccountDataStore) -> bool {
     if let Some(data) = accounts.get(pubkey).unwrap() {
       self.set_account_with_data(
         Pubkey::from_str(pubkey).unwrap(),
         pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
         &data,
         false
-      );  
+      );
+
+      return true;
     }
+
+    return false;
   }
 
   pub fn set_funder_account(
@@ -409,27 +413,13 @@ impl ReplayEnvironment {
 
   pub fn take_snapshot(
     &self,
-    required_pubkeys: &[&String],
-  ) -> AccountSnapshot {
-    self.take_snapshot_with_optional(required_pubkeys, &[])
-  }
-
-  pub fn take_snapshot_with_optional(
-    &self,
-    required_pubkeys: &[&String],
-    optional_pubkeys: &[&String],
+    pubkeys: &[&String],
   ) -> AccountSnapshot {
     let mut snapshot = AccountSnapshot::new();
   
-    for pubkey_string in required_pubkeys {
+    for pubkey_string in pubkeys {
       let account = self.get_account(Pubkey::from_str(pubkey_string).unwrap()).unwrap();
       snapshot.insert((*pubkey_string).clone(), account.data);
-    }
-
-    for pubkey_string in optional_pubkeys {
-      if let Some(account) = self.get_account(Pubkey::from_str(pubkey_string).unwrap()) {
-        snapshot.insert((*pubkey_string).clone(), account.data);
-      }
     }
   
     return snapshot;
