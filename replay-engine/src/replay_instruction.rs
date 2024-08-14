@@ -354,15 +354,19 @@ impl ReplayEnvironment {
     );
   }
 
-  pub fn set_whirlpool_account_if_exists(&mut self, pubkey: &String, accounts: &AccountDataStore) {
+  pub fn set_whirlpool_account_if_exists(&mut self, pubkey: &String, accounts: &AccountDataStore) -> bool {
     if let Some(data) = accounts.get(pubkey).unwrap() {
       self.set_account_with_data(
         Pubkey::from_str(pubkey).unwrap(),
         pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
         &data,
         false
-      );  
+      );
+
+      return true;
     }
+
+    return false;
   }
 
   pub fn set_funder_account(

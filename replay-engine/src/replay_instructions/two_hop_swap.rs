@@ -27,6 +27,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   let intermediate_amount = ix.transfer_amount_1;
   let output_amount = ix.transfer_amount_3;
 
+  let mut writable_accounts = vec![];
+
   // token_program
   // token_authority
   // whirlpool_one
@@ -90,17 +92,29 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     if mint_two_b == output_mint { output_amount } else { 0u64 }
   );
   // tick_array_one_0
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_0, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_0, accounts) {
+    writable_accounts.push(&ix.key_tick_array_one_0);
+  }
   // tick_array_one_1
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_1, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_1, accounts) {
+    writable_accounts.push(&ix.key_tick_array_one_1);
+  }
   // tick_array_one_2
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_2, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_one_2, accounts) {
+    writable_accounts.push(&ix.key_tick_array_one_2);
+  }
   // tick_array_two_0
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_0, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_0, accounts) {
+    writable_accounts.push(&ix.key_tick_array_two_0);
+  }
   // tick_array_two_1
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_1, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_1, accounts) {
+    writable_accounts.push(&ix.key_tick_array_two_1);
+  }
   // tick_array_two_2
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_2, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_two_2, accounts) {
+    writable_accounts.push(&ix.key_tick_array_two_2);
+  }
   // oracle_one
   // oracle_two
 
@@ -138,29 +152,19 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     },
   );
 
-  let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpool_one,
-    &ix.key_whirlpool_two,
-    &ix.key_tick_array_one_0,
-    &ix.key_tick_array_one_1,
-    &ix.key_tick_array_one_2,
-    &ix.key_tick_array_two_0,
-    &ix.key_tick_array_two_1,
-    &ix.key_tick_array_two_2,
-  ]);
-  
+  writable_accounts.dedup();
+  writable_accounts.push(&ix.key_whirlpool_one);
+  writable_accounts.push(&ix.key_whirlpool_two);
+
+  let pre_snapshot = replayer.take_snapshot(
+    &writable_accounts,
+  );
+
   let execution_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpool_one,
-    &ix.key_whirlpool_two,
-    &ix.key_tick_array_one_0,
-    &ix.key_tick_array_one_1,
-    &ix.key_tick_array_one_2,
-    &ix.key_tick_array_two_0,
-    &ix.key_tick_array_two_1,
-    &ix.key_tick_array_two_2,
-  ]);
+  let post_snapshot = replayer.take_snapshot(
+    &writable_accounts,
+  );
 
   ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }

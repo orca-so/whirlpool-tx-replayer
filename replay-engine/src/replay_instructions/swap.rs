@@ -20,6 +20,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
   let input_amount = ix.transfer_amount_0;
   let output_amount = ix.transfer_amount_1;
 
+  let mut writable_accounts = vec![];
+
   // token_program
   // token_authority
   // whirlpool
@@ -53,11 +55,17 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     if mint_b_is_input { 0u64 } else { output_amount }
   );
   // tick_array_0
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_0, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_0, accounts) {
+    writable_accounts.push(&ix.key_tick_array_0);
+  }
   // tick_array_1
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_1, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_1, accounts) {
+    writable_accounts.push(&ix.key_tick_array_1);
+  }
   // tick_array_2
-  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_2, accounts);
+  if replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_2, accounts) {
+    writable_accounts.push(&ix.key_tick_array_2);
+  }
   // oracle
 
   let tx = replayer.build_whirlpool_replay_transaction(
@@ -83,23 +91,18 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     },
   );
 
-  let pre_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpool,
-    &ix.key_tick_array_0,
-    &ix.key_tick_array_1,
-    &ix.key_tick_array_2,
-  ]);
-  
+  writable_accounts.dedup();
+  writable_accounts.push(&ix.key_whirlpool);
+
+  let pre_snapshot = replayer.take_snapshot(
+    &writable_accounts,
+  );
+
   let execution_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = replayer.take_snapshot(&[
-    &ix.key_whirlpool,
-    &ix.key_tick_array_0,
-    &ix.key_tick_array_1,
-    &ix.key_tick_array_2,
-  ]);
+  let post_snapshot = replayer.take_snapshot(
+    &writable_accounts,
+  );
 
   ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
 }
-
-
