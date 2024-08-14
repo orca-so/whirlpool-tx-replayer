@@ -80,12 +80,22 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
     if mint_b_is_input { 0u64 } else { output_amount }
   );
   // tick_array_0
-  replayer.set_whirlpool_account(&ix.key_tick_array_0, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_0, accounts);
   // tick_array_1
-  replayer.set_whirlpool_account(&ix.key_tick_array_1, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_1, accounts);
   // tick_array_2
-  replayer.set_whirlpool_account(&ix.key_tick_array_2, accounts);
+  replayer.set_whirlpool_account_if_exists(&ix.key_tick_array_2, accounts);
   // oracle
+
+  // remaining_accounts (SupplementalTickArrays)
+  let supplemental_tick_arrays = util::get_remaining_accounts(
+    &ix.remaining_accounts_info,
+    &ix.remaining_accounts_keys,
+    whirlpool_base::util::remaining_accounts_utils::AccountsType::SupplementalTickArrays,
+  );
+  for supplemental_tick_array in supplemental_tick_arrays {
+    replayer.set_whirlpool_account_if_exists(&supplemental_tick_array, accounts);
+  }
 
   let tx = replayer.build_whirlpool_replay_transaction(
       whirlpool_ix_args::SwapV2 {
