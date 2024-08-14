@@ -138,9 +138,10 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     },
   );
 
-  let pre_snapshot = replayer.take_snapshot(&[
+  let pre_snapshot = replayer.take_snapshot_with_optional(&[
     &ix.key_whirlpool_one,
     &ix.key_whirlpool_two,
+  ], &[
     &ix.key_tick_array_one_0,
     &ix.key_tick_array_one_1,
     &ix.key_tick_array_one_2,
@@ -151,9 +152,10 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   
   let execution_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = replayer.take_snapshot(&[
+  let post_snapshot = replayer.take_snapshot_with_optional(&[
     &ix.key_whirlpool_one,
     &ix.key_whirlpool_two,
+  ], &[
     &ix.key_tick_array_one_0,
     &ix.key_tick_array_one_1,
     &ix.key_tick_array_one_2,

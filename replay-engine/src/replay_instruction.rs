@@ -409,13 +409,27 @@ impl ReplayEnvironment {
 
   pub fn take_snapshot(
     &self,
-    pubkeys: &[&String],
+    required_pubkeys: &[&String],
+  ) -> AccountSnapshot {
+    self.take_snapshot_with_optional(required_pubkeys, &[])
+  }
+
+  pub fn take_snapshot_with_optional(
+    &self,
+    required_pubkeys: &[&String],
+    optional_pubkeys: &[&String],
   ) -> AccountSnapshot {
     let mut snapshot = AccountSnapshot::new();
   
-    for pubkey_string in pubkeys {
+    for pubkey_string in required_pubkeys {
       let account = self.get_account(Pubkey::from_str(pubkey_string).unwrap()).unwrap();
       snapshot.insert((*pubkey_string).clone(), account.data);
+    }
+
+    for pubkey_string in optional_pubkeys {
+      if let Some(account) = self.get_account(Pubkey::from_str(pubkey_string).unwrap()) {
+        snapshot.insert((*pubkey_string).clone(), account.data);
+      }
     }
   
     return snapshot;

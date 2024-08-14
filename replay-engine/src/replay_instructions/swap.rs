@@ -83,8 +83,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     },
   );
 
-  let pre_snapshot = replayer.take_snapshot(&[
+  let pre_snapshot = replayer.take_snapshot_with_optional(&[
     &ix.key_whirlpool,
+  ], &[
     &ix.key_tick_array_0,
     &ix.key_tick_array_1,
     &ix.key_tick_array_2,
@@ -92,8 +93,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
   
   let execution_result = replayer.execute_transaction(tx);
 
-  let post_snapshot = replayer.take_snapshot(&[
+  let post_snapshot = replayer.take_snapshot_with_optional(&[
     &ix.key_whirlpool,
+  ], &[
     &ix.key_tick_array_0,
     &ix.key_tick_array_1,
     &ix.key_tick_array_2,
