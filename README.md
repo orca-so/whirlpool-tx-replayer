@@ -92,7 +92,8 @@ $ cargo run --release -p whirlpool-replay <REMOTE STORAGE ENDPOINT> <YYYYMMDD>
 
 ## Public Remote Storage Endpoint
 
-- https://whirlpool-replay.pleiades.dev/alpha
+- https://whirlpool-archive.pleiades.dev/alpha
+- (deprecated) https://whirlpool-replay.pleiades.dev/alpha
 
 ### Manual download of state and transaction files
 
@@ -108,10 +109,10 @@ If you will use ``whirlpool-replayer`` heavily, to avoid duplicated data downloa
 
 *Example*
 ```
-curl -OL https://whirlpool-replay.pleiades.dev/alpha/2023/1130/whirlpool-state-20231130.json.gz
+curl -OL https://whirlpool-archive.pleiades.dev/alpha/2023/1130/whirlpool-state-20231130.json.gz
 ```
 ```
-curl -OL https://whirlpool-replay.pleiades.dev/alpha/2023/1130/whirlpool-transaction-20231130.jsonl.gz
+curl -OL https://whirlpool-archive.pleiades.dev/alpha/2023/1130/whirlpool-transaction-20231130.jsonl.gz
 ```
 
 ## TODO
