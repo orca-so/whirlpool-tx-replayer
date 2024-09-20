@@ -385,14 +385,26 @@ impl ReplayEnvironment {
     args: impl InstructionData,
     accounts: impl ToAccountMetas,
   ) -> Transaction {
+    self.build_whirlpool_replay_transaction_with_remaining_accounts(args, accounts, vec![])
+  }
+
+  pub fn build_whirlpool_replay_transaction_with_remaining_accounts(
+    &mut self,
+    args: impl InstructionData,
+    accounts: impl ToAccountMetas,
+    remaining_accounts: Vec<AccountMeta>,
+  ) -> Transaction {
     let payer = self.payer();
     let recent_blockhash = self.get_latest_blockhash();
 
-    let whirlpool_instruction = Instruction {
+    let mut whirlpool_instruction = Instruction {
       program_id: pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
       data: args.data(), // using Anchor, at least instruction code (8 bytes)
       accounts: accounts.to_account_metas(None),
     };
+
+    // add remaining accounts
+    whirlpool_instruction.accounts.extend(remaining_accounts);
 
     // to avoid duplicated transaction signature for instructions with same args & accounts
     let nonce = format!("{:x}", self.get_next_nonce());
