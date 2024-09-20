@@ -166,7 +166,12 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     }
   }
 
-  let tx = replayer.build_whirlpool_replay_transaction(
+  let (remaining_accounts_info, remaining_account_metas) = util::build_two_hop_swap_v2_remaining_accounts(
+    &supplemental_tick_arrays_one,
+    &supplemental_tick_arrays_two,
+  );
+
+  let tx = replayer.build_whirlpool_replay_transaction_with_remaining_accounts(
     whirlpool_ix_args::TwoHopSwapV2 {
       amount: ix.data_amount,
       other_amount_threshold: ix.data_other_amount_threshold,
@@ -176,8 +181,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
       a_to_b_one: ix.data_a_to_b_one,
       a_to_b_two: ix.data_a_to_b_two,
       // don't replay transfer hook
-      // revisit if additional tickarrays is supported
-      remaining_accounts_info: None,
+      remaining_accounts_info,
     },
     whirlpool_ix_accounts::TwoHopSwapV2 {
       whirlpool_one: pubkey(&ix.key_whirlpool_one),
@@ -205,6 +209,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
       oracle_two: pubkey(&ix.key_oracle_two),
       memo_program: pubkey(&ix.key_memo_program),
     },
+    remaining_account_metas,
   );
 
   writable_accounts.dedup();

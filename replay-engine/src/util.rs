@@ -1,9 +1,10 @@
 use anchor_lang::AccountDeserialize;
 use anyhow::Result;
-use solana_sdk::pubkey::Pubkey;
+use solana_sdk::{pubkey::Pubkey, instruction::AccountMeta};
 
 use std::str::FromStr;
 use whirlpool_base::state::{Position, PositionBundle, Whirlpool};
+use whirlpool_base::util::remaining_accounts_utils;
 
 use crate::account_data_store::AccountDataStore;
 use crate::decoded_instructions::{RemainingAccountsInfo, RemainingAccountsKeys, TransferAmountWithTransferFeeConfig};
@@ -59,6 +60,65 @@ pub fn get_remaining_accounts(
     vec![]
 }
 
+pub fn build_swap_v2_remaining_accounts(
+    supplemental_tick_arrays: &Vec<String>,
+) -> (Option<remaining_accounts_utils::RemainingAccountsInfo>, Vec<AccountMeta>) {
+    let mut accounts_info = remaining_accounts_utils::RemainingAccountsInfo { slices: vec![] };
+    let mut account_metas = vec![];
+    
+    // we ignore remaining accounts for TransferHook
+
+    if !supplemental_tick_arrays.is_empty() {
+        accounts_info.slices.push(remaining_accounts_utils::RemainingAccountsSlice {
+            accounts_type: remaining_accounts_utils::AccountsType::SupplementalTickArrays,
+            length: u8::try_from(supplemental_tick_arrays.len()).unwrap(),
+        });
+        account_metas.extend(supplemental_tick_arrays.iter().map(|k| AccountMeta {
+            pubkey: Pubkey::try_from(k.as_str()).unwrap(),
+            is_writable: true,
+            is_signer: false,
+        }));
+    }
+  
+    (Some(accounts_info), account_metas)
+}
+
+pub fn build_two_hop_swap_v2_remaining_accounts(
+    supplemental_tick_arrays_one: &Vec<String>,
+    supplemental_tick_arrays_two: &Vec<String>,
+) -> (Option<remaining_accounts_utils::RemainingAccountsInfo>, Vec<AccountMeta>) {
+    let mut accounts_info = remaining_accounts_utils::RemainingAccountsInfo { slices: vec![] };
+    let mut account_metas = vec![];
+
+    // we ignore remaining accounts for TransferHook
+  
+    if !supplemental_tick_arrays_one.is_empty() {
+        accounts_info.slices.push(remaining_accounts_utils::RemainingAccountsSlice {
+            accounts_type: remaining_accounts_utils::AccountsType::SupplementalTickArraysOne,
+            length: u8::try_from(supplemental_tick_arrays_one.len()).unwrap(),
+        });
+        account_metas.extend(supplemental_tick_arrays_one.iter().map(|k| AccountMeta {
+            pubkey: Pubkey::try_from(k.as_str()).unwrap(),
+            is_writable: true,
+            is_signer: false,
+        }));
+    }
+  
+    if !supplemental_tick_arrays_two.is_empty() {
+        accounts_info.slices.push(remaining_accounts_utils::RemainingAccountsSlice {
+            accounts_type: remaining_accounts_utils::AccountsType::SupplementalTickArraysTwo,
+            length: u8::try_from(supplemental_tick_arrays_two.len()).unwrap(),
+        });
+        account_metas.extend(supplemental_tick_arrays_two.iter().map(|k| AccountMeta {
+            pubkey: Pubkey::try_from(k.as_str()).unwrap(),
+            is_writable: true,
+            is_signer: false,
+        }));
+    }
+  
+    (Some(accounts_info), account_metas)
+}
+  
 pub fn pubkey(pubkey_string: &String) -> Pubkey {
     return Pubkey::from_str(pubkey_string).unwrap();
 }
