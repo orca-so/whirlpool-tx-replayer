@@ -115,6 +115,25 @@ curl -OL https://whirlpool-archive.pleiades.dev/alpha/2023/1130/whirlpool-state-
 curl -OL https://whirlpool-archive.pleiades.dev/alpha/2023/1130/whirlpool-transaction-20231130.jsonl.gz
 ```
 
+## Whirlpool Event Stream
+Whirlpool Event Stream (Whirlpool Now) is live. (EXPERIMENTAL)
+
+https://github.com/yugure-orca/whirlpool-now-doc/blob/main/README.md
+
+Using event stream, you can track & detect EVERYTHING on Whirlpool program without decoding and replay difficulty:
+
+- track trades (including tickIndex and sqrtPrice)
+- track pool price
+- track liquidity operations (deposit & withdraw)
+- detect new whirlpool
+- detect new reward emission
+
+The beauty of this is that you can start at any point in the past three days.
+In the event of a disconnection, it can be resumed without loss of data.
+
+Of course Whirlpool Now is baked by `whirlpool-replayer` library.
+So you even have access to some important account fields that is not directly recorded in the block.
+
 ## TODO
 ### Replace GZip by ZStandard
 - We can reduce >30% storage
