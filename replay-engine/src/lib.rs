@@ -10,3 +10,6 @@ mod replay_instructions;
 mod util;
 mod programs;
 mod pubkeys;
+
+#[cfg(test)]
+mod tests;
