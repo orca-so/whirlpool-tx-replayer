@@ -6,7 +6,7 @@ use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult
 use crate::util;
 use crate::util::pubkey; // abbr
 
-pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePosition>) -> ReplayInstructionResult {
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePositionWithTokenExtensions>) -> ReplayInstructionResult {
   let replayer = req.replayer;
   let ix = req.decoded_instruction;
   let accounts = req.accounts;
@@ -18,6 +18,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePos
   // receiver
   // position
   replayer.set_whirlpool_account(&ix.key_position, accounts);
+  // TODO(must): USE TOKEN EXTENSIONS
   // position_mint
   replayer.set_token_mint(
     pubkey(&ix.key_position_mint),
@@ -26,6 +27,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePos
     0u8,
     None
   );
+  // TODO(must): USE TOKEN EXTENSIONS
   // position_token_amount
   replayer.set_token_account(
     pubkey(&ix.key_position_token_account),
@@ -33,18 +35,18 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedClosePos
     pubkey(&ix.key_position_authority),
     1u64
   );
-  // token_program
+  // token_2022_program
 
   let tx = replayer.build_whirlpool_replay_transaction(
-    whirlpool_ix_args::ClosePosition {
+    whirlpool_ix_args::ClosePositionWithTokenExtensions {
     },
-    whirlpool_ix_accounts::ClosePosition {
+    whirlpool_ix_accounts::ClosePositionWithTokenExtensions {
       position_authority: pubkey(&ix.key_position_authority),
       receiver: pubkey(&ix.key_receiver),
       position: pubkey(&ix.key_position),
       position_mint: pubkey(&ix.key_position_mint),
       position_token_account: pubkey(&ix.key_position_token_account),
-      token_program: pubkey(&ix.key_token_program),
+      token_2022_program: pubkey(&ix.key_token_2022_program),
     },
   );
 

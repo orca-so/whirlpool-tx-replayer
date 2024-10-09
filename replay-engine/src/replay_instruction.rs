@@ -86,6 +86,9 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::DeleteTokenBadge(decoded) => Ok(replay_instructions::delete_token_badge::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetConfigExtensionAuthority(decoded) => Ok(replay_instructions::set_config_extension_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetTokenBadgeAuthority(decoded) => Ok(replay_instructions::set_token_badge_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // TokenExtensions based Position NFT instructions
+    DecodedWhirlpoolInstruction::OpenPositionWithTokenExtensions(decoded) => Ok(replay_instructions::open_position_with_token_extensions::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::ClosePositionWithTokenExtensions(decoded) => Ok(replay_instructions::close_position_with_token_extensions::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {

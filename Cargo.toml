@@ -37,7 +37,7 @@ rocksdb = "0.21.0"
 # anchor & whirlpool
 anchor-lang = "0.29.0"
 anchor-client = "0.29.0"
-whirlpool_base = { git = "https://github.com/orca-so/whirlpools", package = "whirlpool", version = "0.3.0" }
+whirlpool_base = { git = "https://github.com/orca-so/whirlpools", branch = "yugure/relax-spl-token-version-on-v0.3.2", package = "whirlpool" }
 
 # borsh
 borsh = "0.10.3"
@@ -51,6 +51,5 @@ solana-transaction-status = "=1.17.22"
 solana-client = "=1.17.22"
 solana-runtime = "=1.17.22"
 solana-cli-output = "=1.17.22"
-solana-ledger = "=1.17.22"
 spl-token = "=4.0.0"
 spl-token-2022 = "=1.0.0"

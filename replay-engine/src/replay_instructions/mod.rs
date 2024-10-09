@@ -46,3 +46,6 @@ pub mod initialize_token_badge;
 pub mod delete_token_badge;
 pub mod set_config_extension_authority;
 pub mod set_token_badge_authority;
+
+pub mod open_position_with_token_extensions;
+pub mod close_position_with_token_extensions;
