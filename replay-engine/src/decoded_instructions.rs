@@ -52,6 +52,8 @@ pub enum DecodedWhirlpoolInstruction {
   DeleteTokenBadge(DecodedDeleteTokenBadge),
   SetConfigExtensionAuthority(DecodedSetConfigExtensionAuthority),
   SetTokenBadgeAuthority(DecodedSetTokenBadgeAuthority),
+  OpenPositionWithTokenExtensions(DecodedOpenPositionWithTokenExtensions),
+  ClosePositionWithTokenExtensions(DecodedClosePositionWithTokenExtensions),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -120,6 +122,8 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "deleteTokenBadge" => Ok(DecodedWhirlpoolInstruction::DeleteTokenBadge(from_str(&json)?)),
     "setConfigExtensionAuthority" => Ok(DecodedWhirlpoolInstruction::SetConfigExtensionAuthority(from_str(&json)?)),
     "setTokenBadgeAuthority" => Ok(DecodedWhirlpoolInstruction::SetTokenBadgeAuthority(from_str(&json)?)),
+    "openPositionWithTokenExtensions" => Ok(DecodedWhirlpoolInstruction::OpenPositionWithTokenExtensions(from_str(&json)?)),
+    "closePositionWithTokenExtensions" => Ok(DecodedWhirlpoolInstruction::ClosePositionWithTokenExtensions(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -921,6 +925,38 @@ pub struct DecodedSetTokenBadgeAuthority {
   pub key_new_token_badge_authority: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedOpenPositionWithTokenExtensions {
+  pub data_tick_lower_index: i32,
+  pub data_tick_upper_index: i32,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_with_token_metadata_extension: bool,
+  pub key_funder: String,
+  pub key_owner: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_token_account: String,
+  pub key_whirlpool: String,
+  // note: we can read and write "keyToken2022Program" field as expected
+  pub key_token_2022_program: String,
+  pub key_system_program: String,
+  pub key_associated_token_program: String,
+  pub key_metadata_update_auth: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedClosePositionWithTokenExtensions {
+  pub key_position_authority: String,
+  pub key_receiver: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_token_account: String,
+  // note: we can read and write "keyToken2022Program" field as expected
+  pub key_token_2022_program: String,
+}
+
 
 pub type RemainingAccountsInfo = Vec<[u8; 2]>;
 pub type RemainingAccountsKeys = Vec<String>;
@@ -1005,5 +1041,17 @@ mod tests {
     fn test_decode_increase_liquidity_v2() {
         let json_str = r#"{"dataLiquidityAmount": "3453450", "dataTokenAmountMaxA": "19337", "dataTokenAmountMaxB": "19341", "keyWhirlpool": "9tXiuRRw7kbejLhZXtxDxYs2REe43uH2e7k1kocgdM9B", "keyTokenProgramA": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keyTokenProgramB": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyMemoProgram": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "CR39mQe5b87s1Qf4XMSyo12P99buoUaqLprrgQ4ccady", "keyPositionTokenAccount": "ChfxQHG4fV9FZaABv8N3v4vf1wWUhgfFB1VLES3tZVqu", "keyTokenMintA": "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", "keyTokenMintB": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "keyTokenOwnerAccountA": "2A7Cc48jwWWoixM5CWquQKEqk9KNQvY2Xw3WJbBRc6Ei", "keyTokenOwnerAccountB": "FbQdXCQgGQYj3xcGeryVVFjKCTsAuu53vmCRtmjQEqM5", "keyTokenVaultA": "EeF6oBy6AQiBJoRx5xiRNxa6cmpQE3ayVagj28QFZuyg", "keyTokenVaultB": "MvB8poDgpDPbRgx8MXeb7EPEsawGuiBTqpkpM9exeLi", "keyTickArrayLower": "8hXTpuvJQRar4Pf6BZiEWquFgtAtSf2RFDM6EL2FCcf1", "keyTickArrayUpper": "B1jXbjDzenSy8kPNaGw3GSKAVQis5K5tRLeXuaskZTpS", "remainingAccountsInfo": [], "remainingAccountsKeys": [], "transfer0": {"amount": "10000", "transferFeeConfigOpt": 1, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}, "transfer1": {"amount": "9312", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}}"#;
         let _ = from_json(&"increaseLiquidityV2".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_open_position_with_token_extensions() {
+        let json_str = r#"{"dataTickLowerIndex": 29440, "dataTickUpperIndex": 33536, "dataWithTokenMetadataExtension": 1, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyOwner": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "3Gm8DyRFFwaixymojnP1uS1PiXx8KQujuBi3ixEj9Lvv", "keyPositionMint": "9yk8n6b7S2d2XE1GRqRqJs7JDYhKa1t3po27kxcCMZZD", "keyPositionTokenAccount": "DQyNecBmT1SjXRhqeGzGtywjv9BDFdAiuXafSP7Lk1DR", "keyWhirlpool": "6DKRF7rvSiwCNuVM5HC97Rz4n1R4w1dg65DrQjeypoLc", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111", "keyAssociatedTokenProgram": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL", "keyMetadataUpdateAuth": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr"}"#;
+        let _ = from_json(&"openPositionWithTokenExtensions".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_close_position_with_token_extensions() {
+        let json_str = r#"{"keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyReceiver": "vvcvRBSqzAGjTKaPV3hECaGNbw94gLcoWFFpbvFHyP9", "keyPosition": "BbEMeYPTstMDgmohucEBj7H6obkinZQRcxZ2Gpt3cz3X", "keyPositionMint": "Hw3afBx59tPLCwVmE5rt6KpqWVGd8dfqKzSndKtuxHxa", "keyPositionTokenAccount": "EyExmEKtA9E45TKoBKjNRLyxuS2Bn5NsBrxZQ2fKrLE1", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"}"#;
+        let _ = from_json(&"closePositionWithTokenExtensions".to_string(), &json_str.to_string()).unwrap();
     }
 }

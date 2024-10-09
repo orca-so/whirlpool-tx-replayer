@@ -25,3 +25,6 @@ tests/output-snapshot/*.csv.gz
 
 # Profiler
 *.trace/
+
+# Test target program binary
+replay-engine/src/tests/whirlpool-for-testing.so

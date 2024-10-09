@@ -140,6 +140,8 @@ So you even have access to some important account fields that is not directly re
 - It is so fast
 - works well even in streaming mode
 
+### Add test cases for each instruction replay handler
+
 ### Error handling
 - eliminate `unwrap` (panic)
 - eliminate `anyhow`
@@ -169,7 +171,7 @@ https://kevinheavey.github.io/solana-bankrun/
 For now, I think it is NOT needed to support other language.
 We should support them by providing data stream.
 
-### Handling new deployment release
+### ~~Handling new deployment release~~
 We know when whirlpool program have been updated in the past exactly.
 But we cannot know which slot and which tx index in the block the next version will be released.
 

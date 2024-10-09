@@ -86,6 +86,9 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::DeleteTokenBadge(decoded) => Ok(replay_instructions::delete_token_badge::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetConfigExtensionAuthority(decoded) => Ok(replay_instructions::set_config_extension_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetTokenBadgeAuthority(decoded) => Ok(replay_instructions::set_token_badge_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // TokenExtensions based Position NFT instructions
+    DecodedWhirlpoolInstruction::OpenPositionWithTokenExtensions(decoded) => Ok(replay_instructions::open_position_with_token_extensions::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::ClosePositionWithTokenExtensions(decoded) => Ok(replay_instructions::close_position_with_token_extensions::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {
@@ -115,6 +118,7 @@ pub enum TokenTrait {
   Token,
   TokenExtensions,
   TokenExtensionsWithTransferFee(u16, u64), // bps, max
+  TokenExtensionsWithCloseAuthority(Pubkey), // close authority
 }
 
 impl ReplayEnvironment {
@@ -240,6 +244,70 @@ impl ReplayEnvironment {
           false
         )
       }
+      TokenTrait::TokenExtensionsWithCloseAuthority(close_authority) => {
+        #[derive(Default, AnchorSerialize)]
+        struct MintWithMintCloseAuthorityLayout {
+            // 82 for Mint
+            pub coption_mint_authority: u32, // 4
+            pub mint_authority: Pubkey, // 32
+            pub supply: u64, // 8
+            pub decimals: u8, // 1
+            pub is_initialized: bool, // 1
+            pub coption_freeze_authority: u32, // 4
+            pub freeze_authority: Pubkey, // 32
+    
+            // 83 for padding
+            pub padding1: [u8; 32],
+            pub padding2: [u8; 32],
+            pub padding3: [u8; 19],
+    
+            pub account_type: u8, // 1
+    
+            pub extension_type: u16, // 2
+            pub extension_length: u16, // 2
+            // 32 for MintCloseAuthority data
+            pub close_authority: Pubkey, // 32
+        }
+        impl MintWithMintCloseAuthorityLayout {
+            pub const LEN: usize = 82 + 83 + 1 + 2 + 2 + 32; // 202
+        }
+
+        let (coption_mint_authority, mint_authority) = if let Some(authority) = mint_authority {
+          (1u32, authority)
+        } else {
+          (0u32, Pubkey::default())
+        };
+        let (coption_freeze_authority, freeze_authority) = if let Some(authority) = freeze_authority {
+          (1u32, authority)
+        } else {
+          (0u32, Pubkey::default())
+        };
+
+        let data = MintWithMintCloseAuthorityLayout {
+          coption_mint_authority,
+          mint_authority,
+          supply,
+          decimals,
+          is_initialized: true,
+          coption_freeze_authority,
+          freeze_authority,
+          // extension part
+          account_type: 1, // Mint
+          extension_type: 3, // MintCloseAuthority
+          extension_length: 32,
+          close_authority,
+          ..Default::default()
+        };
+
+        let mut packed = Vec::with_capacity(MintWithMintCloseAuthorityLayout::LEN);
+        data.serialize(&mut packed).unwrap();
+        self.set_account_with_data(
+          pubkey,
+          spl_token_2022::ID,
+          &packed,
+          false
+        )
+      }
     }
   }
 
@@ -277,7 +345,7 @@ impl ReplayEnvironment {
   ) -> &mut Self {
     match token_trait {
       TokenTrait::Token => { self.set_token_account(pubkey, mint, owner, amount) }
-      TokenTrait::TokenExtensions => {
+      TokenTrait::TokenExtensions | TokenTrait::TokenExtensionsWithCloseAuthority(_) => {
         self.set_account_with_packable(
           pubkey,
           spl_token_2022::ID,
