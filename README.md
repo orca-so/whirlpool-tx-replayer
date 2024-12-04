@@ -1,5 +1,8 @@
 # whirlpool-replayer
 
+## Indexed Historical Data
+https://whirlpool-archive.pleiades.dev/alpha/index.html
+
 ## Motivation & Core Concept
 Replaying the entire Solana would require a lot of resources, but for Whirlpool state alone, replay is possible with a snapshot of the account and all successful transactions associated with Whirlpool program.
 
@@ -94,6 +97,12 @@ $ cargo run --release -p whirlpool-replay <REMOTE STORAGE ENDPOINT> <YYYYMMDD>
 
 - https://whirlpool-archive.pleiades.dev/alpha
 - (deprecated) https://whirlpool-replay.pleiades.dev/alpha
+
+### Browser access
+https://whirlpool-archive.pleiades.dev/alpha/index.html
+
+### Program access
+https://whirlpool-archive.pleiades.dev/alpha/index.json
 
 ### Manual download of state and transaction files
 
