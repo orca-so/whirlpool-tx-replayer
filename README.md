@@ -1,7 +1,14 @@
 # whirlpool-replayer
 
-## Indexed Historical Data
+## Archived Historical Data
 https://whirlpool-archive.pleiades.dev/alpha/index.html
+
+- state: Snapshot of Whirlpool program owned accounts at the end of the day
+- transaction: All whirlpool related successful transactions (Whirlpool instructions only)
+- token: Decimals of tokens used in at least one whirlpool at the end of the day
+- event: Converted transaction, easy to use with some important account state (old & new)
+- ohlcv-daily: OHLCV data for all whirlpools (daily, sqrtPrice and decimalPrice)
+- ohlcv-minutely: OHLCV data for all whirlpools (daily + minutely, sqrtPrice and decimalPrice)
 
 ## Motivation & Core Concept
 Replaying the entire Solana would require a lot of resources, but for Whirlpool state alone, replay is possible with a snapshot of the account and all successful transactions associated with Whirlpool program.
