@@ -49,3 +49,5 @@ pub mod set_token_badge_authority;
 
 pub mod open_position_with_token_extensions;
 pub mod close_position_with_token_extensions;
+
+pub mod lock_position;
