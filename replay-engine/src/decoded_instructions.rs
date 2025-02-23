@@ -54,6 +54,7 @@ pub enum DecodedWhirlpoolInstruction {
   SetTokenBadgeAuthority(DecodedSetTokenBadgeAuthority),
   OpenPositionWithTokenExtensions(DecodedOpenPositionWithTokenExtensions),
   ClosePositionWithTokenExtensions(DecodedClosePositionWithTokenExtensions),
+  LockPosition(DecodedLockPosition),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -124,6 +125,7 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "setTokenBadgeAuthority" => Ok(DecodedWhirlpoolInstruction::SetTokenBadgeAuthority(from_str(&json)?)),
     "openPositionWithTokenExtensions" => Ok(DecodedWhirlpoolInstruction::OpenPositionWithTokenExtensions(from_str(&json)?)),
     "closePositionWithTokenExtensions" => Ok(DecodedWhirlpoolInstruction::ClosePositionWithTokenExtensions(from_str(&json)?)),
+    "lockPosition" => Ok(DecodedWhirlpoolInstruction::LockPosition(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -957,6 +959,26 @@ pub struct DecodedClosePositionWithTokenExtensions {
   pub key_token_2022_program: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedLockPosition {
+  pub data_lock_type: LockType,
+  pub key_funder: String,
+  pub key_position_authority: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_token_account: String,
+  pub key_lock_config: String,
+  pub key_whirlpool: String,
+  pub key_token_2022_program: String,
+  pub key_system_program: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase", tag = "name")]
+pub enum LockType {
+  Permanent,
+}
 
 pub type RemainingAccountsInfo = Vec<[u8; 2]>;
 pub type RemainingAccountsKeys = Vec<String>;
@@ -1053,5 +1075,11 @@ mod tests {
     fn test_decode_close_position_with_token_extensions() {
         let json_str = r#"{"keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyReceiver": "vvcvRBSqzAGjTKaPV3hECaGNbw94gLcoWFFpbvFHyP9", "keyPosition": "BbEMeYPTstMDgmohucEBj7H6obkinZQRcxZ2Gpt3cz3X", "keyPositionMint": "Hw3afBx59tPLCwVmE5rt6KpqWVGd8dfqKzSndKtuxHxa", "keyPositionTokenAccount": "EyExmEKtA9E45TKoBKjNRLyxuS2Bn5NsBrxZQ2fKrLE1", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"}"#;
         let _ = from_json(&"closePositionWithTokenExtensions".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_lock_position() {
+      let json_str = r#"{"dataLockType": {"name":"permanent"}, "keyFunder": "CuC2g1x7Samr1pXhQMBJChR3qy4uejZHkH6nmY7uDyYU", "keyPositionAuthority": "CuC2g1x7Samr1pXhQMBJChR3qy4uejZHkH6nmY7uDyYU", "keyPosition": "CjWkH4PXV11coibaJ6MUBVbNRb1nbptbYpYMivSRGjYY", "keyPositionMint": "SDbaGx3mcNep6dRj2RcRehZ2XpARCVR1pnLgqija5XL", "keyPositionTokenAccount": "EorHpiTpAujva1GZ9SD8QkHwjjUxzx9mweMFMLXA5bpY", "keyLockConfig": "5EpAxBaVp9N5wvrYn3bkYhxZuuhwVpdWzYburVee6oKo", "keyWhirlpool": "E6AFbRkMwidQyBQ872e9kbVT2ZqybmM6dJ2Zaa6sVxJq", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111"}"#;
+      let _ = from_json(&"lockPosition".to_string(), &json_str.to_string()).unwrap();
     }
 }
