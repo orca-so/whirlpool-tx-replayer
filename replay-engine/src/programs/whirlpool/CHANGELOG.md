@@ -1,3 +1,9 @@
+## 2025
+### 20250228-323677107
+- Event emission ([PR778](https://github.com/orca-so/whirlpools/pull/778))
+- Liquidity Locking ([PR768](https://github.com/orca-so/whirlpools/pull/768))
+- Increase MAX_FEE_RATE ([PR743](https://github.com/orca-so/whirlpools/pull/743))
+
 ## 2024
 ### 20241011-294954598
 - TokenExtensions based Position NFT ([PR341](https://github.com/orca-so/whirlpools/pull/341))
