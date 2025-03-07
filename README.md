@@ -10,6 +10,8 @@ https://whirlpool-archive.pleiades.dev/alpha/index.html
 - ohlcv-daily: OHLCV data for all whirlpools (daily, sqrtPrice and decimalPrice)
 - ohlcv-minutely: OHLCV data for all whirlpools (daily + minutely, sqrtPrice and decimalPrice)
 
+🙏 Please cache the files if you need to use them repeatedly. Large amounts of continuous downloads could cripple the publication of this useful bucket.
+
 ### Data Streaming
 https://github.com/yugure-orca/whirlpool-stream-doc/blob/main/README.md
 
