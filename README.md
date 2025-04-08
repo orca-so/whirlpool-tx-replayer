@@ -156,6 +156,11 @@ curl -OL https://whirlpool-archive.pleiades.dev/alpha/2023/1130/whirlpool-transa
 
 ### Add test cases for each instruction replay handler
 
+### Investigate liteSVM and other new tech
+We should consider taking advantage of the recent modularization of the SVM.
+If it helps simplify the code and offers performance benefits, it’s worth adopting.
+However, if it results in worse performance, there’s little motivation to actively use it.
+
 ### Error handling
 - eliminate `unwrap` (panic)
 - eliminate `anyhow`
