@@ -91,6 +91,10 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::ClosePositionWithTokenExtensions(decoded) => Ok(replay_instructions::close_position_with_token_extensions::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // Liquidity Lock
     DecodedWhirlpoolInstruction::LockPosition(decoded) => Ok(replay_instructions::lock_position::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // Reset Position Range
+    DecodedWhirlpoolInstruction::ResetPositionRange(decoded) => Ok(replay_instructions::reset_position_range::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // Transfer Locked Position
+    DecodedWhirlpoolInstruction::TransferLockedPosition(decoded) => Ok(replay_instructions::transfer_locked_position::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {

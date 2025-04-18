@@ -55,6 +55,8 @@ pub enum DecodedWhirlpoolInstruction {
   OpenPositionWithTokenExtensions(DecodedOpenPositionWithTokenExtensions),
   ClosePositionWithTokenExtensions(DecodedClosePositionWithTokenExtensions),
   LockPosition(DecodedLockPosition),
+  ResetPositionRange(DecodedResetPositionRange),
+  TransferLockedPosition(DecodedTransferLockedPosition),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -126,6 +128,8 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "openPositionWithTokenExtensions" => Ok(DecodedWhirlpoolInstruction::OpenPositionWithTokenExtensions(from_str(&json)?)),
     "closePositionWithTokenExtensions" => Ok(DecodedWhirlpoolInstruction::ClosePositionWithTokenExtensions(from_str(&json)?)),
     "lockPosition" => Ok(DecodedWhirlpoolInstruction::LockPosition(from_str(&json)?)),
+    "resetPositionRange" => Ok(DecodedWhirlpoolInstruction::ResetPositionRange(from_str(&json)?)),
+    "transferLockedPosition" => Ok(DecodedWhirlpoolInstruction::TransferLockedPosition(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -975,6 +979,33 @@ pub struct DecodedLockPosition {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedResetPositionRange {
+  pub data_new_tick_lower_index: i32,
+  pub data_new_tick_upper_index: i32,
+  pub key_funder: String,
+  pub key_position_authority: String,
+  pub key_whirlpool: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_system_program: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedTransferLockedPosition {
+  pub key_position_authority: String,
+  pub key_receiver: String,
+  pub key_position: String,
+  pub key_position_mint: String,
+  pub key_position_token_account: String,
+  pub key_destination_token_account: String,
+  pub key_lock_config: String,
+  // note: we can read and write "keyToken2022Program" field as expected
+  pub key_token_2022_program: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase", tag = "name")]
 pub enum LockType {
   Permanent,
@@ -1081,5 +1112,17 @@ mod tests {
     fn test_decode_lock_position() {
       let json_str = r#"{"dataLockType": {"name":"permanent"}, "keyFunder": "CuC2g1x7Samr1pXhQMBJChR3qy4uejZHkH6nmY7uDyYU", "keyPositionAuthority": "CuC2g1x7Samr1pXhQMBJChR3qy4uejZHkH6nmY7uDyYU", "keyPosition": "CjWkH4PXV11coibaJ6MUBVbNRb1nbptbYpYMivSRGjYY", "keyPositionMint": "SDbaGx3mcNep6dRj2RcRehZ2XpARCVR1pnLgqija5XL", "keyPositionTokenAccount": "EorHpiTpAujva1GZ9SD8QkHwjjUxzx9mweMFMLXA5bpY", "keyLockConfig": "5EpAxBaVp9N5wvrYn3bkYhxZuuhwVpdWzYburVee6oKo", "keyWhirlpool": "E6AFbRkMwidQyBQ872e9kbVT2ZqybmM6dJ2Zaa6sVxJq", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111"}"#;
       let _ = from_json(&"lockPosition".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_reset_position_range() {
+      let json_str = r#"{"dataNewTickLowerIndex": 128, "dataNewTickUpperIndex": 32640, "keyFunder": "FEL7n299Zav7WRv4tszuGBeS4e1Xfq5wkXNyeZsNt586", "keyPositionAuthority": "3otH3AHWqkqgSVfKFkrxyDqd2vK6LcaqigHrFEmWcGuo", "keyWhirlpool": "F1xbtqx8cDaumqHc2MzknADQVHMdY9Vc5WvhxHYipERG", "keyPosition": "Coje7Bvp4yCyxum7Y3BSbvhWHuJJfi4S57ohqkT4mMHo", "keyPositionTokenAccount": "DMHFpHSFGJ5e5Xf6FAmFHAqFyhTHHHQojJQdtdtP6sLC", "keySystemProgram": "11111111111111111111111111111111"}"#;
+      let _ = from_json(&"resetPositionRange".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_transfer_locked_position() {
+      let json_str = r#"{"keyPositionAuthority": "3otH3AHWqkqgSVfKFkrxyDqd2vK6LcaqigHrFEmWcGuo", "keyReceiver": "6BJXm9xS1Lv31iro9scuxGuwKHApayQ9gZFyeWzzjFZo", "keyPosition": "4LXNDp2UpgUYxvisqooxJPBQxw6takv88xFZ6pWKYNq7", "keyPositionMint": "9zLGrtJD9oiafUah3nSsC5Lpi8T9BGzkK7jSVuuH67bh", "keyPositionTokenAccount": "6rgFzh2EaUEeN88Ljmd6RzhKXv1iDx9HwrdEcrKD4zvD", "keyDestinationTokenAccount": "2J49LG3g1r2QW3N3L2CS2NKTgJ7gV86kuke3YqGBzshU", "keyLockConfig": "F7r6iB8LBdUHYGr69JD87KYqgswEBgkU3UhuQ8TyGVug", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"}"#;
+      let _ = from_json(&"transferLockedPosition".to_string(), &json_str.to_string()).unwrap();
     }
 }

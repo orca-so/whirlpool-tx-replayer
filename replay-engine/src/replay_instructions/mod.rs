@@ -51,3 +51,6 @@ pub mod open_position_with_token_extensions;
 pub mod close_position_with_token_extensions;
 
 pub mod lock_position;
+
+pub mod reset_position_range;
+pub mod transfer_locked_position;
