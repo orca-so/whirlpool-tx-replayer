@@ -341,6 +341,30 @@ impl ReplayEnvironment {
       )
   }
 
+  // TODO: refactor (integrate with set_token_account_with_trait)
+  pub fn set_frozen_token_account_2022(
+    &mut self,
+    pubkey: Pubkey,
+    mint: Pubkey,
+    owner: Pubkey,
+    amount: u64,
+  ) -> &mut Self {
+    self.set_account_with_packable(
+      pubkey,
+      spl_token_2022::ID,
+      spl_token_2022::state::Account {
+          mint,
+          owner,
+          amount,
+          delegate: COption::None,
+          state: spl_token_2022::state::AccountState::Frozen,
+          is_native: COption::None,
+          delegated_amount: 0,
+          close_authority: COption::None,
+      },
+    )
+  }
+
   pub fn set_token_account_with_trait(
     &mut self,
     pubkey: Pubkey,
