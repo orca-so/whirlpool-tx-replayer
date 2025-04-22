@@ -36,15 +36,27 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedLockPosi
     Some(pubkey(&ix.key_position))
   );
   // position_token_account
-  replayer.set_token_account_with_trait(
-    pubkey(&ix.key_position_token_account),
-    position_mint_token_trait,
-    position_mint,
-    //TODO: fix
-    // FIXME: we need to extract true owner of token account from transaction data (pre/post token)
-    pubkey(&ix.key_position_authority),
-    1u64
-  );
+  if ix.key_position_authority != ix.aux_key_position_token_account_owner {
+    // delegated
+    replayer.set_delegated_token_account_2022(
+      pubkey(&ix.key_position_token_account),
+      position_mint,
+      // this owner info will be stored in the lock_config, so we need to set this correctly
+      pubkey(&ix.aux_key_position_token_account_owner), // owner
+      1u64,
+      pubkey(&ix.key_position_authority), // delegate
+      1u64,
+    );
+  } else {
+    replayer.set_token_account_with_trait(
+      pubkey(&ix.key_position_token_account),
+      position_mint_token_trait,
+      position_mint,
+      // this owner info will be stored in the lock_config, so we need to set this correctly
+      pubkey(&ix.aux_key_position_token_account_owner),
+      1u64
+    );
+  }
   // lock_config
   // whirlpool
   replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);

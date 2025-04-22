@@ -976,6 +976,7 @@ pub struct DecodedLockPosition {
   pub key_whirlpool: String,
   pub key_token_2022_program: String,
   pub key_system_program: String,
+  pub aux_key_position_token_account_owner: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -1003,6 +1004,7 @@ pub struct DecodedTransferLockedPosition {
   pub key_lock_config: String,
   // note: we can read and write "keyToken2022Program" field as expected
   pub key_token_2022_program: String,
+  pub aux_key_destination_token_account_owner: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
@@ -1110,7 +1112,7 @@ mod tests {
 
     #[test]
     fn test_decode_lock_position() {
-      let json_str = r#"{"dataLockType": {"name":"permanent"}, "keyFunder": "CuC2g1x7Samr1pXhQMBJChR3qy4uejZHkH6nmY7uDyYU", "keyPositionAuthority": "CuC2g1x7Samr1pXhQMBJChR3qy4uejZHkH6nmY7uDyYU", "keyPosition": "CjWkH4PXV11coibaJ6MUBVbNRb1nbptbYpYMivSRGjYY", "keyPositionMint": "SDbaGx3mcNep6dRj2RcRehZ2XpARCVR1pnLgqija5XL", "keyPositionTokenAccount": "EorHpiTpAujva1GZ9SD8QkHwjjUxzx9mweMFMLXA5bpY", "keyLockConfig": "5EpAxBaVp9N5wvrYn3bkYhxZuuhwVpdWzYburVee6oKo", "keyWhirlpool": "E6AFbRkMwidQyBQ872e9kbVT2ZqybmM6dJ2Zaa6sVxJq", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111"}"#;
+      let json_str = r#"{"dataLockType": {"name":"permanent"}, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPositionAuthority": "2ViXvF8djjCFWLMfjPeyYFxH3eDo9D5eLnWvFscGy3Zn", "keyPosition": "4smUufScXDa5E6HDYEjDUAVGvrkGyU7378GNr89vY8h1", "keyPositionMint": "5qper4gVLigi1HTg3FELzt36Y3BHd59y37APZ6BEW2Ke", "keyPositionTokenAccount": "966wMa5TJGv3aCGiBEgFpwoeT84opPnLbXSq6AZPpeKX", "keyLockConfig": "BoK2279WTwe3yAia7GTbae8bZY6MyiCpWr5qiAvNm8Cb", "keyWhirlpool": "CTuhhDTq1shvQwd5aeezjNYrw1q4KvDszSQWc9EmDMVd", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111", "auxKeyPositionTokenAccountOwner": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6"}"#;
       let _ = from_json(&"lockPosition".to_string(), &json_str.to_string()).unwrap();
     }
 
@@ -1122,7 +1124,7 @@ mod tests {
 
     #[test]
     fn test_decode_transfer_locked_position() {
-      let json_str = r#"{"keyPositionAuthority": "3otH3AHWqkqgSVfKFkrxyDqd2vK6LcaqigHrFEmWcGuo", "keyReceiver": "6BJXm9xS1Lv31iro9scuxGuwKHApayQ9gZFyeWzzjFZo", "keyPosition": "4LXNDp2UpgUYxvisqooxJPBQxw6takv88xFZ6pWKYNq7", "keyPositionMint": "9zLGrtJD9oiafUah3nSsC5Lpi8T9BGzkK7jSVuuH67bh", "keyPositionTokenAccount": "6rgFzh2EaUEeN88Ljmd6RzhKXv1iDx9HwrdEcrKD4zvD", "keyDestinationTokenAccount": "2J49LG3g1r2QW3N3L2CS2NKTgJ7gV86kuke3YqGBzshU", "keyLockConfig": "F7r6iB8LBdUHYGr69JD87KYqgswEBgkU3UhuQ8TyGVug", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"}"#;
+      let json_str = r#"{"keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyReceiver": "HTmy49kE8Vug2wCh2hSqE1xH1EyXy9x26G6wJg1i9A1P", "keyPosition": "Bvxjz3othczrEmSpodoqwXjJLqcsqawaqHv5NFRDq98V", "keyPositionMint": "6u7DbXkw82Nm5xCfVH5nTC9C4M2PP8FSfGS7aQqHoqRh", "keyPositionTokenAccount": "HkB4St4k7NQ9YjtrikSmzenTVPykxCSwbcw9vFyv2t2c", "keyDestinationTokenAccount": "5wayh2tapWNqMZz4x81AMhJDUVAanMyBK5TLqQHew88a", "keyLockConfig": "CnbYq7WjrehZgLdKTTzibUPT75EtpaAzZY6k9p3Lpoj2", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "auxKeyDestinationTokenAccountOwner": "ECyvxDUzA8LyYjHR67Doj21WuVBvJcSipSjw8HauegyY"}"#;
       let _ = from_json(&"transferLockedPosition".to_string(), &json_str.to_string()).unwrap();
     }
 }

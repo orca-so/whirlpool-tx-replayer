@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bincode::de;
 use solana_accounts_db::transaction_results::TransactionExecutionResult;
 use solana_program::program_option::COption;
 use std::str::FromStr;
@@ -365,6 +366,32 @@ impl ReplayEnvironment {
     )
   }
 
+  // TODO: refactor (integrate with set_token_account_with_trait)
+  pub fn set_delegated_token_account_2022(
+    &mut self,
+    pubkey: Pubkey,
+    mint: Pubkey,
+    owner: Pubkey,
+    amount: u64,
+    delegate: Pubkey,
+    delegated_amount: u64,
+  ) -> &mut Self {
+    self.set_account_with_packable(
+      pubkey,
+      spl_token_2022::ID,
+      spl_token_2022::state::Account {
+          mint,
+          owner,
+          amount,
+          delegate: COption::Some(delegate),
+          delegated_amount,
+          state: spl_token_2022::state::AccountState::Initialized,
+          is_native: COption::None,
+          close_authority: COption::None,
+      },
+    )
+  }
+  
   pub fn set_token_account_with_trait(
     &mut self,
     pubkey: Pubkey,

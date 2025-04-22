@@ -1,5 +1,6 @@
+use crate::tests::deserialize_position;
+
 use super::{create_engine, ix, replay};
-use anchor_lang::AccountDeserialize;
 
 #[test]
 fn test_reset_position_range() {
@@ -35,7 +36,7 @@ fn test_reset_position_range() {
         r#"{"dataNewTickLowerIndex": -443520, "dataNewTickUpperIndex": 443520, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyWhirlpool": "BsGwEuUqbfeUSDN4mmxhcGFhNYKypKH8NZjoQ7DQrFfC", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keySystemProgram": "11111111111111111111111111111111"}"#,
     );
 
-    let position = "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b".to_string();
+    let position = "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b";
 
     replay(&mut engine, &initialize_config);
     replay(&mut engine, &initialize_fee_tier);
@@ -44,15 +45,13 @@ fn test_reset_position_range() {
     replay(&mut engine, &initialize_tick_array_439296);
     replay(&mut engine, &open_position_with_token_extensions);
 
-    let data = engine.get_accounts().get(&position).unwrap().unwrap();
-    let position_data = whirlpool_base::state::Position::try_deserialize(&mut data.as_slice()).unwrap();
+    let position_data = deserialize_position(&engine, position);
     assert_eq!(position_data.tick_lower_index, -443584);
     assert_eq!(position_data.tick_upper_index, 443584);
 
     replay(&mut engine, &reset_position_range);
 
-    let data = engine.get_accounts().get(&position).unwrap().unwrap();
-    let position_data = whirlpool_base::state::Position::try_deserialize(&mut data.as_slice()).unwrap();
+    let position_data = deserialize_position(&engine, position);
     assert_eq!(position_data.tick_lower_index, -443520);
     assert_eq!(position_data.tick_upper_index, 443520);
 }

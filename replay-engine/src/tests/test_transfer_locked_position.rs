@@ -1,4 +1,6 @@
-use super::{assert_account_initialized, create_engine, ix, replay};
+use crate::tests::deserialize_lock_config;
+
+use super::{create_engine, ix, replay};
 
 #[test]
 fn test_transfer_locked_position() {
@@ -35,12 +37,12 @@ fn test_transfer_locked_position() {
 
     let lock_position = ix(
         "lockPosition",
-        r#"{"dataLockType": {"name":"permanent"}, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionMint": "E1EGF4YqwPa4uR2naSJ37n22XHaiqQ616NXv6fYLWpk1", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keyLockConfig": "66HeXxFvnaBEvi5YBjHxBsmguiTustHA9hWQPBjSrtwX", "keyWhirlpool": "BsGwEuUqbfeUSDN4mmxhcGFhNYKypKH8NZjoQ7DQrFfC", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111"}"#,
+        r#"{"dataLockType": {"name":"permanent"}, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionMint": "E1EGF4YqwPa4uR2naSJ37n22XHaiqQ616NXv6fYLWpk1", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keyLockConfig": "66HeXxFvnaBEvi5YBjHxBsmguiTustHA9hWQPBjSrtwX", "keyWhirlpool": "BsGwEuUqbfeUSDN4mmxhcGFhNYKypKH8NZjoQ7DQrFfC", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111", "auxKeyPositionTokenAccountOwner": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6"}"#,
     );
 
     let transfer_locked_position = ix(
         "transferLockedPosition",
-        r#"{"keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyReceiver": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionMint": "E1EGF4YqwPa4uR2naSJ37n22XHaiqQ616NXv6fYLWpk1", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keyDestinationTokenAccount": "2J49LG3g1r2QW3N3L2CS2NKTgJ7gV86kuke3YqGBzshU", "keyLockConfig": "66HeXxFvnaBEvi5YBjHxBsmguiTustHA9hWQPBjSrtwX", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"}"#,
+        r#"{"keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyReceiver": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionMint": "E1EGF4YqwPa4uR2naSJ37n22XHaiqQ616NXv6fYLWpk1", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keyDestinationTokenAccount": "2J49LG3g1r2QW3N3L2CS2NKTgJ7gV86kuke3YqGBzshU", "keyLockConfig": "66HeXxFvnaBEvi5YBjHxBsmguiTustHA9hWQPBjSrtwX", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "auxKeyDestinationTokenAccountOwner": "2v112XbwQXFrdqX438HUrfZF91qCZb7QRP4bwUiN7JF5"}"#,
     );
 
     let lock_config = "66HeXxFvnaBEvi5YBjHxBsmguiTustHA9hWQPBjSrtwX";
@@ -53,9 +55,14 @@ fn test_transfer_locked_position() {
     replay(&mut engine, &open_position_with_token_extensions);
     replay(&mut engine, &increase_liquidity);
     replay(&mut engine, &lock_position);
+
+    // pre owner check
+    let lock_config_data = deserialize_lock_config(&engine, lock_config);
+    assert_eq!(lock_config_data.position_owner.to_string(), "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6");
+
     replay(&mut engine, &transfer_locked_position);
 
-    //TODO: fix
-    //FIXME: check the new owner (but it is not impossible)
-    assert_account_initialized(&engine, lock_config);
+    // post owner check
+    let lock_config_data = deserialize_lock_config(&engine, lock_config);
+    assert_eq!(lock_config_data.position_owner.to_string(), "2v112XbwQXFrdqX438HUrfZF91qCZb7QRP4bwUiN7JF5");    
 }

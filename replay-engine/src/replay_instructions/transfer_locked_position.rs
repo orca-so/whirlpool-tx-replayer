@@ -41,9 +41,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTransfer
     pubkey(&ix.key_destination_token_account),
     position_mint_token_trait,
     position_mint,
-    //TODO: fix
-    // FIXME: we need to extract true owner of token account from transaction data (pre/post token)
-    pubkey(&ix.key_position_authority),
+    // this owner info will be stored in the lock_config, so we need to set this correctly
+    pubkey(&ix.aux_key_destination_token_account_owner),
     0u64 // no balance
   );
   // lock_config
