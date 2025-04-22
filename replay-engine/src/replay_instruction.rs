@@ -1,5 +1,4 @@
 use anyhow::Result;
-use bincode::de;
 use solana_accounts_db::transaction_results::TransactionExecutionResult;
 use solana_program::program_option::COption;
 use std::str::FromStr;

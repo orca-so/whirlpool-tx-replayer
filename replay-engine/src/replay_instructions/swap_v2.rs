@@ -118,8 +118,8 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
       sqrt_price_limit: ix.data_sqrt_price_limit,
       amount_specified_is_input: ix.data_amount_specified_is_input,
       a_to_b: ix.data_a_to_b,
-      // don't replay transfer hook
-      remaining_accounts_info: remaining_accounts_info,
+      // don't replay transfer hook, but we need to pass supplemental tick arrays
+      remaining_accounts_info,
     },
     whirlpool_ix_accounts::SwapV2 {
       token_program_a: pubkey(&ix.key_token_program_a),
