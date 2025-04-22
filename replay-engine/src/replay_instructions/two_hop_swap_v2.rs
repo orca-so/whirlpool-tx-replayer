@@ -180,7 +180,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
       amount_specified_is_input: ix.data_amount_specified_is_input,
       a_to_b_one: ix.data_a_to_b_one,
       a_to_b_two: ix.data_a_to_b_two,
-      // don't replay transfer hook
+      // don't replay transfer hook, but we need to pass supplemental tick arrays
       remaining_accounts_info,
     },
     whirlpool_ix_accounts::TwoHopSwapV2 {
