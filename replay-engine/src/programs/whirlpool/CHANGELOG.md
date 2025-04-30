@@ -1,4 +1,10 @@
 ## 2025
+### 20250421-334826946
+- Reset position range ([PR902](https://github.com/orca-so/whirlpools/pull/902))
+- Allow locking concentrated positions ([PR903](https://github.com/orca-so/whirlpools/pull/903))
+- Transfer Locked Position ([PR904](https://github.com/orca-so/whirlpools/pull/904))
+- Fix event emission / transfer fee value on Traded event (swapV2) ([PR905](https://github.com/orca-so/whirlpools/pull/905))
+
 ### 20250228-323677107
 - Event emission ([PR778](https://github.com/orca-so/whirlpools/pull/778))
 - Liquidity Locking ([PR768](https://github.com/orca-so/whirlpools/pull/768))
