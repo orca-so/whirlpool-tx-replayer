@@ -1,0 +1,16 @@
+[package]
+name = "whirlpool-regression-test"
+version = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+clap = { workspace = true }
+itertools = { workspace = true }
+chrono = { workspace = true }
+
+anchor-lang = { workspace = true }
+whirlpool_base = { workspace = true }
+
+# internal
+replay-engine = { path = "../replay-engine" }
+whirlpool-replayer = { path = "../replayer" }

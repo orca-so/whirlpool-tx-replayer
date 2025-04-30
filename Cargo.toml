@@ -3,6 +3,7 @@ members = [
   "replay-engine",
   "replayer",
   "whirlpool-replay-command",
+  "whirlpool-regression-test-command",
 ]
 
 resolver = "2"

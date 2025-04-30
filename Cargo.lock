@@ -5947,6 +5947,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "whirlpool-regression-test"
+version = "0.1.8"
+dependencies = [
+ "anchor-lang",
+ "chrono",
+ "clap 4.5.6",
+ "itertools",
+ "replay-engine",
+ "whirlpool",
+ "whirlpool-replayer",
+]
+
+[[package]]
 name = "whirlpool-replay"
 version = "0.1.8"
 dependencies = [
