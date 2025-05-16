@@ -95,6 +95,9 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::ResetPositionRange(decoded) => Ok(replay_instructions::reset_position_range::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // Transfer Locked Position
     DecodedWhirlpoolInstruction::TransferLockedPosition(decoded) => Ok(replay_instructions::transfer_locked_position::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // Adaptive Fee instructions
+    DecodedWhirlpoolInstruction::InitializeAdaptiveFeeTier(decoded) => Ok(replay_instructions::initialize_adaptive_fee_tier::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::InitializePoolWithAdaptiveFee(decoded) => Ok(replay_instructions::initialize_pool_with_adaptive_fee::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {
