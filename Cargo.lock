@@ -5930,8 +5930,8 @@ checksum = "5f20c57d8d7db6d3b86154206ae5d8fba62dd39573114de97c2cb0578251f8e1"
 
 [[package]]
 name = "whirlpool"
-version = "0.3.5"
-source = "git+https://github.com/orca-so/whirlpools?branch=yugure%2Ffor-replayer-20250418#378d2d6a92eb106d2fe7ce10993173b717b33938"
+version = "0.4.1"
+source = "git+https://github.com/orca-so/whirlpools?branch=yugure%2Ffor-replayer-20250516#236a98a14fcf3b2e9b0864854ebe595591c4c813"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
