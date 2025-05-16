@@ -94,6 +94,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwapV2>)
     writable_accounts.push(&ix.key_tick_array_2);
   }
   // oracle
+  if replayer.set_whirlpool_account_if_exists(&ix.key_oracle, accounts) {
+    writable_accounts.push(&ix.key_oracle);
+  }
 
   // remaining_accounts (SupplementalTickArrays)
   let supplemental_tick_arrays = util::get_remaining_accounts(

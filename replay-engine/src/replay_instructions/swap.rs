@@ -67,8 +67,16 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
     writable_accounts.push(&ix.key_tick_array_2);
   }
   // oracle
+  if replayer.set_whirlpool_account_if_exists(&ix.key_oracle, accounts) {
+    writable_accounts.push(&ix.key_oracle);
+  }
 
-  let tx = replayer.build_whirlpool_replay_transaction(
+  // HACK: make oracle account writable
+  let remaining_account_metas = vec![
+    solana_program::instruction::AccountMeta::new(pubkey(&ix.key_oracle), false),
+  ];
+
+  let tx = replayer.build_whirlpool_replay_transaction_with_remaining_accounts(
       whirlpool_ix_args::Swap {
       amount: ix.data_amount,
       other_amount_threshold: ix.data_other_amount_threshold,
@@ -89,6 +97,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedSwap>) -
       tick_array_2: pubkey(&ix.key_tick_array_2),
       oracle: pubkey(&ix.key_oracle),
     },
+    remaining_account_metas,
   );
 
   writable_accounts.dedup();
