@@ -54,3 +54,6 @@ pub mod lock_position;
 
 pub mod reset_position_range;
 pub mod transfer_locked_position;
+
+pub mod initialize_adaptive_fee_tier;
+pub mod initialize_pool_with_adaptive_fee;

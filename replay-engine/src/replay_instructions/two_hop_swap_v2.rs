@@ -140,7 +140,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     writable_accounts.push(&ix.key_tick_array_two_2);
   }
   // oracle_one
+  if replayer.set_whirlpool_account_if_exists(&ix.key_oracle_one, accounts) {
+    writable_accounts.push(&ix.key_oracle_one);
+  }
   // oracle_two
+  if replayer.set_whirlpool_account_if_exists(&ix.key_oracle_two, accounts) {
+    writable_accounts.push(&ix.key_oracle_two);
+  }
   // memo_program
 
   // remaining_accounts (SupplementalTickArraysOne)
