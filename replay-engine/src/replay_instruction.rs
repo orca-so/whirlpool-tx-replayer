@@ -98,6 +98,11 @@ pub fn replay_whirlpool_instruction(
     // Adaptive Fee instructions
     DecodedWhirlpoolInstruction::InitializeAdaptiveFeeTier(decoded) => Ok(replay_instructions::initialize_adaptive_fee_tier::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::InitializePoolWithAdaptiveFee(decoded) => Ok(replay_instructions::initialize_pool_with_adaptive_fee::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetInitializePoolAuthority(decoded) => Ok(replay_instructions::set_initialize_pool_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetDelegatedFeeAuthority(decoded) => Ok(replay_instructions::set_delegated_fee_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetDefaultBaseFeeRate(decoded) => Ok(replay_instructions::set_default_base_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetFeeRateByDelegatedFeeAuthority(decoded) => Ok(replay_instructions::set_fee_rate_by_delegated_fee_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(decoded) => Ok(replay_instructions::set_preset_adaptive_fee_constants::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {
