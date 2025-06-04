@@ -59,6 +59,11 @@ pub enum DecodedWhirlpoolInstruction {
   TransferLockedPosition(DecodedTransferLockedPosition),
   InitializeAdaptiveFeeTier(DecodedInitializeAdaptiveFeeTier),
   InitializePoolWithAdaptiveFee(DecodedInitializePoolWithAdaptiveFee),
+  SetInitializePoolAuthority(DecodedSetInitializePoolAuthority),
+  SetDelegatedFeeAuthority(DecodedSetDelegatedFeeAuthority),
+  SetDefaultBaseFeeRate(DecodedSetDefaultBaseFeeRate),
+  SetFeeRateByDelegatedFeeAuthority(DecodedSetFeeRateByDelegatedFeeAuthority),
+  SetPresetAdaptiveFeeConstants(DecodedSetPresetAdaptiveFeeConstants),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -134,6 +139,11 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "transferLockedPosition" => Ok(DecodedWhirlpoolInstruction::TransferLockedPosition(from_str(&json)?)),
     "initializeAdaptiveFeeTier" => Ok(DecodedWhirlpoolInstruction::InitializeAdaptiveFeeTier(from_str(&json)?)),
     "initializePoolWithAdaptiveFee" => Ok(DecodedWhirlpoolInstruction::InitializePoolWithAdaptiveFee(from_str(&json)?)),
+    "setInitializePoolAuthority" => Ok(DecodedWhirlpoolInstruction::SetInitializePoolAuthority(from_str(&json)?)),
+    "setDelegatedFeeAuthority" => Ok(DecodedWhirlpoolInstruction::SetDelegatedFeeAuthority(from_str(&json)?)),
+    "setDefaultBaseFeeRate" => Ok(DecodedWhirlpoolInstruction::SetDefaultBaseFeeRate(from_str(&json)?)),
+    "setFeeRateByDelegatedFeeAuthority" => Ok(DecodedWhirlpoolInstruction::SetFeeRateByDelegatedFeeAuthority(from_str(&json)?)),
+    "setPresetAdaptiveFeeConstants" => Ok(DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -1063,6 +1073,57 @@ pub struct DecodedInitializePoolWithAdaptiveFee {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetInitializePoolAuthority {
+  pub key_whirlpools_config: String,
+  pub key_adaptive_fee_tier: String,
+  pub key_fee_authority: String,
+  pub key_new_initialize_pool_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetDelegatedFeeAuthority {
+  pub key_whirlpools_config: String,
+  pub key_adaptive_fee_tier: String,
+  pub key_fee_authority: String,
+  pub key_new_delegated_fee_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetDefaultBaseFeeRate {
+  pub data_default_base_fee_rate: u16,
+  pub key_whirlpools_config: String,
+  pub key_adaptive_fee_tier: String,
+  pub key_fee_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetFeeRateByDelegatedFeeAuthority {
+  pub data_fee_rate: u16,
+  pub key_whirlpool: String,
+  pub key_adaptive_fee_tier: String,
+  pub key_delegated_fee_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetPresetAdaptiveFeeConstants {
+  pub data_filter_period: u16,
+  pub data_decay_period: u16,
+  pub data_reduction_factor: u16,
+  pub data_adaptive_fee_control_factor: u32,
+  pub data_max_volatility_accumulator: u32,
+  pub data_tick_group_size: u16,
+  pub data_major_swap_threshold_ticks: u16,
+  pub key_whirlpools_config: String,
+  pub key_adaptive_fee_tier: String,
+  pub key_fee_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase", tag = "name")]
 pub enum LockType {
   Permanent,
@@ -1193,5 +1254,35 @@ mod tests {
     fn test_decode_initialize_pool_with_adaptive_fee() {
       let json_str = r#"{"dataInitialSqrtPrice": "18446744073709551616", "dataTradeEnableTimestamp": "0", "keyWhirlpoolsConfig": "9K4ihx6N9Mti3J5vwzy783KAJPYu4QJz5ECcfwpjF31K", "keyTokenMintA": "8gGzGKiWH94Wo7Za48nvQCVuUohvUjZbk5ELETzog9sR", "keyTokenMintB": "8mnNEhE5BBJWw6vSmzLCsgMRXQqCkD629xPeRgk8cXdm", "keyTokenBadgeA": "BNbNkvGKkJyd1jiGM8Xj7CjuXZoRxcsocp3nAx17a5Pi", "keyTokenBadgeB": "3jx2jmTBhjswKKWhrKabdnjQ5SKj1vEwb3GMaN7Aogw2", "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyInitializePoolAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyWhirlpool": "4tk7887ZnsWqe2wKPNkiLd2yM5zzRbP6effxox2BNAjP", "keyOracle": "9aXVuoLzAkoM1cD5H5wuND7FSXaAL6LeE1jQZ1iqYQ2u", "keyTokenVaultA": "CUgMa3o8Y7GiDwgHR9bNH4kv4MoAVZpZXwBfPWSstGs8", "keyTokenVaultB": "4wwQzpyE1iNhVoDXV9f4RZQm7m1XGKNpohJHzCQrW65X", "keyAdaptiveFeeTier": "Egy8tWAQBzg8pKuX4ZxN8SVComJSoipSGjdxaqTJwTVm", "keyTokenProgramA": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyTokenProgramB": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keySystemProgram": "11111111111111111111111111111111", "keyRent": "SysvarRent111111111111111111111111111111111", "decimalsTokenMintA": 0, "decimalsTokenMintB": 0}"#;
       let _ = from_json(&"initializePoolWithAdaptiveFee".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_initialize_pool_authority() {
+      let json_str = r#"{"keyWhirlpoolsConfig": "9RzLyzBKrgCTMnynAVoypJwgWU3E1FiWrRwP72sCMCK5", "keyAdaptiveFeeTier": "EaSm8cCi2P7SSnmmTwK8yDJeMM92XpX1SCDYbFokMFtp", "keyFeeAuthority": "DybgC2vCQe6QKbp8b14aftPRcpLXJLZJt5sS15YUo1dH", "keyNewInitializePoolAuthority": "GK2gWhYi36xLFGaFgtWAgVD6dnBNMmPQw7SVifA8XhZ"}"#;
+      let _ = from_json(&"setInitializePoolAuthority".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_delegated_fee_authority() {
+      let json_str = r#"{"keyWhirlpoolsConfig": "9GDzN1bcwWxZ7Rumnh5sTUjkp7v7AUjUxLwzNViAtEin", "keyAdaptiveFeeTier": "4zurpj7anheKgEpz8A14F2A9xyjrjL4uQegDSvW1tG1Z", "keyFeeAuthority": "HgVpTy4vYnPeSJhtsrJEJ4BPqJz67tCUecudvx6rPt9x", "keyNewDelegatedFeeAuthority": "HDpmET6dhYj9KUxdzzGek5KUTRdemnXnHYaaTk4J5wFS"}"#;
+      let _ = from_json(&"setDelegatedFeeAuthority".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_default_base_fee_rate() {
+      let json_str = r#"{"dataDefaultBaseFeeRate": 10000, "keyWhirlpoolsConfig": "CfaQtT5WrzeTWUzykoreb4jP8DLanPPKsMMvgeHzv7SH", "keyAdaptiveFeeTier": "9Vj5jyVjijHVNo6E4r2tAp1DXJFo7eALW8xKTfoksnXH", "keyFeeAuthority": "Bjt8Ef9Wo18LdX9V46PwqY7UPpnmRceVCepbHU1RBXp8"}"#;
+      let _ = from_json(&"setDefaultBaseFeeRate".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_fee_rate_by_delegated_fee_authority() {
+      let json_str = r#"{"dataFeeRate": 20000, "keyWhirlpool": "9E7FfVeMAA7WXNQKPu5d3kjNDN1rLyrVo25uUnhVo4Eo", "keyAdaptiveFeeTier": "FdMfVWWjEACh8C3MCNA4r7Aj71mSs8zcgcw6cB2pTjmh", "keyDelegatedFeeAuthority": "2Sx9ut2d96mq635R11GfsERRWXND65cZ7Z1VzHmfMuWT"}"#;
+      let _ = from_json(&"setFeeRateByDelegatedFeeAuthority".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_preset_adaptive_fee_constants() {
+      let json_str = r#"{"dataFilterPeriod": 65534, "dataDecayPeriod": 65535, "dataReductionFactor": 9999, "dataAdaptiveFeeControlFactor": 99999, "dataMaxVolatilityAccumulator": 67108863, "dataTickGroupSize": 32, "dataMajorSwapThresholdTicks": 16, "keyWhirlpoolsConfig": "Cd9Ko9Rx39i4EJZFAnnEpJACjJ5fb95f7m5Q1v68ns2A", "keyAdaptiveFeeTier": "4mcztvKTbLDDoU3g51MSqsJjHYpSmXNXdNt72sAwCjWn", "keyFeeAuthority": "3ZdAEmjvNfSh8mVeT2RrNgXutcJfrxt5VqKwuU2DPiHX"}"#;
+      let _ = from_json(&"setPresetAdaptiveFeeConstants".to_string(), &json_str.to_string()).unwrap();
     }
 }

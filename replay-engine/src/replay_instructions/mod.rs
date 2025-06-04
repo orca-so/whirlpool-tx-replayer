@@ -57,3 +57,8 @@ pub mod transfer_locked_position;
 
 pub mod initialize_adaptive_fee_tier;
 pub mod initialize_pool_with_adaptive_fee;
+pub mod set_initialize_pool_authority;
+pub mod set_delegated_fee_authority;
+pub mod set_default_base_fee_rate;
+pub mod set_fee_rate_by_delegated_fee_authority;
+pub mod set_preset_adaptive_fee_constants;
