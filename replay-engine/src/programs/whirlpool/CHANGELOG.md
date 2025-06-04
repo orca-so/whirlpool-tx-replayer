@@ -1,4 +1,10 @@
 ## 2025
+### 20250513-339751616
+- Reduce stack size usage on initialize_pool_with_adaptive_fee ([PR946](https://github.com/orca-so/whirlpools/pull/946))
+
+### 20250505-338005185
+- Adaptive Fee ([PR918](https://github.com/orca-so/whirlpools/pull/918))
+
 ### 20250421-334826946
 - Reset position range ([PR902](https://github.com/orca-so/whirlpools/pull/902))
 - Allow locking concentrated positions ([PR903](https://github.com/orca-so/whirlpools/pull/903))
