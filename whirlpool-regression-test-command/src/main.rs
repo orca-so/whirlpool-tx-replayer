@@ -48,7 +48,9 @@ fn main() {
     replayer_right.override_program_data(program_data_right);
 
     loop {
+        println!("left replayer...");
         let result_left = replayer_left.replay_one_slot();
+        println!("right replayer...");
         let result_right = replayer_right.replay_one_slot();
 
         assert_eq!(result_left.is_some(), result_right.is_some());
@@ -60,7 +62,6 @@ fn main() {
         let result_right = result_right.unwrap();
         assert_eq!(result_left.len(), result_right.len());
 
-        //let length = result_left.len();
         // foreach zipped
         for (left, right) in result_left.iter().zip(result_right.iter()) {
             let (slot_left, signature_left, name_left, payload_left, snapshot_left) = left;
@@ -81,11 +82,15 @@ fn main() {
                     println!("Account mismatch: slot={}, signature={}, name={}, payload={}", slot_left, signature_left, name_left, payload_left);
                     println!("Left: {} => {:?}", key_left, account_left);
                     println!("Right: {} => {:?}", key_left, account_right);
-                    panic!("Account mismatch");
+                    panic!("Fatal: Account mismatch");
                 }
             }
+
+            println!("ok: slot={}, signature={}, name={}", slot_left, signature_left, name_left);
         }        
     }
+
+    println!("Replay finished successfully (no regression detected)");
 }
 
 pub struct WhirlpoolReplayerStep {
@@ -170,8 +175,14 @@ impl WhirlpoolReplayerStep {
                     ) => {
                         let result = self
                             .replay_engine
-                            .replay_instruction(&whirlpool_instruction)
-                            .unwrap();
+                            .replay_instruction(&whirlpool_instruction);
+                        if result.is_err() {
+                            let e = result.err().unwrap();
+                            println!("Error: {:?}", e);
+                            println!("REPLAY: slot={}, signature={}, name={}, payload={}", slot.slot, signature, name, payload);
+                            panic!("Fatal: Error during replay");
+                        }
+                        let result = result.unwrap();
 
                         writable_account_snapshots.push((
                             slot.slot,
