@@ -1,11 +1,9 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc, vec};
-
+use std::vec;
 use clap::Parser;
-use itertools::Itertools;
 
 use replay_engine::{decoded_instructions, replay_engine::ReplayEngine, types::{ProgramData, WritableAccountSnapshot}};
 use whirlpool_replayer::{
-    io, schema::{self, WhirlpoolTransaction}, serde::{self, AccountDataStoreConfig}, ReplayUntil, Slot, SyncInstructionCallback, SyncSlotCallback, WhirlpoolReplayer
+    io, schema::{WhirlpoolTransaction}, serde::{self, AccountDataStoreConfig}, Slot,
 };
 
 #[derive(Parser, Debug)]
