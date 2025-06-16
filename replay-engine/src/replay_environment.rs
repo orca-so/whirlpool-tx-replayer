@@ -316,6 +316,26 @@ impl ReplayEnvironment {
         )
     }
 
+    pub fn set_account_with_data_with_additional_lamports(
+        &mut self,
+        pubkey: Pubkey,
+        owner: Pubkey,
+        data: &[u8],
+        executable: bool,
+        additional_lamports: u64,
+    ) -> &mut Self {
+        self.set_account(
+            pubkey,
+            &Account {
+                lamports: self.config.rent.minimum_balance(data.len()) + additional_lamports,
+                data: data.to_vec(),
+                executable,
+                owner,
+                rent_epoch: 0,
+            },
+        )
+    }
+
     pub fn set_account_with_lamports(
         &mut self,
         pubkey: Pubkey,

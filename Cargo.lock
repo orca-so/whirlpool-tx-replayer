@@ -3306,7 +3306,7 @@ checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
 
 [[package]]
 name = "replay-engine"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "anchor-client",
  "anchor-lang",
@@ -5931,7 +5931,7 @@ checksum = "5f20c57d8d7db6d3b86154206ae5d8fba62dd39573114de97c2cb0578251f8e1"
 [[package]]
 name = "whirlpool"
 version = "0.4.1"
-source = "git+https://github.com/orca-so/whirlpools?branch=yugure%2Ffor-replayer-20250516#236a98a14fcf3b2e9b0864854ebe595591c4c813"
+source = "git+https://github.com/orca-so/whirlpools?branch=yugure%2Ffor-replayer-20250616#02b7016a6df194ea4646a2c69e45f4fff6ca47b4"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -5948,7 +5948,7 @@ dependencies = [
 
 [[package]]
 name = "whirlpool-regression-test"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "anchor-lang",
  "chrono",
@@ -5961,7 +5961,7 @@ dependencies = [
 
 [[package]]
 name = "whirlpool-replay"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "anchor-lang",
  "clap 4.5.6",
@@ -5972,7 +5972,7 @@ dependencies = [
 
 [[package]]
 name = "whirlpool-replayer"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "base64 0.21.7",
  "bincode",

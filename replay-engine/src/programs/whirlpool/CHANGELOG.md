@@ -1,4 +1,7 @@
 ## 2025
+### 20250610-345968990
+- (Partial release)Dynamic TickArray ([PR973](https://github.com/orca-so/whirlpools/pull/973))
+
 ### 20250513-339751616
 - Reduce stack size usage on initialize_pool_with_adaptive_fee ([PR946](https://github.com/orca-so/whirlpools/pull/946))
 
