@@ -62,3 +62,5 @@ pub mod set_delegated_fee_authority;
 pub mod set_default_base_fee_rate;
 pub mod set_fee_rate_by_delegated_fee_authority;
 pub mod set_preset_adaptive_fee_constants;
+
+pub mod initialize_dynamic_tick_array;

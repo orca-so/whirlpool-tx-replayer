@@ -103,6 +103,8 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetDefaultBaseFeeRate(decoded) => Ok(replay_instructions::set_default_base_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetFeeRateByDelegatedFeeAuthority(decoded) => Ok(replay_instructions::set_fee_rate_by_delegated_fee_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(decoded) => Ok(replay_instructions::set_preset_adaptive_fee_constants::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // Dynamic Tick Array
+    DecodedWhirlpoolInstruction::InitializeDynamicTickArray(decoded) => Ok(replay_instructions::initialize_dynamic_tick_array::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {
@@ -483,6 +485,16 @@ impl ReplayEnvironment {
       pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
       &accounts.get(pubkey).unwrap().unwrap(),
       false
+    );
+  }
+
+  pub fn set_whirlpool_account_with_additional_lamports(&mut self, pubkey: &String, accounts: &AccountDataStore) {
+    self.set_account_with_data_with_additional_lamports(
+      Pubkey::from_str(pubkey).unwrap(),
+      pubkeys::ORCA_WHIRLPOOL_PROGRAM_ID,
+      &accounts.get(pubkey).unwrap().unwrap(),
+      false,
+      1_000_000_000, // 1 SOL
     );
   }
 

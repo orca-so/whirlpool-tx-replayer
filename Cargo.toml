@@ -38,7 +38,7 @@ rocksdb = "0.21.0"
 # anchor & whirlpool
 anchor-lang = "0.29.0"
 anchor-client = "0.29.0"
-whirlpool_base = { git = "https://github.com/orca-so/whirlpools", branch = "yugure/for-replayer-20250516", package = "whirlpool" }
+whirlpool_base = { git = "https://github.com/orca-so/whirlpools", branch = "yugure/for-replayer-20250616", package = "whirlpool" }
 
 # borsh
 borsh = "0.10.3"

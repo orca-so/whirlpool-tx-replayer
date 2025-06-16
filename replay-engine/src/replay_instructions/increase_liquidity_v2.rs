@@ -31,7 +31,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncrease
   // memo_program
   // position_authority
   // position
-  replayer.set_whirlpool_account(&ix.key_position, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_position, accounts); // add lamports to initialize 2 ticks if needed
   // position_token_amount
   replayer.set_token_account(
     pubkey(&ix.key_position_token_account),

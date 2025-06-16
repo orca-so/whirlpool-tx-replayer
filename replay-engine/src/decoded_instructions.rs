@@ -64,6 +64,7 @@ pub enum DecodedWhirlpoolInstruction {
   SetDefaultBaseFeeRate(DecodedSetDefaultBaseFeeRate),
   SetFeeRateByDelegatedFeeAuthority(DecodedSetFeeRateByDelegatedFeeAuthority),
   SetPresetAdaptiveFeeConstants(DecodedSetPresetAdaptiveFeeConstants),
+  InitializeDynamicTickArray(DecodedInitializeDynamicTickArray),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -144,6 +145,7 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "setDefaultBaseFeeRate" => Ok(DecodedWhirlpoolInstruction::SetDefaultBaseFeeRate(from_str(&json)?)),
     "setFeeRateByDelegatedFeeAuthority" => Ok(DecodedWhirlpoolInstruction::SetFeeRateByDelegatedFeeAuthority(from_str(&json)?)),
     "setPresetAdaptiveFeeConstants" => Ok(DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(from_str(&json)?)),
+    "initializeDynamicTickArray" => Ok(DecodedWhirlpoolInstruction::InitializeDynamicTickArray(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -1124,6 +1126,18 @@ pub struct DecodedSetPresetAdaptiveFeeConstants {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedInitializeDynamicTickArray {
+  pub data_start_tick_index: i32,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub data_idempotent: bool,
+  pub key_whirlpool: String,
+  pub key_funder: String,
+  pub key_tick_array: String,
+  pub key_system_program: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase", tag = "name")]
 pub enum LockType {
   Permanent,
@@ -1284,5 +1298,11 @@ mod tests {
     fn test_decode_set_preset_adaptive_fee_constants() {
       let json_str = r#"{"dataFilterPeriod": 65534, "dataDecayPeriod": 65535, "dataReductionFactor": 9999, "dataAdaptiveFeeControlFactor": 99999, "dataMaxVolatilityAccumulator": 67108863, "dataTickGroupSize": 32, "dataMajorSwapThresholdTicks": 16, "keyWhirlpoolsConfig": "Cd9Ko9Rx39i4EJZFAnnEpJACjJ5fb95f7m5Q1v68ns2A", "keyAdaptiveFeeTier": "4mcztvKTbLDDoU3g51MSqsJjHYpSmXNXdNt72sAwCjWn", "keyFeeAuthority": "3ZdAEmjvNfSh8mVeT2RrNgXutcJfrxt5VqKwuU2DPiHX"}"#;
       let _ = from_json(&"setPresetAdaptiveFeeConstants".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_initialize_dynamic_tick_array() {
+      let json_str = r#"{"dataStartTickIndex": -157696, "dataIdempotent": 1, "keyWhirlpool": "J4reQPa5tqACDiZMLpqKtZdjbZvFKnEJ6D9dbP19B1w3", "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyTickArray": "4qKfU6Zg5a2TanLxU9CwEbmixbmox7Dvui72J4e74GVn", "keySystemProgram": "11111111111111111111111111111111"}"#;
+      let _ = from_json(&"initializeDynamicTickArray".to_string(), &json_str.to_string()).unwrap();
     }
 }
