@@ -3,7 +3,7 @@ use clap::Parser;
 
 use replay_engine::{decoded_instructions, replay_engine::ReplayEngine, types::{ProgramData, WritableAccountSnapshot}};
 use whirlpool_replayer::{
-    io, schema::{WhirlpoolTransaction}, serde::{self, AccountDataStoreConfig}, Slot,
+    io, schema::{WhirlpoolTransaction, WhirlpoolState}, serde::{self, AccountDataStoreConfig}, Slot,
 };
 
 #[derive(Parser, Debug)]
@@ -38,8 +38,8 @@ fn main() {
     let program_data_right = std::fs::read(&args.program_path_right).unwrap();
     
     // build replayer
-    let mut replayer_left = WhirlpoolReplayerStep::build_with_local_file_storage(&base_path, &yyyymmdd, &account_data_store_config);
-    let mut replayer_right = WhirlpoolReplayerStep::build_with_local_file_storage(&base_path, &yyyymmdd, &account_data_store_config);
+    let mut replayer_left = WhirlpoolReplayerStep::build_with_local_file_storage(&base_path, &yyyymmdd, &account_data_store_config, false);
+    let mut replayer_right = WhirlpoolReplayerStep::build_with_local_file_storage(&base_path, &yyyymmdd, &account_data_store_config, true);
 
     // override program data
     replayer_left.override_program_data(program_data_left);
@@ -76,6 +76,19 @@ fn main() {
             assert_eq!(snapshot_left.len(), snapshot_right.len());
             for (key_left, account_left) in snapshot_left.iter() {
                 let account_right = snapshot_right.get(key_left).unwrap();
+
+                let account_left = if is_fixed_tick_array(account_left) {
+                    fixed_tick_array_to_dynamic_tick_array(account_left)
+                } else {
+                    account_left.to_vec()
+                };
+
+                let account_right = if is_fixed_tick_array(account_right) {
+                    fixed_tick_array_to_dynamic_tick_array(account_right)
+                } else {
+                    account_right.to_vec()
+                };
+
                 if account_left != account_right {
                     println!("Account mismatch: slot={}, signature={}, name={}, payload={}", slot_left, signature_left, name_left, payload_left);
                     println!("Left: {} => {:?}", key_left, account_left);
@@ -96,11 +109,99 @@ pub struct WhirlpoolReplayerStep {
     transaction_iter: Box<dyn Iterator<Item = WhirlpoolTransaction> + Send>,
 }
 
+use anchor_lang::prelude::*;
+
+#[derive(borsh::BorshDeserialize, borsh::BorshSerialize)]
+pub struct FixedTickArrayClone {
+    pub discriminator: [u8; 8],
+    pub start_tick_index: i32,
+    pub ticks: [FixedTickClone; 88],
+    pub whirlpool: Pubkey,
+}
+
+#[derive(borsh::BorshDeserialize, borsh::BorshSerialize)]
+pub struct FixedTickClone {
+    pub initialized: bool,     // 1
+    pub liquidity_net: i128,   // 16
+    pub liquidity_gross: u128, // 16
+    pub fee_growth_outside_a: u128, // 16
+    pub fee_growth_outside_b: u128, // 16
+    pub reward_growths_outside: [u128; 3], // 48 = 16 * 3
+}
+
+#[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Copy, Clone)]
+pub struct DynamicTickDataClone {
+    pub liquidity_net: i128,   // 16
+    pub liquidity_gross: u128, // 16
+    pub fee_growth_outside_a: u128, // 16
+    pub fee_growth_outside_b: u128, // 16
+    pub reward_growths_outside: [u128; 3], // 48 = 16 * 3
+}
+
+#[derive(borsh::BorshDeserialize, borsh::BorshSerialize, Copy, Clone)]
+pub enum DynamicTickClone {
+    Uninitialized,
+    Initialized(DynamicTickDataClone),
+}
+
+#[derive(borsh::BorshDeserialize, borsh::BorshSerialize)]
+pub struct DynamicTickArrayClone {
+    pub discriminator: [u8; 8],
+    pub start_tick_index: i32, // 4 bytes
+    pub whirlpool: Pubkey,     // 32 bytes
+    // 0: uninitialized, 1: initialized
+    pub tick_bitmap: u128, // 16 bytes
+    pub ticks: [DynamicTickClone; 88],
+}
+
+fn is_fixed_tick_array(data: &[u8]) -> bool {
+    let mut data = data;
+    whirlpool_base::state::FixedTickArray::try_deserialize(&mut data).is_ok()
+}
+
+fn fixed_tick_array_to_dynamic_tick_array(data: &[u8]) -> Vec<u8> {
+    let mut data = data;
+    let fixed_tick_array = FixedTickArrayClone::deserialize(&mut data).unwrap();
+    
+    let mut tick_bitmap: u128 = 0;
+    for (i, tick) in fixed_tick_array.ticks.iter().enumerate() {
+        if tick.initialized {
+            tick_bitmap |= 1 << i;
+        }
+    }
+
+    let mut ticks: [DynamicTickClone; 88] = [DynamicTickClone::Uninitialized; 88];
+    for (i, tick) in fixed_tick_array.ticks.iter().enumerate() {
+        if !tick.initialized {
+            ticks[i] = DynamicTickClone::Uninitialized;
+        } else {
+            ticks[i] = DynamicTickClone::Initialized(DynamicTickDataClone {
+                liquidity_net: tick.liquidity_net,
+                liquidity_gross: tick.liquidity_gross,
+                fee_growth_outside_a: tick.fee_growth_outside_a,
+                fee_growth_outside_b: tick.fee_growth_outside_b,
+                reward_growths_outside: tick.reward_growths_outside,
+            });
+        }
+    }
+
+    let dynamic_tick_array = DynamicTickArrayClone {
+        discriminator: [17, 216, 246, 142, 225, 199, 218, 56],
+        start_tick_index: fixed_tick_array.start_tick_index,
+        whirlpool: fixed_tick_array.whirlpool,
+        tick_bitmap,
+        ticks,
+    };
+
+    dynamic_tick_array.try_to_vec().unwrap()
+}
+
 impl WhirlpoolReplayerStep {
     pub fn build_with_local_file_storage(
         base_path: &String,
         yyyymmdd: &String,
         account_data_store_config: &AccountDataStoreConfig,
+        fixed_to_dynamic_conversion: bool,
     ) -> WhirlpoolReplayerStep {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
         let previous = current.pred_opt().unwrap();
@@ -113,7 +214,24 @@ impl WhirlpoolReplayerStep {
             io::get_whirlpool_transaction_file_relative_path(&current);
         let transaction_file_path = format!("{}/{}", base_path, transaction_file_relative_path);
 
-        let state = io::load_from_local_whirlpool_state_file(&state_file_path, account_data_store_config);
+        let mut state: WhirlpoolState = io::load_from_local_whirlpool_state_file(&state_file_path, account_data_store_config);
+
+        if fixed_to_dynamic_conversion {
+            let mut dynamic_tick_arrays: Vec<(String, Vec<u8>)> = vec![];
+            state.accounts.traverse(|pubkey, data| {
+                if is_fixed_tick_array(data) {
+                    let pubkey_str = pubkey.to_string();
+                    let dynamic_tick_array_data = fixed_tick_array_to_dynamic_tick_array(data);
+                    dynamic_tick_arrays.push((pubkey_str, dynamic_tick_array_data));
+                }
+                Ok(())
+            }).unwrap();
+
+            for (pubkey, dynamic_tick_array) in dynamic_tick_arrays {
+                state.accounts.upsert(&pubkey, &dynamic_tick_array).unwrap();
+            }
+        }
+
         let transaction_iter =
             io::load_from_local_whirlpool_transaction_file(&transaction_file_path);
 

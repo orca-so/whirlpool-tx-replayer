@@ -10,6 +10,7 @@ chrono = { workspace = true }
 
 anchor-lang = { workspace = true }
 whirlpool_base = { workspace = true }
+borsh = "0.10.3"
 
 # internal
 replay-engine = { path = "../replay-engine" }

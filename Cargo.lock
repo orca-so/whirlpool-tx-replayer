@@ -5951,6 +5951,7 @@ name = "whirlpool-regression-test"
 version = "0.1.10"
 dependencies = [
  "anchor-lang",
+ "borsh 0.10.3",
  "chrono",
  "clap 4.5.6",
  "itertools",
