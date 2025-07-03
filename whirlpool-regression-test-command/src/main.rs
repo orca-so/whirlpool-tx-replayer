@@ -46,9 +46,9 @@ fn main() {
     replayer_right.override_program_data(program_data_right);
 
     loop {
-        println!("left replayer...");
+        //println!("left replayer...");
         let result_left = replayer_left.replay_one_slot();
-        println!("right replayer...");
+        //println!("right replayer...");
         let result_right = replayer_right.replay_one_slot();
 
         assert_eq!(result_left.is_some(), result_right.is_some());
@@ -72,6 +72,7 @@ fn main() {
 
             // compare snapshots
             let snapshot_left = snapshot_left.post_snapshot.clone();
+            let snapshot_right_pre = snapshot_right.pre_snapshot.clone();
             let snapshot_right = snapshot_right.post_snapshot.clone();
             assert_eq!(snapshot_left.len(), snapshot_right.len());
             for (key_left, account_left) in snapshot_left.iter() {
@@ -98,6 +99,30 @@ fn main() {
             }
 
             println!("ok: slot={}, signature={}, name={}", slot_left, signature_left, name_left);
+
+            for (key_right, account_right) in snapshot_right.iter() {
+                if !is_dynamic_tick_array(account_right) {
+                    continue;
+                }
+
+                if let Some(account_right_pre) = snapshot_right_pre.get(key_right) {
+                    let pre_length = account_right_pre.len() as isize;
+                    let post_length = account_right.len() as isize;
+                    let delta = post_length - pre_length;
+                    let delta_abs = delta.abs();
+
+                    assert!(delta_abs == 0 || delta_abs == 112 || delta_abs == 112 * 2);
+
+                    if pre_length < post_length {
+                        assert!(name_right.starts_with("increaseLiquidity"));
+                        println!("Account extended: key={}, length={} -> {} (delta: {})", key_right, pre_length, post_length, delta);
+                    }
+                    if pre_length > post_length {
+                        assert!(name_right.starts_with("decreaseLiquidity"));
+                        println!("Account shrunk: key={}, length={} -> {} (delta: {})", key_right, pre_length, post_length, delta);
+                    }
+                }
+            }
         }        
     }
 
@@ -157,6 +182,14 @@ pub struct DynamicTickArrayClone {
 fn is_fixed_tick_array(data: &[u8]) -> bool {
     let mut data = data;
     whirlpool_base::state::FixedTickArray::try_deserialize(&mut data).is_ok()
+}
+
+fn is_dynamic_tick_array(data: &[u8]) -> bool {
+    if data.len() >= 148 && data[0..8] == [17, 216, 246, 142, 225, 199, 218, 56] {
+        // Check if the discriminator matches
+        return true;
+    }
+    false
 }
 
 fn fixed_tick_array_to_dynamic_tick_array(data: &[u8]) -> Vec<u8> {
