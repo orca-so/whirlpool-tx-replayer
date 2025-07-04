@@ -63,9 +63,9 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedDecrease
     amount_b
   );
   // tick_array_lower
-  replayer.set_whirlpool_account(&ix.key_tick_array_lower, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_tick_array_lower, accounts); // add lamports to collect rent of 2 ticks
   // tick_array_upper
-  replayer.set_whirlpool_account(&ix.key_tick_array_upper, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_tick_array_upper, accounts); // add lamports to collect rent of 2 ticks
 
   let tx = replayer.build_whirlpool_replay_transaction(
     whirlpool_ix_args::DecreaseLiquidity {
