@@ -1,4 +1,7 @@
 ## 2025
+### 20250705-351188208
+- Dynamic TickArray ([PR970](https://github.com/orca-so/whirlpools/pull/970))
+
 ### 20250625-349119692
 - Support new TokenExtensions ([PR974](https://github.com/orca-so/whirlpools/pull/974))
 
