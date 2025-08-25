@@ -64,3 +64,6 @@ pub mod set_fee_rate_by_delegated_fee_authority;
 pub mod set_preset_adaptive_fee_constants;
 
 pub mod initialize_dynamic_tick_array;
+pub mod set_config_feature_flag;
+pub mod set_token_badge_attribute;
+pub mod migrate_repurpose_reward_authority_space;

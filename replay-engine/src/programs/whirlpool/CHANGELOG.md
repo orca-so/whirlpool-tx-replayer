@@ -1,4 +1,10 @@
 ## 2025
+### 20250821-361491090
+- Non transferable position ([PR1038](https://github.com/orca-so/whirlpools/pull/1038))
+- Safer account initialization ([PR1010](https://github.com/orca-so/whirlpools/pull/1010))
+- Remove unnecessary transfer hook token program account info ([PR1004](https://github.com/orca-so/whirlpools/pull/1004))
+- Refactor Dynamic TA ([PR1006](https://github.com/orca-so/whirlpools/pull/1006))
+
 ### 20250705-351188208
 - Dynamic TickArray ([PR970](https://github.com/orca-so/whirlpools/pull/970))
 

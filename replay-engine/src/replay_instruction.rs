@@ -105,8 +105,12 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(decoded) => Ok(replay_instructions::set_preset_adaptive_fee_constants::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // Dynamic Tick Array
     DecodedWhirlpoolInstruction::InitializeDynamicTickArray(decoded) => Ok(replay_instructions::initialize_dynamic_tick_array::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // Non Transferable Position
+    DecodedWhirlpoolInstruction::SetConfigFeatureFlag(decoded) => Ok(replay_instructions::set_config_feature_flag::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetTokenBadgeAttribute(decoded) => Ok(replay_instructions::set_token_badge_attribute::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::MigrateRepurposeRewardAuthoritySpace(decoded) => Ok(replay_instructions::migrate_repurpose_reward_authority_space::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     //_ => {
     //  Err(ErrorCode::UnknownWhirlpoolInstruction("not implemented yet".to_string()))
     //}
