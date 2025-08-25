@@ -65,6 +65,9 @@ pub enum DecodedWhirlpoolInstruction {
   SetFeeRateByDelegatedFeeAuthority(DecodedSetFeeRateByDelegatedFeeAuthority),
   SetPresetAdaptiveFeeConstants(DecodedSetPresetAdaptiveFeeConstants),
   InitializeDynamicTickArray(DecodedInitializeDynamicTickArray),
+  SetConfigFeatureFlag(DecodedSetConfigFeatureFlag),
+  SetTokenBadgeAttribute(DecodedSetTokenBadgeAttribute),
+  MigrateRepurposeRewardAuthoritySpace(DecodedMigrateRepurposeRewardAuthoritySpace),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -146,6 +149,9 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "setFeeRateByDelegatedFeeAuthority" => Ok(DecodedWhirlpoolInstruction::SetFeeRateByDelegatedFeeAuthority(from_str(&json)?)),
     "setPresetAdaptiveFeeConstants" => Ok(DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(from_str(&json)?)),
     "initializeDynamicTickArray" => Ok(DecodedWhirlpoolInstruction::InitializeDynamicTickArray(from_str(&json)?)),
+    "setConfigFeatureFlag" => Ok(DecodedWhirlpoolInstruction::SetConfigFeatureFlag(from_str(&json)?)),
+    "setTokenBadgeAttribute" => Ok(DecodedWhirlpoolInstruction::SetTokenBadgeAttribute(from_str(&json)?)),
+    "migrateRepurposeRewardAuthoritySpace" => Ok(DecodedWhirlpoolInstruction::MigrateRepurposeRewardAuthoritySpace(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -1138,9 +1144,46 @@ pub struct DecodedInitializeDynamicTickArray {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetConfigFeatureFlag {
+  pub data_feature_flag: ConfigFeatureFlag,
+  pub key_whirlpools_config: String,
+  pub key_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetTokenBadgeAttribute {
+  pub data_attribute: TokenBadgeAttribute,
+  pub key_whirlpools_config: String,
+  pub key_whirlpools_config_extension: String,
+  pub key_token_badge_authority: String,
+  pub key_token_mint: String,
+  pub key_token_badge: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedMigrateRepurposeRewardAuthoritySpace {
+  pub key_whirlpool: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase", tag = "name")]
 pub enum LockType {
   Permanent,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase", tag = "name")]
+pub enum ConfigFeatureFlag {
+  TokenBadge { enabled: bool },
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase", tag = "name")]
+pub enum TokenBadgeAttribute {
+  RequireNonTransferablePosition { required: bool },
 }
 
 pub type RemainingAccountsInfo = Vec<[u8; 2]>;
@@ -1304,5 +1347,55 @@ mod tests {
     fn test_decode_initialize_dynamic_tick_array() {
       let json_str = r#"{"dataStartTickIndex": -157696, "dataIdempotent": 1, "keyWhirlpool": "J4reQPa5tqACDiZMLpqKtZdjbZvFKnEJ6D9dbP19B1w3", "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyTickArray": "4qKfU6Zg5a2TanLxU9CwEbmixbmox7Dvui72J4e74GVn", "keySystemProgram": "11111111111111111111111111111111"}"#;
       let _ = from_json(&"initializeDynamicTickArray".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_config_feature_flag_token_badge_true() {
+      let json_str = r#"{"dataFeatureFlag": {"name":"tokenBadge","enabled":true}, "keyWhirlpoolsConfig": "GMreYzVNUvLbZa1P3wvQEHGDMwSNzw1VKGfymVRiWmhn", "keyAuthority": "tstYmkF9JHjZbSugJe1H3ygUTox1bqSxpn5QjxMwVrm"}"#;
+      let parsed = from_json(&"setConfigFeatureFlag".to_string(), &json_str.to_string()).unwrap();
+      if let DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::SetConfigFeatureFlag(decoded)) = parsed {
+          assert_eq!(decoded.data_feature_flag, ConfigFeatureFlag::TokenBadge { enabled: true });
+      } else {
+          panic!("Unexpected instruction type");
+      }
+    }
+
+    #[test]
+    fn test_decode_set_config_feature_flag_token_badge_false() {
+      let json_str = r#"{"dataFeatureFlag": {"name":"tokenBadge","enabled":false}, "keyWhirlpoolsConfig": "GMreYzVNUvLbZa1P3wvQEHGDMwSNzw1VKGfymVRiWmhn", "keyAuthority": "tstYmkF9JHjZbSugJe1H3ygUTox1bqSxpn5QjxMwVrm"}"#;
+      let parsed = from_json(&"setConfigFeatureFlag".to_string(), &json_str.to_string()).unwrap();
+      if let DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::SetConfigFeatureFlag(decoded)) = parsed {
+          assert_eq!(decoded.data_feature_flag, ConfigFeatureFlag::TokenBadge { enabled: false });
+      } else {
+          panic!("Unexpected instruction type");
+      }
+    }
+
+    #[test]
+    fn test_decode_set_token_badge_attribute_require_non_transferable_position_true() {
+      let json_str = r#"{"dataAttribute": {"name":"requireNonTransferablePosition","required":true}, "keyWhirlpoolsConfig": "En7osvvTqrWucPrqTQxaZCVzPeeAr5cvfMHexNnsmAy", "keyWhirlpoolsConfigExtension": "2Uz5gzSSRWfbV8ejPBCjJywjGHwUVjekprSBLAB9TYao", "keyTokenBadgeAuthority": "B9Tt2B2tvC2pVHerieJPqqk4f6i5SFvq6AbuWbM2p5qs", "keyTokenMint": "GGNk2ysKF74taTfsCfKNdL5yj1sboeqyQWREGQdkFFc5", "keyTokenBadge": "43hfpnAf5WUnq77YqMEUFSq8sx9xEybkmTQszw6d6ori"}"#;
+      let parsed = from_json(&"setTokenBadgeAttribute".to_string(), &json_str.to_string()).unwrap();
+      if let DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::SetTokenBadgeAttribute(decoded)) = parsed {
+          assert_eq!(decoded.data_attribute, TokenBadgeAttribute::RequireNonTransferablePosition { required: true });
+      } else {
+          panic!("Unexpected instruction type");
+      }
+    }
+
+    #[test]
+    fn test_decode_set_token_badge_attribute_require_non_transferable_position_false() {
+      let json_str = r#"{"dataAttribute": {"name":"requireNonTransferablePosition","required":false}, "keyWhirlpoolsConfig": "En7osvvTqrWucPrqTQxaZCVzPeeAr5cvfMHexNnsmAy", "keyWhirlpoolsConfigExtension": "2Uz5gzSSRWfbV8ejPBCjJywjGHwUVjekprSBLAB9TYao", "keyTokenBadgeAuthority": "B9Tt2B2tvC2pVHerieJPqqk4f6i5SFvq6AbuWbM2p5qs", "keyTokenMint": "GGNk2ysKF74taTfsCfKNdL5yj1sboeqyQWREGQdkFFc5", "keyTokenBadge": "43hfpnAf5WUnq77YqMEUFSq8sx9xEybkmTQszw6d6ori"}"#;
+      let parsed = from_json(&"setTokenBadgeAttribute".to_string(), &json_str.to_string()).unwrap();
+      if let DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::SetTokenBadgeAttribute(decoded)) = parsed {
+          assert_eq!(decoded.data_attribute, TokenBadgeAttribute::RequireNonTransferablePosition { required: false });
+      } else {
+          panic!("Unexpected instruction type");
+      }
+    }
+
+    #[test]
+    fn test_decode_migrate_repurpose_reward_authority_space() {
+      let json_str = r#"{"keyWhirlpool": "7vWRTPPBq3aNaJZsrfterTz1BSjht4YSHBXJwnbuV6SC"}"#;
+      let _ = from_json(&"migrateRepurposeRewardAuthoritySpace".to_string(), &json_str.to_string()).unwrap();
     }
 }

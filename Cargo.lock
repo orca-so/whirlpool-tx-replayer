@@ -5930,14 +5930,16 @@ checksum = "5f20c57d8d7db6d3b86154206ae5d8fba62dd39573114de97c2cb0578251f8e1"
 
 [[package]]
 name = "whirlpool"
-version = "0.4.1"
-source = "git+https://github.com/orca-so/whirlpools?branch=yugure%2Ffor-replayer-20250616#02b7016a6df194ea4646a2c69e45f4fff6ca47b4"
+version = "0.5.0"
+source = "git+https://github.com/orca-so/whirlpools?branch=yugure%2Ffor-replayer-20250824#7f89b9544d596a2fa432074712ac061028632ffb"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
  "arrayref",
+ "bitflags 2.5.0",
  "borsh 0.9.3",
  "bytemuck",
+ "num_enum 0.7.2",
  "solana-program",
  "solana-security-txt",
  "spl-token",
