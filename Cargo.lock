@@ -3306,7 +3306,7 @@ checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
 
 [[package]]
 name = "replay-engine"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "anchor-client",
  "anchor-lang",
@@ -5950,7 +5950,7 @@ dependencies = [
 
 [[package]]
 name = "whirlpool-regression-test"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "anchor-lang",
  "chrono",
@@ -5963,7 +5963,7 @@ dependencies = [
 
 [[package]]
 name = "whirlpool-replay"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "anchor-lang",
  "clap 4.5.6",
@@ -5974,7 +5974,7 @@ dependencies = [
 
 [[package]]
 name = "whirlpool-replayer"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
  "base64 0.21.7",
  "bincode",
