@@ -1,4 +1,7 @@
 ## 2025
+### 20250911-366188902
+- Make ADMINS multi-sig (no feature update) ([PR1061](https://github.com/orca-so/whirlpools/pull/1061))
+
 ### 20250821-361491090
 - Non transferable position ([PR1038](https://github.com/orca-so/whirlpools/pull/1038))
 - Safer account initialization ([PR1010](https://github.com/orca-so/whirlpools/pull/1010))
