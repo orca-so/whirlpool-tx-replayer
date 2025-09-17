@@ -30,6 +30,10 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   let intermediate_token_trait = util::determine_token_trait(&ix.key_token_program_intermediate, &ix.transfer_1);
   let output_token_trait = util::determine_token_trait(&ix.key_token_program_output, &ix.transfer_2);
 
+  // there is an edge case that input and output token accounts are the same (e.g. SOL to USDC to SOL)
+  // e.g. https://solscan.io/tx/51chh5qHQ2hjWQCRqDmFAxHJdDfb5R7gMKKq72Pqoe7D1mK22JgMWk2wvoineuUE88wXdM6vf61hGQw3FNkxwqwK
+  let is_edge_case_input_output_match = ix.key_token_owner_account_output == ix.key_token_owner_account_input;
+
   let mut writable_accounts = vec![];
 
   // whirlpool_one
@@ -112,7 +116,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     output_token_trait,
     output_mint,
     pubkey(&ix.key_token_authority),
-    0u64,
+    if is_edge_case_input_output_match { input_amount } else { 0u64 },
   );
   // token_authority
   // tick_array_one_0
