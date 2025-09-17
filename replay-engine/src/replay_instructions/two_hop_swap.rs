@@ -21,11 +21,26 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
   let input_mint = if ix.data_a_to_b_one { mint_one_a } else { mint_one_b };
   let output_mint = if ix.data_a_to_b_two { mint_two_b } else { mint_two_a };
 
-  let input_token_owner_account = if ix.data_a_to_b_one { ix.key_token_owner_account_one_a.clone() } else { ix.key_token_owner_account_one_b.clone() };
+  let (input_token_owner_account_one, output_token_owner_account_one) = if ix.data_a_to_b_one {
+    (ix.key_token_owner_account_one_a.clone(), ix.key_token_owner_account_one_b.clone())
+  } else {
+    (ix.key_token_owner_account_one_b.clone(), ix.key_token_owner_account_one_a.clone())
+  };
+  let (input_token_owner_account_two, output_token_owner_account_two) = if ix.data_a_to_b_two {
+    (ix.key_token_owner_account_two_a.clone(), ix.key_token_owner_account_two_b.clone())
+  } else {
+    (ix.key_token_owner_account_two_b.clone(), ix.key_token_owner_account_two_a.clone())
+  };
 
   let input_amount = ix.transfer_amount_0;
   let intermediate_amount = ix.transfer_amount_1;
   let output_amount = ix.transfer_amount_3;
+
+  // there is an edge case that input and output token accounts are the same (e.g. SOL to USDC to SOL)
+  // e.g. https://solscan.io/tx/51chh5qHQ2hjWQCRqDmFAxHJdDfb5R7gMKKq72Pqoe7D1mK22JgMWk2wvoineuUE88wXdM6vf61hGQw3FNkxwqwK
+  let is_edge_case_input_output_match = input_token_owner_account_one == output_token_owner_account_two;
+  // there is an edge case that intermediate token accounts are different
+  let is_edge_case_intermediate_mismatch = output_token_owner_account_one != input_token_owner_account_two;
 
   let mut writable_accounts = vec![];
 
@@ -40,7 +55,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     pubkey(&ix.key_token_owner_account_one_a),
     mint_one_a,
     pubkey(&ix.key_token_authority),
-    if ix.key_token_owner_account_one_a == input_token_owner_account { input_amount } else { 0u64 }
+    if ix.data_a_to_b_one { input_amount } else { 0u64 }
   );
   // vault_one_a
   replayer.set_token_account(
@@ -54,7 +69,7 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     pubkey(&ix.key_token_owner_account_one_b),
     mint_one_b,
     pubkey(&ix.key_token_authority),
-    if ix.key_token_owner_account_one_b == input_token_owner_account { input_amount } else { 0u64 }
+    if !ix.data_a_to_b_one { input_amount } else { 0u64 }
   );
   // vault_one_b
   replayer.set_token_account(
@@ -68,7 +83,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     pubkey(&ix.key_token_owner_account_two_a),
     mint_two_a,
     pubkey(&ix.key_token_authority),
-    if ix.key_token_owner_account_two_a == input_token_owner_account { input_amount } else { 0u64 }
+    if ix.data_a_to_b_two {
+      // intermediate token account
+      if is_edge_case_intermediate_mismatch { intermediate_amount } else { 0u64 }
+    } else {
+      // output token account
+      if is_edge_case_input_output_match { input_amount } else { 0u64 }
+    },
   );
   // vault_two_a
   replayer.set_token_account(
@@ -82,7 +103,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedTwoHopSw
     pubkey(&ix.key_token_owner_account_two_b),
     mint_two_b,
     pubkey(&ix.key_token_authority),
-    if ix.key_token_owner_account_two_b == input_token_owner_account { input_amount } else { 0u64 }
+    if !ix.data_a_to_b_two {
+      // intermediate token account
+      if is_edge_case_intermediate_mismatch { intermediate_amount } else { 0u64 }
+    } else {
+      // output token account
+      if is_edge_case_input_output_match { input_amount } else { 0u64 }
+    },
   );
   // vault_two_b
   replayer.set_token_account(
