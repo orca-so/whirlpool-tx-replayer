@@ -136,7 +136,7 @@ impl WhirlpoolReplayerStep {
     pub fn replay_one_slot(
         &mut self,
     ) -> Option<Vec<(u64, String, String, String, WritableAccountSnapshot)>> {
-        let mut next_whirlpool_transaction = self.transaction_iter.next();
+        let next_whirlpool_transaction = self.transaction_iter.next();
         if next_whirlpool_transaction.is_none() {
             return None;
         }
@@ -163,7 +163,7 @@ impl WhirlpoolReplayerStep {
 
                 match decoded {
                     decoded_instructions::DecodedInstruction::ProgramDeployInstruction(
-                        deploy_instruction,
+                        _deploy_instruction,
                     ) => {
                         // self.replay_engine
                         //    .update_program_data(deploy_instruction.program_data);
