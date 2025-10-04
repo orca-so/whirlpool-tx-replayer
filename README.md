@@ -12,21 +12,6 @@ https://whirlpool-archive.pleiades.dev/alpha/index.html
 
 🙏 Please cache the files if you need to use them repeatedly. Large amounts of continuous downloads could cripple the publication of this useful bucket.
 
-### Data Streaming
-https://github.com/yugure-orca/whirlpool-stream-doc/blob/main/README.md
-
-Using whirlpool stream, you can track & detect EVERYTHING on Whirlpool program without decoding and replay difficulty:
-
-- track trades (including tickIndex and sqrtPrice)
-- track pool price
-- track liquidity operations (deposit & withdraw)
-- detect new whirlpool
-- detect new reward emission
-- track all whirlpool account state (delta data transfer)
-
-The beauty of this is that you can start at any point in the past three days.
-In the event of a disconnection, it can be resumed without loss of data.
-
 ## Motivation & Core Concept
 Replaying the entire Solana would require a lot of resources, but for Whirlpool state alone, replay is possible with a snapshot of the account and all successful transactions associated with Whirlpool program.
 
@@ -153,6 +138,9 @@ curl -OL https://whirlpool-archive.pleiades.dev/alpha/2023/1130/whirlpool-transa
 - We can reduce >30% storage
 - It is so fast
 - works well even in streaming mode
+
+### use liteSVM as replay environment instead of raw Bank implementation
+If it has better performance than the current implementation.
 
 ### Add test cases for each instruction replay handler
 
