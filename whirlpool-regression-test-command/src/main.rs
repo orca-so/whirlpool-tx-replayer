@@ -1,4 +1,4 @@
-use std::vec;
+use std::{collections::HashMap, vec};
 use clap::Parser;
 
 use replay_engine::{decoded_instructions, replay_engine::ReplayEngine, types::{ProgramData, WritableAccountSnapshot}};
@@ -45,6 +45,11 @@ fn main() {
     replayer_left.override_program_data(program_data_left);
     replayer_right.override_program_data(program_data_right);
 
+    // replayed instruction counter
+    let mut replayed_instruction_count: HashMap<String, u64> = HashMap::new();
+    let mut total_cu_left: u64 = 0;
+    let mut total_cu_right: u64 = 0;
+
     loop {
         println!("left replayer...");
         let result_left = replayer_left.replay_one_slot();
@@ -62,8 +67,8 @@ fn main() {
 
         // foreach zipped
         for (left, right) in result_left.iter().zip(result_right.iter()) {
-            let (slot_left, signature_left, name_left, payload_left, snapshot_left) = left;
-            let (slot_right, signature_right, name_right, payload_right, snapshot_right) = right;
+            let (slot_left, signature_left, cu_left, name_left, payload_left, snapshot_left) = left;
+            let (slot_right, signature_right, cu_right, name_right, payload_right, snapshot_right) = right;
 
             assert_eq!(slot_left, slot_right);
             assert_eq!(signature_left, signature_right);
@@ -84,12 +89,26 @@ fn main() {
                 }
             }
 
-            println!("ok: slot={}, signature={}, name={}", slot_left, signature_left, name_left);
+            println!("ok: slot={}, signature={}, name={}, cu={},{}", slot_left, signature_left, name_left, cu_left, cu_right);
+            *replayed_instruction_count.entry(name_left.clone()).or_insert(0) += 1;
+            total_cu_left += cu_left;
+            total_cu_right += cu_right;
         }        
     }
 
     println!("Replay finished successfully (no regression detected)");
+    println!("Replayed instruction counts:");
+    let mut sorted_counts: Vec<_> = replayed_instruction_count.iter().collect();
+    sorted_counts.sort_by_key(|(name, _)| *name);
+    for (name, count) in sorted_counts {
+        println!("  {}: {}", name, count);
+    }
+    println!("Total compute units:");
+    println!("  Left: {}", total_cu_left);
+    println!("  Right: {}", total_cu_right);
 }
+
+type InstructionReplayResult = (u64, String, u64, String, String, WritableAccountSnapshot);
 
 pub struct WhirlpoolReplayerStep {
     replay_engine: ReplayEngine,
@@ -98,8 +117,8 @@ pub struct WhirlpoolReplayerStep {
 
 impl WhirlpoolReplayerStep {
     pub fn build_with_local_file_storage(
-        base_path: &String,
-        yyyymmdd: &String,
+        base_path: &str,
+        yyyymmdd: &str,
         account_data_store_config: &AccountDataStoreConfig,
     ) -> WhirlpoolReplayerStep {
         let current = chrono::NaiveDate::parse_from_str(yyyymmdd, "%Y%m%d").unwrap();
@@ -123,10 +142,10 @@ impl WhirlpoolReplayerStep {
             state.accounts,
         );
 
-        return WhirlpoolReplayerStep {
+        WhirlpoolReplayerStep {
             replay_engine,
             transaction_iter: Box::new(transaction_iter),
-        };
+        }
     }
 
     pub fn override_program_data(&mut self, program_data: ProgramData) {
@@ -135,13 +154,8 @@ impl WhirlpoolReplayerStep {
 
     pub fn replay_one_slot(
         &mut self,
-    ) -> Option<Vec<(u64, String, String, String, WritableAccountSnapshot)>> {
-        let next_whirlpool_transaction = self.transaction_iter.next();
-        if next_whirlpool_transaction.is_none() {
-            return None;
-        }
-
-        let whirlpool_transaction = next_whirlpool_transaction.unwrap();
+    ) -> Option<Vec<InstructionReplayResult>> {
+        let whirlpool_transaction = self.transaction_iter.next()?;
 
         let slot = Slot {
             slot: whirlpool_transaction.slot,
@@ -152,7 +166,7 @@ impl WhirlpoolReplayerStep {
         self.replay_engine
             .update_slot(slot.slot, slot.block_height, slot.block_time);
 
-        let mut writable_account_snapshots: Vec<(u64, String, String, String, WritableAccountSnapshot)> = vec![];
+        let mut writable_account_snapshots: Vec<InstructionReplayResult> = vec![];
 
         for transaction in whirlpool_transaction.transactions {
             let signature = transaction.signature.clone();
@@ -165,8 +179,7 @@ impl WhirlpoolReplayerStep {
                     decoded_instructions::DecodedInstruction::ProgramDeployInstruction(
                         _deploy_instruction,
                     ) => {
-                        // self.replay_engine
-                        //    .update_program_data(deploy_instruction.program_data);
+                        println!("ProgramDeployInstruction encountered, but program data override is in effect, so skipping.");
                     }
                     decoded_instructions::DecodedInstruction::WhirlpoolInstruction(
                         whirlpool_instruction,
@@ -181,10 +194,12 @@ impl WhirlpoolReplayerStep {
                             panic!("Fatal: Error during replay");
                         }
                         let result = result.unwrap();
+                        let compute_units = result.execution_result.details().unwrap().executed_units;
 
                         writable_account_snapshots.push((
                             slot.slot,
                             signature.clone(),
+                            compute_units,
                             name.clone(),
                             payload.clone(),
                             result.snapshot.clone(),
