@@ -49,6 +49,8 @@ fn main() {
     let mut replayed_instruction_count: HashMap<String, u64> = HashMap::new();
     let mut total_cu_left: u64 = 0;
     let mut total_cu_right: u64 = 0;
+    let mut replayed_instruction_cu_sum_left: HashMap<String, u64> = HashMap::new();
+    let mut replayed_instruction_cu_sum_right: HashMap<String, u64> = HashMap::new();
 
     loop {
         println!("left replayer...");
@@ -93,6 +95,8 @@ fn main() {
             *replayed_instruction_count.entry(name_left.clone()).or_insert(0) += 1;
             total_cu_left += cu_left;
             total_cu_right += cu_right;
+            *replayed_instruction_cu_sum_left.entry(name_left.clone()).or_insert(0) += cu_left;
+            *replayed_instruction_cu_sum_right.entry(name_left.clone()).or_insert(0) += cu_right;
         }        
     }
 
@@ -101,9 +105,11 @@ fn main() {
     let mut sorted_counts: Vec<_> = replayed_instruction_count.iter().collect();
     sorted_counts.sort_by_key(|(name, _)| *name);
     for (name, count) in sorted_counts {
-        println!("  {}: {}", name, count);
+        let cu_left = replayed_instruction_cu_sum_left.get(name).unwrap();
+        let cu_right = replayed_instruction_cu_sum_right.get(name).unwrap();
+        println!("  {}: count={}, left CU={}, right CU={}", name, count, cu_left, cu_right);
     }
-    println!("Total compute units:");
+    println!("Total CU:");
     println!("  Left: {}", total_cu_left);
     println!("  Right: {}", total_cu_right);
 }
