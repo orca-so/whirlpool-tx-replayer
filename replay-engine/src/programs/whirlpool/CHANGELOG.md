@@ -1,3 +1,14 @@
+## 2026
+### 20260204-398059635
+- Pinocchio implementation for Liquidity ops ([PR1226](https://github.com/orca-so/whirlpools/pull/1226))
+- Add reposition_liquidity_v2 instruction ([PR1227](https://github.com/orca-so/whirlpools/pull/1227))
+- Add increase_liquidity_by_token_amounts_v2 instruction ([PR1229](https://github.com/orca-so/whirlpools/pull/1229))
+
+### 20260122-395191896
+- Add open one-sided position logic ([PR1189](https://github.com/orca-so/whirlpools/pull/1189))
+- Add set_adaptive_fee_constants instruction ([PR1187](https://github.com/orca-so/whirlpools/pull/1187))
+- Update metadata URL for dynamic position NFTs ([PR1218](https://github.com/orca-so/whirlpools/pull/1218))
+
 ## 2025
 ### 20250911-366188902
 - Make ADMINS multi-sig (no feature update) ([PR1061](https://github.com/orca-so/whirlpools/pull/1061))
