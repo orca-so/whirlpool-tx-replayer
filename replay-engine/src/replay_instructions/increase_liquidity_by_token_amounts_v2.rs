@@ -1,0 +1,208 @@
+use crate::decoded_instructions;
+use crate::replay_instruction::{ReplayInstructionParams, ReplayInstructionResult};
+use crate::util::pubkey; // abbr
+
+use anchor_lang::{InstructionData, ToAccountMetas, Discriminator, AnchorSerialize};
+use crate::util;
+use anchor_lang::solana_program::pubkey::Pubkey;
+
+#[derive(AnchorSerialize)]
+struct IncreaseLiquidityByTokenAmountsV2InstructionArgs {
+  pub method: IncreaseLiquidityMethod,
+  pub remaining_accounts_info: Option<u8>, // dummy, not used for replay (always None)
+}
+#[derive(AnchorSerialize)]
+enum IncreaseLiquidityMethod {
+  ByTokenAmounts {
+    token_max_a: u64,
+    token_max_b: u64,
+    min_sqrt_price: u128,
+    max_sqrt_price: u128,
+  },
+}
+impl Discriminator for IncreaseLiquidityByTokenAmountsV2InstructionArgs {
+  const DISCRIMINATOR: [u8; 8] = [0xef, 0xfb, 0x09, 0x7c, 0xd2, 0xc6, 0x35, 0x2b];
+}
+impl InstructionData for IncreaseLiquidityByTokenAmountsV2InstructionArgs {}
+
+struct IncreaseLiquidityByTokenAmountsV2InstructionAccounts {
+  pub whirlpool: Pubkey,
+  pub token_program_a: Pubkey,
+  pub token_program_b: Pubkey,
+  pub memo_program: Pubkey,
+  pub position_authority: Pubkey,
+  pub position: Pubkey,
+  pub position_token_account: Pubkey,
+  pub token_mint_a: Pubkey,
+  pub token_mint_b: Pubkey,
+  pub token_owner_account_a: Pubkey,
+  pub token_owner_account_b: Pubkey,
+  pub token_vault_a: Pubkey,
+  pub token_vault_b: Pubkey,
+  pub tick_array_lower: Pubkey,
+  pub tick_array_upper: Pubkey,
+}
+impl ToAccountMetas for IncreaseLiquidityByTokenAmountsV2InstructionAccounts {
+  fn to_account_metas(&self, is_signer: Option<bool>) -> Vec<solana_program::instruction::AccountMeta> {
+    vec![
+      solana_program::instruction::AccountMeta::new(self.whirlpool, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.token_program_a, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.token_program_b, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.memo_program, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.position_authority, is_signer.unwrap_or(true)),
+      solana_program::instruction::AccountMeta::new(self.position, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.position_token_account, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.token_mint_a, false),
+      solana_program::instruction::AccountMeta::new_readonly(self.token_mint_b, false),
+      solana_program::instruction::AccountMeta::new(self.token_owner_account_a, false),
+      solana_program::instruction::AccountMeta::new(self.token_owner_account_b, false),
+      solana_program::instruction::AccountMeta::new(self.token_vault_a, false),
+      solana_program::instruction::AccountMeta::new(self.token_vault_b, false),
+      solana_program::instruction::AccountMeta::new(self.tick_array_lower, false),
+      solana_program::instruction::AccountMeta::new(self.tick_array_upper, false),
+    ]
+  }
+}
+
+pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedIncreaseLiquidityByTokenAmountsV2>) -> ReplayInstructionResult {
+  let replayer = req.replayer;
+  let ix = req.decoded_instruction;
+  let accounts = req.accounts;
+
+  let whirlpool_data = util::get_whirlpool_data(&ix.key_whirlpool, accounts);
+  let mint_a = whirlpool_data.token_mint_a;
+  let mint_b = whirlpool_data.token_mint_b;
+
+  let position_data = util::get_position_data(&ix.key_position, accounts);
+  let position_mint = position_data.position_mint;
+
+  let amount_a = ix.transfer_0.amount;
+  let amount_b = ix.transfer_1.amount;
+
+  let token_trait_a = util::determine_token_trait(&ix.key_token_program_a, &ix.transfer_0);
+  let token_trait_b = util::determine_token_trait(&ix.key_token_program_b, &ix.transfer_1);
+
+  // whirlpool
+  replayer.set_whirlpool_account(&ix.key_whirlpool, accounts);
+  // token_program_a
+  // token_program_b
+  // memo_program
+  // position_authority
+  // position
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_position, accounts); // add lamports to initialize 2 ticks if needed
+  // position_token_amount
+  replayer.set_token_account(
+    pubkey(&ix.key_position_token_account),
+    position_mint,
+    pubkey(&ix.key_position_authority),
+    1u64
+  );
+  // token_mint_a
+  replayer.set_token_mint_with_trait(
+    pubkey(&ix.key_token_mint_a),
+    token_trait_a,
+    None,
+    u64::MAX, // dummy
+    6, // dummy
+    None
+  );
+  // token_mint_b
+  replayer.set_token_mint_with_trait(
+    pubkey(&ix.key_token_mint_b),
+    token_trait_b,
+    None,
+    u64::MAX, // dummy
+    6, // dummy
+    None
+  );
+  // token_owner_account_a
+  replayer.set_token_account_with_trait(
+    pubkey(&ix.key_token_owner_account_a),
+    token_trait_a,
+    mint_a,
+    pubkey(&ix.key_position_authority),
+    amount_a
+  );
+  // token_owner_account_b
+  replayer.set_token_account_with_trait(
+    pubkey(&ix.key_token_owner_account_b),
+    token_trait_b,
+    mint_b,
+    pubkey(&ix.key_position_authority),
+    amount_b
+  );
+  // token_vault_a
+  replayer.set_token_account_with_trait(
+    pubkey(&ix.key_token_vault_a),
+    token_trait_a,
+    mint_a,
+    pubkey(&ix.key_whirlpool),
+    0u64
+  );
+  // token_vault_b
+  replayer.set_token_account_with_trait(
+    pubkey(&ix.key_token_vault_b),
+    token_trait_b,
+    mint_b,
+    pubkey(&ix.key_whirlpool),
+    0u64
+  );
+  // tick_array_lower
+  replayer.set_whirlpool_account(&ix.key_tick_array_lower, accounts);
+  // tick_array_upper
+  replayer.set_whirlpool_account(&ix.key_tick_array_upper, accounts);
+
+  let method = match ix.data_method {
+    decoded_instructions::IncreaseLiquidityMethod::ByTokenAmounts { token_max_a, token_max_b, min_sqrt_price, max_sqrt_price } => {
+      IncreaseLiquidityMethod::ByTokenAmounts {
+        token_max_a,
+        token_max_b,
+        min_sqrt_price,
+        max_sqrt_price,
+      }
+    },
+  };
+
+  let tx = replayer.build_whirlpool_replay_transaction(
+     IncreaseLiquidityByTokenAmountsV2InstructionArgs {
+      method,
+      // don't replay transfer hook
+      remaining_accounts_info: None,
+    },
+    IncreaseLiquidityByTokenAmountsV2InstructionAccounts {
+      whirlpool: pubkey(&ix.key_whirlpool),
+      token_program_a: pubkey(&ix.key_token_program_a),
+      token_program_b: pubkey(&ix.key_token_program_b),
+      memo_program: pubkey(&ix.key_memo_program),
+      position_authority: pubkey(&ix.key_position_authority),
+      position: pubkey(&ix.key_position),
+      position_token_account: pubkey(&ix.key_position_token_account),
+      token_mint_a: pubkey(&ix.key_token_mint_a),
+      token_mint_b: pubkey(&ix.key_token_mint_b),
+      token_owner_account_a: pubkey(&ix.key_token_owner_account_a),
+      token_owner_account_b: pubkey(&ix.key_token_owner_account_b),
+      token_vault_a: pubkey(&ix.key_token_vault_a),
+      token_vault_b: pubkey(&ix.key_token_vault_b),
+      tick_array_lower: pubkey(&ix.key_tick_array_lower),
+      tick_array_upper: pubkey(&ix.key_tick_array_upper),
+    },
+  );
+
+  let pre_snapshot = replayer.take_snapshot(&[
+    &ix.key_whirlpool,
+    &ix.key_position,
+    &ix.key_tick_array_lower,
+    &ix.key_tick_array_upper,
+  ]);
+  
+  let execution_result = replayer.execute_transaction(tx);
+
+  let post_snapshot = replayer.take_snapshot(&[
+    &ix.key_whirlpool,
+    &ix.key_position,
+    &ix.key_tick_array_lower,
+    &ix.key_tick_array_upper,
+  ]);
+
+  ReplayInstructionResult::new(execution_result, pre_snapshot, post_snapshot)
+}

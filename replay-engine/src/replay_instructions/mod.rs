@@ -67,3 +67,7 @@ pub mod initialize_dynamic_tick_array;
 pub mod set_config_feature_flag;
 pub mod set_token_badge_attribute;
 pub mod migrate_repurpose_reward_authority_space;
+
+pub mod set_adaptive_fee_constants;
+pub mod increase_liquidity_by_token_amounts_v2;
+pub mod reposition_liquidity_v2;
