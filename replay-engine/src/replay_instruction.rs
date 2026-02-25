@@ -103,11 +103,15 @@ pub fn replay_whirlpool_instruction(
     DecodedWhirlpoolInstruction::SetDefaultBaseFeeRate(decoded) => Ok(replay_instructions::set_default_base_fee_rate::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetFeeRateByDelegatedFeeAuthority(decoded) => Ok(replay_instructions::set_fee_rate_by_delegated_fee_authority::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetPresetAdaptiveFeeConstants(decoded) => Ok(replay_instructions::set_preset_adaptive_fee_constants::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::SetAdaptiveFeeConstants(decoded) => Ok(replay_instructions::set_adaptive_fee_constants::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // Dynamic Tick Array
     DecodedWhirlpoolInstruction::InitializeDynamicTickArray(decoded) => Ok(replay_instructions::initialize_dynamic_tick_array::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // Non Transferable Position
     DecodedWhirlpoolInstruction::SetConfigFeatureFlag(decoded) => Ok(replay_instructions::set_config_feature_flag::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::SetTokenBadgeAttribute(decoded) => Ok(replay_instructions::set_token_badge_attribute::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    // Newer v2 instructions
+    DecodedWhirlpoolInstruction::IncreaseLiquidityByTokenAmountsV2(decoded) => Ok(replay_instructions::increase_liquidity_by_token_amounts_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
+    DecodedWhirlpoolInstruction::RepositionLiquidityV2(decoded) => Ok(replay_instructions::reposition_liquidity_v2::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     // temporary patch instructions
     DecodedWhirlpoolInstruction::AdminIncreaseLiquidity(decoded) => Ok(replay_instructions::admin_increase_liquidity::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),
     DecodedWhirlpoolInstruction::MigrateRepurposeRewardAuthoritySpace(decoded) => Ok(replay_instructions::migrate_repurpose_reward_authority_space::replay(ReplayInstructionParams { replayer, decoded_instruction: &decoded, accounts })),

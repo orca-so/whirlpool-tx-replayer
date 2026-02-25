@@ -68,6 +68,9 @@ pub enum DecodedWhirlpoolInstruction {
   SetConfigFeatureFlag(DecodedSetConfigFeatureFlag),
   SetTokenBadgeAttribute(DecodedSetTokenBadgeAttribute),
   MigrateRepurposeRewardAuthoritySpace(DecodedMigrateRepurposeRewardAuthoritySpace),
+  SetAdaptiveFeeConstants(DecodedSetAdaptiveFeeConstants),
+  RepositionLiquidityV2(DecodedRepositionLiquidityV2),
+  IncreaseLiquidityByTokenAmountsV2(DecodedIncreaseLiquidityByTokenAmountsV2),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -152,6 +155,9 @@ pub fn from_json(ix: &String, json: &String) -> Result<DecodedInstruction, Error
     "setConfigFeatureFlag" => Ok(DecodedWhirlpoolInstruction::SetConfigFeatureFlag(from_str(&json)?)),
     "setTokenBadgeAttribute" => Ok(DecodedWhirlpoolInstruction::SetTokenBadgeAttribute(from_str(&json)?)),
     "migrateRepurposeRewardAuthoritySpace" => Ok(DecodedWhirlpoolInstruction::MigrateRepurposeRewardAuthoritySpace(from_str(&json)?)),
+    "setAdaptiveFeeConstants" => Ok(DecodedWhirlpoolInstruction::SetAdaptiveFeeConstants(from_str(&json)?)),
+    "repositionLiquidityV2" => Ok(DecodedWhirlpoolInstruction::RepositionLiquidityV2(from_str(&json)?)),
+    "increaseLiquidityByTokenAmountsV2" => Ok(DecodedWhirlpoolInstruction::IncreaseLiquidityByTokenAmountsV2(from_str(&json)?)),
     _ => Err(ErrorCode::UnknownWhirlpoolInstruction(ix.to_string())),
   };
 
@@ -1169,6 +1175,76 @@ pub struct DecodedMigrateRepurposeRewardAuthoritySpace {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedSetAdaptiveFeeConstants {
+  pub data_adaptive_fee_constants: AdaptiveFeeConstants,
+  pub key_whirlpool: String,
+  pub key_whirlpools_config: String,
+  pub key_oracle: String,
+  pub key_fee_authority: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedRepositionLiquidityV2 {
+  pub data_new_tick_lower_index: i32,
+  pub data_new_tick_upper_index: i32,
+  pub data_method: RepositionLiquidityMethod,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub aux_data_is_token_a_transfer_from_owner: bool,
+  #[serde(deserialize_with = "deserialize_bool")]
+  pub aux_data_is_token_b_transfer_from_owner: bool,
+  pub key_whirlpool: String,
+  pub key_token_program_a: String,
+  pub key_token_program_b: String,
+  pub key_memo_program: String,
+  pub key_position_authority: String,
+  pub key_funder: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_token_mint_a: String,
+  pub key_token_mint_b: String,
+  pub key_token_owner_account_a: String,
+  pub key_token_owner_account_b: String,
+  pub key_token_vault_a: String,
+  pub key_token_vault_b: String,
+  pub key_existing_tick_array_lower: String,
+  pub key_existing_tick_array_upper: String,
+  pub key_new_tick_array_lower: String,
+  pub key_new_tick_array_upper: String,
+  pub key_system_program: String,
+  pub remaining_accounts_info: RemainingAccountsInfo,
+  pub remaining_accounts_keys: RemainingAccountsKeys,
+  pub transfer_0: TransferAmountWithTransferFeeConfig,
+  pub transfer_1: TransferAmountWithTransferFeeConfig,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DecodedIncreaseLiquidityByTokenAmountsV2 {
+  pub data_method: IncreaseLiquidityMethod,
+  pub key_whirlpool: String,
+  pub key_token_program_a: String,
+  pub key_token_program_b: String,
+  pub key_memo_program: String,
+  pub key_position_authority: String,
+  pub key_position: String,
+  pub key_position_token_account: String,
+  pub key_token_mint_a: String,
+  pub key_token_mint_b: String,
+  pub key_token_owner_account_a: String,
+  pub key_token_owner_account_b: String,
+  pub key_token_vault_a: String,
+  pub key_token_vault_b: String,
+  pub key_tick_array_lower: String,
+  pub key_tick_array_upper: String,
+  pub remaining_accounts_info: RemainingAccountsInfo,
+  pub remaining_accounts_keys: RemainingAccountsKeys,
+  pub transfer_0: TransferAmountWithTransferFeeConfig,
+  pub transfer_1: TransferAmountWithTransferFeeConfig,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase", tag = "name")]
 pub enum LockType {
   Permanent,
@@ -1184,6 +1260,54 @@ pub enum ConfigFeatureFlag {
 #[serde(rename_all = "camelCase", tag = "name")]
 pub enum TokenBadgeAttribute {
   RequireNonTransferablePosition { required: bool },
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct AdaptiveFeeConstants {
+  pub filter_period: Option<u16>,
+  pub decay_period: Option<u16>,
+  pub reduction_factor: Option<u16>,
+  pub adaptive_fee_control_factor: Option<u32>,
+  pub max_volatility_accumulator: Option<u32>,
+  pub tick_group_size: Option<u16>,
+  pub major_swap_threshold_ticks: Option<u16>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase", tag = "name")]
+pub enum RepositionLiquidityMethod {
+  // we need to add rename_all to make sure the field names are deserialized correctly
+  #[serde(rename_all = "camelCase")]
+  ByLiquidity {
+    #[serde(deserialize_with = "deserialize_u128")]
+    new_liquidity_amount: u128,
+    #[serde(deserialize_with = "deserialize_u64")]
+    existing_range_token_min_a: u64,
+    #[serde(deserialize_with = "deserialize_u64")]
+    existing_range_token_min_b: u64,
+    #[serde(deserialize_with = "deserialize_u64")]
+    new_range_token_max_a: u64,
+    #[serde(deserialize_with = "deserialize_u64")]
+    new_range_token_max_b: u64,
+  },
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[serde(rename_all = "camelCase", tag = "name")]
+pub enum IncreaseLiquidityMethod {
+  // we need to add rename_all to make sure the field names are deserialized correctly
+  #[serde(rename_all = "camelCase")]
+  ByTokenAmounts {
+    #[serde(deserialize_with = "deserialize_u64")]
+    token_max_a: u64,
+    #[serde(deserialize_with = "deserialize_u64")]
+    token_max_b: u64,
+    #[serde(deserialize_with = "deserialize_u128")]
+    min_sqrt_price: u128,
+    #[serde(deserialize_with = "deserialize_u128")]
+    max_sqrt_price: u128,
+  },
 }
 
 pub type RemainingAccountsInfo = Vec<[u8; 2]>;
@@ -1397,5 +1521,60 @@ mod tests {
     fn test_decode_migrate_repurpose_reward_authority_space() {
       let json_str = r#"{"keyWhirlpool": "7vWRTPPBq3aNaJZsrfterTz1BSjht4YSHBXJwnbuV6SC"}"#;
       let _ = from_json(&"migrateRepurposeRewardAuthoritySpace".to_string(), &json_str.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_decode_set_adaptive_fee_constants() {
+      let json_str = r#"{"dataAdaptiveFeeConstants": {"filterPeriod":null,"decayPeriod":660,"reductionFactor":null,"adaptiveFeeControlFactor":40000,"maxVolatilityAccumulator":null,"tickGroupSize":64,"majorSwapThresholdTicks":128}, "keyWhirlpool": "966HQTB3CKAL6AzqueVo3mFkaEiePCFLoGWXetoxBTH2", "keyWhirlpoolsConfig": "FcrweFY1G9HJAHG5inkGB6pKg1HZ6x9UC2WioAfWrGkR", "keyOracle": "ETu2xvY2zVKKfeQamani671qrvBxx7YPnKemji8HjdUo", "keyFeeAuthority": "3otH3AHWqkqgSVfKFkrxyDqd2vK6LcaqigHrFEmWcGuo"}"#;
+      let result = from_json(&"setAdaptiveFeeConstants".to_string(), &json_str.to_string()).unwrap();
+      match result {
+          DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::SetAdaptiveFeeConstants(decoded)) => {
+              assert_eq!(decoded.data_adaptive_fee_constants.filter_period, None);
+              assert_eq!(decoded.data_adaptive_fee_constants.decay_period, Some(660u16));
+              assert_eq!(decoded.data_adaptive_fee_constants.reduction_factor, None);
+              assert_eq!(decoded.data_adaptive_fee_constants.adaptive_fee_control_factor, Some(40000u32));
+              assert_eq!(decoded.data_adaptive_fee_constants.max_volatility_accumulator, None);
+              assert_eq!(decoded.data_adaptive_fee_constants.tick_group_size, Some(64u16));
+              assert_eq!(decoded.data_adaptive_fee_constants.major_swap_threshold_ticks, Some(128u16));
+          },
+          _ => panic!("Unexpected instruction type"),
+      }
+    }
+
+    #[test]
+    fn test_decode_reposition_liquidity_v2_by_liquidity() {
+      let json_str = r#"{"dataNewTickLowerIndex": -35776, "dataNewTickUpperIndex": -35712, "dataMethod": {"name":"byLiquidity","newLiquidityAmount":"93468635752","existingRangeTokenMinA":"0","existingRangeTokenMinB":"100","newRangeTokenMaxA":"1000000000","newRangeTokenMaxB":"300000000"}, "auxDataIsTokenATransferFromOwner": 1, "auxDataIsTokenBTransferFromOwner": 0, "keyWhirlpool": "966HQTB3CKAL6AzqueVo3mFkaEiePCFLoGWXetoxBTH2", "keyTokenProgramA": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyTokenProgramB": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyMemoProgram": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "9keZBHVEBWe2uWyCXWyzLRvyP7P3LpUGWof3CTV566WJ", "keyPositionTokenAccount": "7yJzthuoTo1gctZ8Qv6SjAdeabefVMFVRec2b6i8iVwx", "keyTokenMintA": "So11111111111111111111111111111111111111112", "keyTokenMintB": "BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k", "keyTokenOwnerAccountA": "3sDLkZQoCiqGHquJtSL3Ti2M46PzNB73RiFVHfTc6iag", "keyTokenOwnerAccountB": "3ZBThPKT5i5YiUL9QwhR6Qrxhmn5Sgz4RB4mMuZQCAv7", "keyTokenVaultA": "HCExg9kzWMsLTqF6MqYJtC2oxyLop2FffwAiraCenoXS", "keyTokenVaultB": "HnEmvKUYXznamehQfgAfXDng84Rpz3oVsmfP3PqiaSm1", "keyExistingTickArrayLower": "D8yPeo4pfHJnKKhxs2AFnKb9QutJomJQAAJooJq6z6fv", "keyExistingTickArrayUpper": "D8yPeo4pfHJnKKhxs2AFnKb9QutJomJQAAJooJq6z6fv", "keyNewTickArrayLower": "D8yPeo4pfHJnKKhxs2AFnKb9QutJomJQAAJooJq6z6fv", "keyNewTickArrayUpper": "D8yPeo4pfHJnKKhxs2AFnKb9QutJomJQAAJooJq6z6fv", "keySystemProgram": "11111111111111111111111111111111", "remainingAccountsInfo": [], "remainingAccountsKeys": [], "transfer0": {"amount": "0", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}, "transfer1": {"amount": "49920259", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}}"#;
+      let result = from_json(&"repositionLiquidityV2".to_string(), &json_str.to_string()).unwrap();
+      match result {
+          DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::RepositionLiquidityV2(decoded)) => {
+              assert_eq!(decoded.data_new_tick_lower_index, -35776i32);
+              assert_eq!(decoded.data_new_tick_upper_index, -35712i32);
+              assert_eq!(decoded.data_method, RepositionLiquidityMethod::ByLiquidity {
+                  new_liquidity_amount: 93468635752u128,
+                  existing_range_token_min_a: 0u64,
+                  existing_range_token_min_b: 100u64,
+                  new_range_token_max_a: 1000000000u64,
+                  new_range_token_max_b: 300000000u64,
+              });
+          },
+          _ => panic!("Unexpected instruction type"),
+      }
+    }
+
+    #[test]
+    fn test_decode_increase_liquidity_by_token_amounts_v2_by_token_amounts() {
+      let json_str = r#"{"dataMethod": {"name":"byTokenAmounts","tokenMaxA":"1000000000","tokenMaxB":"500000000","minSqrtPrice":"4295048016","maxSqrtPrice":"79226673515401279992447579055"}, "keyWhirlpool": "966HQTB3CKAL6AzqueVo3mFkaEiePCFLoGWXetoxBTH2", "keyTokenProgramA": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyTokenProgramB": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyMemoProgram": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "9keZBHVEBWe2uWyCXWyzLRvyP7P3LpUGWof3CTV566WJ", "keyPositionTokenAccount": "7yJzthuoTo1gctZ8Qv6SjAdeabefVMFVRec2b6i8iVwx", "keyTokenMintA": "So11111111111111111111111111111111111111112", "keyTokenMintB": "BRjpCHtyQLNCo8gqRUr8jtdAj5AjPYQaoqbvcZiHok1k", "keyTokenOwnerAccountA": "3sDLkZQoCiqGHquJtSL3Ti2M46PzNB73RiFVHfTc6iag", "keyTokenOwnerAccountB": "3ZBThPKT5i5YiUL9QwhR6Qrxhmn5Sgz4RB4mMuZQCAv7", "keyTokenVaultA": "HCExg9kzWMsLTqF6MqYJtC2oxyLop2FffwAiraCenoXS", "keyTokenVaultB": "HnEmvKUYXznamehQfgAfXDng84Rpz3oVsmfP3PqiaSm1", "keyTickArrayLower": "D8yPeo4pfHJnKKhxs2AFnKb9QutJomJQAAJooJq6z6fv", "keyTickArrayUpper": "D8yPeo4pfHJnKKhxs2AFnKb9QutJomJQAAJooJq6z6fv", "remainingAccountsInfo": [], "remainingAccountsKeys": [], "transfer0": {"amount": "0", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}, "transfer1": {"amount": "500000000", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}}"#;
+      let result = from_json(&"increaseLiquidityByTokenAmountsV2".to_string(), &json_str.to_string()).unwrap();
+      match result {
+          DecodedInstruction::WhirlpoolInstruction(DecodedWhirlpoolInstruction::IncreaseLiquidityByTokenAmountsV2(decoded)) => {
+              assert_eq!(decoded.data_method, IncreaseLiquidityMethod::ByTokenAmounts {
+                  token_max_a: 1000000000u64,
+                  token_max_b: 500000000u64,
+                  min_sqrt_price: 4295048016u128,
+                  max_sqrt_price: 79226673515401279992447579055u128,
+              });
+          },
+          _ => panic!("Unexpected instruction type"),
+      }
     }
 }

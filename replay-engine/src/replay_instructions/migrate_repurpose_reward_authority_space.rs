@@ -18,9 +18,9 @@ struct MigrateRepurposeRewardAuthoritySpaceInstructionAccounts {
 }
 impl ToAccountMetas for MigrateRepurposeRewardAuthoritySpaceInstructionAccounts {
   fn to_account_metas(&self, _is_signer: Option<bool>) -> Vec<solana_program::instruction::AccountMeta> {
-    let mut metas = Vec::new();
-    metas.push(solana_program::instruction::AccountMeta::new(self.whirlpool, false));
-    return metas;
+    vec![
+      solana_program::instruction::AccountMeta::new(self.whirlpool, false),
+    ]
   }
 }
 
