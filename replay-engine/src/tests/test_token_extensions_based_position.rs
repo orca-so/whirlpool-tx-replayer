@@ -6,7 +6,7 @@ fn test_open_and_close_position_with_token_extensions() {
 
     let initialize_config = ix(
         "initializeConfig",
-        r#"{"dataDefaultProtocolFeeRate": 300, "dataFeeAuthority": "6oCnhnbUz4WFsoC6P3SCmCPWFGmwQrSwvXXMdSoFekby", "dataCollectProtocolFeesAuthority": "5RxQK8kHgaVb6rHPvfTV9N8fciat8RQ4AsHDko1cSaXV", "dataRewardEmissionsSuperAuthority": "5GkuHxpU9bZvbSnXbFzizwxCkHieAkDu7mtmMpYTQ3xB", "keyWhirlpoolsConfig": "E2B7cgVcMxvNBX6eDHMSMXQeP5K3vFEEikGZTZZMEH2e", "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keySystemProgram": "11111111111111111111111111111111"}"#,
+        r#"{"dataDefaultProtocolFeeRate": 300, "dataFeeAuthority": "6oCnhnbUz4WFsoC6P3SCmCPWFGmwQrSwvXXMdSoFekby", "dataCollectProtocolFeesAuthority": "5RxQK8kHgaVb6rHPvfTV9N8fciat8RQ4AsHDko1cSaXV", "dataRewardEmissionsSuperAuthority": "5GkuHxpU9bZvbSnXbFzizwxCkHieAkDu7mtmMpYTQ3xB", "keyWhirlpoolsConfig": "E2B7cgVcMxvNBX6eDHMSMXQeP5K3vFEEikGZTZZMEH2e", "keyFunder": "GwH3Hiv5mACLX3ufTw1pFsrhSPon5tdw252DBs4Rx4PV", "keySystemProgram": "11111111111111111111111111111111"}"#,
     );
     let initialize_fee_tier = ix(
         "initializeFeeTier",

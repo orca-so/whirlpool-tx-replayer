@@ -8,7 +8,7 @@ fn test_transfer_locked_position() {
 
     let initialize_config = ix(
         "initializeConfig",
-        r#"{"dataDefaultProtocolFeeRate": 300, "dataFeeAuthority": "3Q4pMMf5e2wcqYMGZhjpDWEmWaAVAVzMxKJtsv2iMu1R", "dataCollectProtocolFeesAuthority": "EXz6jkK22aa6jqgkG4q3GXm5Ankb6gh8Dsk4VytWupf7", "dataRewardEmissionsSuperAuthority": "34H4AgZt4CpS4488bWNcXUZFqpbXrfCnS7ika2BUwY3p", "keyWhirlpoolsConfig": "Drks8NktGoBWtV5YPWwKEWR9skUWypjmS6q46ckjPi8D", "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keySystemProgram": "11111111111111111111111111111111"}"#,
+        r#"{"dataDefaultProtocolFeeRate": 300, "dataFeeAuthority": "3Q4pMMf5e2wcqYMGZhjpDWEmWaAVAVzMxKJtsv2iMu1R", "dataCollectProtocolFeesAuthority": "EXz6jkK22aa6jqgkG4q3GXm5Ankb6gh8Dsk4VytWupf7", "dataRewardEmissionsSuperAuthority": "34H4AgZt4CpS4488bWNcXUZFqpbXrfCnS7ika2BUwY3p", "keyWhirlpoolsConfig": "Drks8NktGoBWtV5YPWwKEWR9skUWypjmS6q46ckjPi8D", "keyFunder": "GwH3Hiv5mACLX3ufTw1pFsrhSPon5tdw252DBs4Rx4PV", "keySystemProgram": "11111111111111111111111111111111"}"#,
     );
     let initialize_fee_tier = ix(
         "initializeFeeTier",

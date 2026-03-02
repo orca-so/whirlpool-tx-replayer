@@ -5,6 +5,7 @@ mod test_lock_position;
 mod test_transfer_locked_position;
 mod test_reset_position_range;
 mod test_dynamic_tick_array;
+mod test_increase_liquidity_by_token_amounts_v2;
 
 mod test_utils;
 pub use test_utils::*;

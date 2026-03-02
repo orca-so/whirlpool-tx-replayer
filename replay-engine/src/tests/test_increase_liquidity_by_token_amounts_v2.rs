@@ -3,7 +3,7 @@ use crate::tests::deserialize_position;
 use super::{create_engine, ix, replay};
 
 #[test]
-fn test_reset_position_range() {
+fn test_increase_liquidity_by_token_amounts_v2() {
     let mut engine = create_engine();
 
     let initialize_config = ix(
@@ -30,10 +30,9 @@ fn test_reset_position_range() {
         "openPositionWithTokenExtensions",
         r#"{"dataTickLowerIndex": -443584, "dataTickUpperIndex": 443584, "dataWithTokenMetadataExtension": 1, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyOwner": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionMint": "E1EGF4YqwPa4uR2naSJ37n22XHaiqQ616NXv6fYLWpk1", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keyWhirlpool": "BsGwEuUqbfeUSDN4mmxhcGFhNYKypKH8NZjoQ7DQrFfC", "keyToken2022Program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", "keySystemProgram": "11111111111111111111111111111111", "keyAssociatedTokenProgram": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL", "keyMetadataUpdateAuth": "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr"}"#,
     );
-
-    let reset_position_range = ix(
-        "resetPositionRange",
-        r#"{"dataNewTickLowerIndex": -443520, "dataNewTickUpperIndex": 443520, "keyFunder": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyWhirlpool": "BsGwEuUqbfeUSDN4mmxhcGFhNYKypKH8NZjoQ7DQrFfC", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keySystemProgram": "11111111111111111111111111111111"}"#,
+    let increase_liquidity_by_token_amounts_v2 = ix(
+        "increaseLiquidityByTokenAmountsV2",
+        r#"{"dataMethod": {"name":"byTokenAmounts","tokenMaxA":"200000","tokenMaxB":"5000000","minSqrtPrice":"4295048016","maxSqrtPrice":"79226673515401279992447579055"}, "keyWhirlpool": "BsGwEuUqbfeUSDN4mmxhcGFhNYKypKH8NZjoQ7DQrFfC", "keyTokenProgramA": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyTokenProgramB": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", "keyMemoProgram": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr", "keyPositionAuthority": "r21Gamwd9DtyjHeGywsneoQYR39C1VDwrw7tWxHAwh6", "keyPosition": "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b", "keyPositionTokenAccount": "CqybBwB821UWPgJuvERUZPUiRoMpBnsDELL7KBQEpKcJ", "keyTokenMintA": "7Xws5FruPQGB3Jq9xj4Cc55rruVjY8mdzmmr6wpUHeqB", "keyTokenMintB": "7j8yxRszXTonjCS7LsnvLtitRSBCggPM2Bx9yzJjcT9y", "keyTokenOwnerAccountA": "7RJCL297iWxQGNiEvdLW8srWE2HFqH4WrQXiHMnXD18", "keyTokenOwnerAccountB": "CPGfEURMHiLjvsjAC45XesbqVAfDQDbutK4HmiMLGLTH", "keyTokenVaultA": "FNiNQiXYgFhKcKuU16DuNDxZynVAmNG2DVs3ukXe1JeB", "keyTokenVaultB": "6tMEfTsiby8m1jh861Zb23aTQt65c8mjVvL6PgkjXmjh", "keyTickArrayLower": "CPWekMYLLoEggpQCV4ddND6pGCo4LcGb13uvSmsBHfpc", "keyTickArrayUpper": "ESzF37B5Z3JzjU47sMAymWXfrbD2RoezWEnnPiATtvt2", "remainingAccountsInfo": [], "remainingAccountsKeys": [], "transfer0": {"amount": "200000", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}, "transfer1": {"amount": "5000000", "transferFeeConfigOpt": 0, "transferFeeConfigBps": 0, "transferFeeConfigMax": "0"}}"#,
     );
 
     let position = "22MwAtBfaqJQxNH5kHrdZdaTERH9bdT5mqGBfSpdGV9b";
@@ -46,12 +45,10 @@ fn test_reset_position_range() {
     replay(&mut engine, &open_position_with_token_extensions);
 
     let position_data = deserialize_position(&engine, position);
-    assert_eq!(position_data.tick_lower_index, -443584);
-    assert_eq!(position_data.tick_upper_index, 443584);
+    assert!(position_data.liquidity == 0);
 
-    replay(&mut engine, &reset_position_range);
+    replay(&mut engine, &increase_liquidity_by_token_amounts_v2);
 
     let position_data = deserialize_position(&engine, position);
-    assert_eq!(position_data.tick_lower_index, -443520);
-    assert_eq!(position_data.tick_upper_index, 443520);
+    assert!(position_data.liquidity > 0);
 }
