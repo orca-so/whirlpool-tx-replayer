@@ -393,6 +393,8 @@ pub struct ReplayEnvironmentBuilder {
 }
 
 impl ReplayEnvironmentBuilder {
+    const COMPUTE_UNIT_MAX: u64 = 2_000_000; // 1.4M + 0.6M because replayed instructions contain Memo instruction.
+
     fn new() -> Self {
         let faucet = Keypair::new();
         let mut config = GenesisConfig::new(
@@ -623,7 +625,7 @@ impl ReplayEnvironmentBuilder {
 
         // set compute budget to max
         let mut runtime_config = RuntimeConfig::default();
-        runtime_config.compute_budget = Some(solana_program_runtime::compute_budget::ComputeBudget::new(1_400_000u64));
+        runtime_config.compute_budget = Some(solana_program_runtime::compute_budget::ComputeBudget::new(Self::COMPUTE_UNIT_MAX));
 
         let bank_slot0 = Bank::new_with_paths(
             &self.config,
