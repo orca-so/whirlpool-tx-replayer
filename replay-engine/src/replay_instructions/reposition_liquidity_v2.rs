@@ -173,13 +173,13 @@ pub fn replay(req: ReplayInstructionParams<decoded_instructions::DecodedRepositi
     vault_amount_b
   );
   // existing_tick_array_lower
-  replayer.set_whirlpool_account(&ix.key_existing_tick_array_lower, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_existing_tick_array_lower, accounts); // add lamports to collect rent of 2 ticks
   // existing_tick_array_upper
-  replayer.set_whirlpool_account(&ix.key_existing_tick_array_upper, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_existing_tick_array_upper, accounts); // add lamports to collect rent of 2 ticks
   // new_tick_array_lower
-  replayer.set_whirlpool_account(&ix.key_new_tick_array_lower, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_new_tick_array_lower, accounts); // add lamports to collect rent of 2 ticks
   // new_tick_array_upper
-  replayer.set_whirlpool_account(&ix.key_new_tick_array_upper, accounts);
+  replayer.set_whirlpool_account_with_additional_lamports(&ix.key_new_tick_array_upper, accounts); // add lamports to collect rent of 2 ticks
   // system_program
 
   let method = match ix.data_method {
