@@ -1,4 +1,13 @@
 ## 2026
+### 20261015-457147740
+- Remove migrate_repurpose_reward_authority_space ix ([PR1311](https://github.com/orca-so/whirlpools/pull/1311))
+- Fix: u256 div edge case ([PR1326](https://github.com/orca-so/whirlpools/pull/1326))
+- Prepare for SIMD-0460 Virtual Address Space Adjustments ([PR1392](https://github.com/orca-so/whirlpools/pull/1392))
+- Improve checkpoint update (Mitigation for griefing attacks) ([PR1396](https://github.com/orca-so/whirlpools/pull/1396))
+
+### 20260819-440170207
+- Prepare for rent reduction starting with Agave 4.2 ([PR1366](https://github.com/orca-so/whirlpools/pull/1366))
+
 ### 20260204-398059635
 - Pinocchio implementation for Liquidity ops ([PR1226](https://github.com/orca-so/whirlpools/pull/1226))
 - Add reposition_liquidity_v2 instruction ([PR1227](https://github.com/orca-so/whirlpools/pull/1227))
@@ -67,3 +76,28 @@
 ### 20240528-268396603
 - TokenExtensions support ([PR134](https://github.com/orca-so/whirlpools/pull/134))
 
+## 2023
+### 20230901-214946722
+- Increase the fee rate limit and log fee growth ([PR104](https://github.com/orca-so/whirlpools/pull/104))
+
+### 20230419-189278833
+- Position bundle and Anchor v26 ([PR89](https://github.com/orca-so/whirlpools/pull/89))
+
+### 20230217-178191491
+- Two hop swap instruction ([PR87](https://github.com/orca-so/whirlpools/pull/87))
+
+### 20230127-174717190
+- Update Whirlpool position NFT metadata URI ([PR83](https://github.com/orca-so/whirlpools/pull/83))
+
+## 2022
+### 20221221-168120167
+- remove temporary adminIncreaseLiquidity instruction (PR82 related state patch) 
+
+### 20221221-168116472
+- add temporary adminIncreaseLiquidity instruction (PR82 related state patch)
+
+### 20221204-164780893
+- Handle liquidity swapping edge case across initialized tick boundary ([PR82](https://github.com/orca-so/whirlpools/pull/82))
+
+### 20220503
+Initial commit for the open-source repository
