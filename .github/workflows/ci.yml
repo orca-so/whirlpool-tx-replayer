@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: cargo test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      # The workspace pins solana-* =1.17.22 (openssl-sys via reqwest/native-tls)
+      # and rocksdb 0.21 (bindgen). Both build scripts fail when the headers are
+      # missing, so install them explicitly instead of relying on the runner image.
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libssl-dev \
+            libclang-dev \
+            clang \
+            libz-dev \
+            cmake \
+            pkg-config \
+            libudev-dev
+
+      - name: Show toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Cache cargo registry and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      # replay-engine/src/tests/mod.rs include_bytes!s a fixture program that is
+      # .gitignore'd (line 30) and therefore absent from a fresh checkout. The
+      # newest program binary committed under src/programs/whirlpool/ is
+      # API-compatible with the current test suite (33/33 pass with the
+      # 2026-02-04 and 2026-10-15 builds; older ones fail newer instruction
+      # tests), so materialize it from there. Replace with a build from the
+      # pinned whirlpools branch if the fixture should come from source instead.
+      - name: Materialize test fixture program
+        run: |
+          fixture="$(ls -1 replay-engine/src/programs/whirlpool/whirlpool-*.so | sort | tail -1)"
+          echo "using fixture: $fixture"
+          cp "$fixture" replay-engine/src/tests/whirlpool-for-testing.so
+
+      - name: cargo test --workspace
+        run: cargo test --workspace --locked
